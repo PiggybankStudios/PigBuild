@@ -46,7 +46,8 @@
 	[ ] Move "init_emsdk.bat" into this repo
 	[X] Remove "plex" and "car" aliases
 	[ ] Document why we need each of the standard library #includes
-	[?] Add Str8_Empty?
+	[X] Add Str8_Empty?
+	[?] Add AllocStr8?
 	[X] Add types like "u8", "u64", "i32", "r32", etc.
 	[ ] Move all the macros into their own file
 	[ ] Move all the string related functions into their own file

@@ -108,8 +108,8 @@ u64 FnvHash(const void* bufferPntr, u64 numBytes, u64 startingState)
 // change then your builder will be re-compiled (this function will call exit(REBUILD_EXIT_CODE);)
 void RecompileIfNeeded()
 {
-	Str8 buildScriptFilePath = StrLit(BUILD_SCRIPT_SOURCE_PATH);
-	Str8 buildSystemFolderPath = StrLit(PIG_BUILD_FOLDER_PATH);
+	Str8 buildScriptFilePath = StrLit_Const(BUILD_SCRIPT_SOURCE_PATH);
+	Str8 buildSystemFolderPath = StrLit_Const(PIG_BUILD_FOLDER_PATH);
 	
 	Str8 buildScriptContents = ZEROED;
 	if (!TryReadFile(buildScriptFilePath, &buildScriptContents))
@@ -138,7 +138,7 @@ void RecompileIfNeeded()
 		}
 	}
 	
-	Str8 buildHashFilePath = StrLit(BUILD_SCRIPT_HASH_PATH);
+	Str8 buildHashFilePath = StrLit_Const(BUILD_SCRIPT_HASH_PATH);
 	u64 savedHash = 0;
 	bool hashesMatch = false;
 	bool hashFileExisted = false;

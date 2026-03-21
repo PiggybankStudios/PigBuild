@@ -51,7 +51,7 @@ struct CliArgList
 
 Str8 FormatArg(const CliArg* arg, Str8 rootDirPath, char pathSepChar)
 {
-	Str8 valTargetStr = StrLit(CLI_VAL_STR);
+	Str8 valTargetStr = StrLit_Const(CLI_VAL_STR);
 	Str8 formatStr = arg->format;
 	Str8 valueStr = StrReplace(arg->value, StrLit(CLI_ROOT_DIR), rootDirPath, false);
 	FixPathSlashes(valueStr, pathSepChar);

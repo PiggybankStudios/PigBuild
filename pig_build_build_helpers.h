@@ -64,7 +64,7 @@ static inline void InitializeMsvcIf(Str8 pigCoreFolder, bool* isMsvcInitialized)
 	if (*isMsvcInitialized == false)
 	{
 		Str8 batchPath = JoinStrings2(pigCoreFolder, StrLit("/init_msvc.bat"), false);
-		Str8 environmentPath = StrLit("msvc_environment.txt");
+		Str8 environmentPath = StrLit_Const("msvc_environment.txt");
 		if (DoesFileExist(environmentPath)) { WriteLine("Loading MSVC Environment..."); }
 		else { WriteLine("Initializing MSVC Compiler..."); }
 		RunBatchFileAndApplyDumpedEnvironment(batchPath, environmentPath, true);
@@ -212,10 +212,10 @@ static inline Str8 GetPlaydateSdkPath()
 	*(linePntr) = StrSliceFrom(*(linePntr), (expectedStr).length);         \
 } while(0)
 
-#define CONSUME_NT_STR(linePntr, expectedStrNt) do \
-{                                                  \
-	Str8 expectedStr = StrLit(expectedStrNt);      \
-	CONSUME_STR((linePntr), expectedStr);          \
+#define CONSUME_NT_STR(linePntr, expectedStrNt) do  \
+{                                                   \
+	Str8 expectedStr = StrLit_Const(expectedStrNt); \
+	CONSUME_STR((linePntr), expectedStr);           \
 } while(0)
 
 #define CONSUME_UNTIL(linePntr, expectedStr) do                        \

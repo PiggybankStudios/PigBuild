@@ -12,16 +12,24 @@
 		],
 		"custom_constants":
 		[
+			"Str8_Empty",
+			"Str8_Empty_Const",
 		],
 		"custom_functions":
 		[
-			"#define StrPrint(string)"
+			"#define MakeStr8(length, pntr)",
+			"#define MakeStr8Nt(nullTermPntr)",
+			"#define MakeStr8_Const(lengthValue, pntrValue)",
+			"#define StrLit(stringLiteral)",
+			"#define StrLitLength(stringLiteral)",
+			"#define StrLit_Const(stringLiteral)",
+			"#define StrPrint(string)",
 		],
 		"custom_globals":
 		[
 		],
 		"custom_types":
 		[
-		]
+		],
 	},
 }

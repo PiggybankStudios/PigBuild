@@ -144,10 +144,10 @@ typedef RECURSIVE_DIR_WALK_CALLBACK_DEF(RecursiveDirWalkCallback_f);
 // +--------------------------------------------------------------+
 // |                            Macros                            |
 // +--------------------------------------------------------------+
-#define StrLitLength(stringLiteral) ((sizeof(stringLiteral) / sizeof((stringLiteral)[0])) - sizeof((stringLiteral)[0]))
-#define CheckStrLit(stringLiteral) ("" stringLiteral "")
-#define StrLit(stringLiteral) MakeStr8(StrLitLength(CheckStrLit(stringLiteral)), (stringLiteral))
 #define ArrayCount(array) (sizeof(array) / sizeof((array)[0]))
+#define CheckStrLit(stringLiteral) ("" stringLiteral "")
+//In C, when assigning a structure to a designated initializer AFTER it has been declared, we must have the type prefixing the curly brackets
+#define NEW_STRUCT(type) (type)
 
 #define WriteLine(messageStr) printf(messageStr "\n")
 #define WriteLine_E(messageStr) fprintf(stderr, messageStr "\n")
@@ -156,27 +156,22 @@ typedef RECURSIVE_DIR_WALK_CALLBACK_DEF(RecursiveDirWalkCallback_f);
 
 #define IS_SLASH(character) ((character) == '\\' || (character) == '/')
 
-//NOTE: This is meant to be used when formatting Str8 using any printf like functions
-//      Use the format specifier %.*s and then this macro in the var-args
-#define StrPrint(string)   (int)(string).length, (string).chars
-
 // +--------------------------------------------------------------+
 // |                        Str Functions                         |
 // +--------------------------------------------------------------+
-static inline Str8 MakeStr8(u64 length, const void* pntr)
-{
-	Str8 result;
-	result.length = length;
-	result.pntr = (void*)pntr; //throw away const qualifier
-	return result;
-}
-static inline Str8 MakeStr8Nt(const void* nullTermPntr)
-{
-	Str8 result;
-	result.length = (u64)strlen(nullTermPntr);
-	result.pntr = (void*)nullTermPntr; //throw away const qualifier
-	return result;
-}
+#define MakeStr8_Const(lengthValue, pntrValue) { .length=(lengthValue), .pntr=(void*)(pntrValue) }
+#define MakeStr8(length, pntr) NEW_STRUCT(Str8)MakeStr8_Const((length), (pntr))
+#define Str8_Empty_Const MakeStr8_Const(0, nullptr)
+#define Str8_Empty       MakeStr8(0, nullptr)
+
+#define StrLitLength(stringLiteral) ((sizeof(stringLiteral) / sizeof((stringLiteral)[0])) - sizeof((stringLiteral)[0]))
+#define StrLit_Const(stringLiteral) MakeStr8_Const(StrLitLength(CheckStrLit(stringLiteral)), (stringLiteral))
+#define StrLit(stringLiteral)       MakeStr8(StrLitLength(CheckStrLit(stringLiteral)), (stringLiteral))
+#define MakeStr8Nt(nullTermPntr)    MakeStr8((u64)strlen(nullTermPntr), (nullTermPntr))
+
+//NOTE: This is meant to be used when formatting Str8 using any printf like functions
+//      Use the format specifier %.*s and then this macro in the var-args
+#define StrPrint(string)   (int)(string).length, (string).chars
 
 static inline bool StrExactEquals(Str8 left, Str8 right)
 {
