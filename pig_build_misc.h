@@ -2,15 +2,13 @@
 File:   pig_build_misc.h
 Author: Taylor Robbins
 Date:   06\16\2025
-Description: 
-	** Holds functions\types\etc. that are shared amongst all the tool scripts
-	** This are basically duplicates of a small section of PigCore that need to
-	** be separate and stable so that these tools don't depend on the code they
-	** are helping compile.
 */
 
 #ifndef _PIG_BUILD_MISC_H
 #define _PIG_BUILD_MISC_H
+
+#include "pig_build_base.h"
+#include "pig_build_str8.h"
 
 // +--------------------------------------------------------------+
 // |                            Types                             |

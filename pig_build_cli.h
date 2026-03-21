@@ -10,6 +10,9 @@ Description:
 #ifndef _PIG_BUILD_CLI_H
 #define _PIG_BUILD_CLI_H
 
+#include "pig_build_base.h"
+#include "pig_build_str8.h"
+
 //#define this before including this file to enable a printout inside `RunCliProgram` like `>> clang main.c -O0 -g -o program`
 #ifndef PIG_BUILD_PRINT_SYS_CMDS
 #define PIG_BUILD_PRINT_SYS_CMDS 0
@@ -18,7 +21,7 @@ Description:
 // +--------------------------------------------------------------+
 // |                   Composing Argument Lists                   |
 // +--------------------------------------------------------------+
-// We have this string inside a bunch of #defines in places like tools_msvc_flags.h
+// We have this string inside a bunch of #defines in places like pig_build_cli_flags.h
 // This allows us to replace that part of the argument string with an actual value, adding escaping if the argument is in quotes
 #define CLI_VAL_STR      "[VAL]"
 #define CLI_UNQUOTED_ARG "[VAL]"
@@ -124,7 +127,7 @@ void AddArgInt(CliArgList* list, const char* formatStrNt, i32 valueInt)
 }
 void AddArg(CliArgList* list, const char* formatStrNt)
 {
-	AddArgStr(list, formatStrNt, MakeStr8(0, nullptr));
+	AddArgStr(list, formatStrNt, Str8_Empty);
 }
 
 void AddArgList(CliArgList* dest, const CliArgList* source)

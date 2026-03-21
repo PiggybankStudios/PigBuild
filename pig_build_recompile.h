@@ -13,6 +13,10 @@ Description:
 #ifndef _PIG_BUILD_RECOMPILE_H
 #define _PIG_BUILD_RECOMPILE_H
 
+#include "pig_build_base.h"
+#include "pig_build_str8.h"
+#include "pig_build_file.h"
+
 // NOTE: If you want to change any of these #defines, make sure you change them in build.sh and build.bat
 // If we exit(REBUILD_EXIT_CODE) then the shell script will re-compile and re-run us
 #define REBUILD_EXIT_CODE 42

@@ -33,6 +33,8 @@ The code in this repo used to live in [PigCore](https://github.com/PiggybankStud
 	
 	* `#include "pig_build_str8.h"`
 	
+	* `#include "pig_build_str_array.h"`
+	
 	* `#include "pig_build_file.h"`
 	
 	* `#include "pig_build_misc.h"`
@@ -40,8 +42,6 @@ The code in this repo used to live in [PigCore](https://github.com/PiggybankStud
 	* `#include "pig_build_recompile.h"` -- **NOTE:** This is required if you want to use `RecompileIfNeeded()`
 	
 	* `#include "pig_build_cli_flags.h"`
-	
-	* `#include "pig_build_str_array.h"`
 	
 	* `#include "pig_build_cli.h"`
 	

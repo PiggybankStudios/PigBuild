@@ -7,6 +7,9 @@ Date:   06\20\2025
 #ifndef _PIG_BUILD_STR_ARRAY_H
 #define _PIG_BUILD_STR_ARRAY_H
 
+#include "pig_build_base.h"
+#include "pig_build_str8.h"
+
 typedef struct StrArray StrArray;
 struct StrArray
 {

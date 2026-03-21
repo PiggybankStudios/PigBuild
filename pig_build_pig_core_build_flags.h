@@ -13,6 +13,11 @@ Description:
 #ifndef _PIG_BUILD_PIG_CORE_BUILD_FLAGS_H
 #define _PIG_BUILD_PIG_CORE_BUILD_FLAGS_H
 
+#include "pig_build_base.h"
+#include "pig_build_str8.h"
+#include "pig_build_cli_flags.h"
+#include "pig_build_cli.h"
+
 void Fill_cl_CommonFlags(CliArgList* cl_CommonFlags, Str8 pigCoreThirdPartyPath, bool DEBUG_BUILD, bool DUMP_PREPROCESSOR, bool DUMP_ASSEMBLY, bool BUILD_WITH_FREETYPE)
 {
 	AddArg(cl_CommonFlags, DEBUG_BUILD ? CL_STD_LIB_DYNAMIC_DBG : CL_STD_LIB_DYNAMIC);

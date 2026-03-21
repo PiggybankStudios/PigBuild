@@ -35,10 +35,11 @@
 	[ ] Can we add support for incremental compilation with intermediates tracking?
 	[ ] Move more of the "build_script.c" code into "pig_build"
 	[ ] Should we have an Assert macro? Or just use the one from "<assert.h>"
-	[ ] Add a define or something to enable ">> cl ..." printout for debug purposes
+	[X] Add a define or something to enable ">> cl ..." printout for debug purposes
 	[ ] Add some functions that help measure build times and save them to .csv or something
 	[ ] Make sure every file header has a proper description
 	[?] Should we remove all the static inline keywords? They are probably just misleading
+	[ ] Replace ZEROED usages with Str8_Empty or Str8_Empty_Const where applicable
 	[ ] 
 
 # Motiviations.md Ideas

@@ -7,6 +7,9 @@ Date:   03\21\2026
 #ifndef _PIG_BUILD_FILE_H
 #define _PIG_BUILD_FILE_H
 
+#include "pig_build_base.h"
+#include "pig_build_str8.h"
+
 typedef struct FileIter FileIter;
 struct FileIter
 {
@@ -423,7 +426,7 @@ static inline bool DoesFileExist(Str8 filePath)
 		return (accessResult == 0);
 	}
 	#else
-	assert(false && "tools_shared.h's DoesFileExist does not support the current platform yet!");
+	assert(false && "pig_build_file.h's DoesFileExist does not support the current platform yet!");
 	return false;
 	#endif
 }

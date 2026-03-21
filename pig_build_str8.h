@@ -7,6 +7,8 @@ Date:   03\21\2026
 #ifndef _PIG_BUILD_STR_8_H
 #define _PIG_BUILD_STR_8_H
 
+#include "pig_build_base.h"
+
 typedef struct Str8 Str8;
 struct Str8
 {

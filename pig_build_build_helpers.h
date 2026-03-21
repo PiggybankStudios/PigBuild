@@ -7,6 +7,13 @@ Date:   06\19\2025
 #ifndef _PIG_BUILD_BUILD_HELPERS_H
 #define _PIG_BUILD_BUILD_HELPERS_H
 
+#include "pig_build_base.h"
+#include "pig_build_str8.h"
+#include "pig_build_file.h"
+#include "pig_build_misc.h"
+#include "pig_build_str_array.h"
+#include "pig_build_cli.h"
+
 static inline Str8 ExtractStrDefine(Str8 buildConfigContents, Str8 defineName)
 {
 	Str8 defineValueStr = ZEROED;
