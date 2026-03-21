@@ -10,6 +10,11 @@ Description:
 #ifndef _PIG_BUILD_CLI_H
 #define _PIG_BUILD_CLI_H
 
+//#define this before including this file to enable a printout inside `RunCliProgram` like `>> clang main.c -O0 -g -o program`
+#ifndef PIG_BUILD_PRINT_SYS_CMDS
+#define PIG_BUILD_PRINT_SYS_CMDS 0
+#endif
+
 // +--------------------------------------------------------------+
 // |                   Composing Argument Lists                   |
 // +--------------------------------------------------------------+
@@ -190,7 +195,9 @@ Str8 JoinCliArgsList(Str8 prefix, const CliArgList* list, bool addNullTerm)
 int RunCliProgram(Str8 programName, const CliArgList* args)
 {
 	Str8 joinedArgs = JoinCliArgsList(programName, args, true);
-	// PrintLine(">> %s", joinedArgs.chars);
+	#if PIG_BUILD_PRINT_SYS_CMDS
+	PrintLine(">> %s", joinedArgs.chars);
+	#endif
 	fflush(stdout);
 	fflush(stderr);
 	int resultCode = system(joinedArgs.chars);

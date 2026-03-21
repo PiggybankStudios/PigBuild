@@ -12,30 +12,8 @@
 	[!] Add all functions types etc. to custom types list in PigBuild.sublime-project
 	[ ] Add an example "build_script.c" file
 	[ ] Add a "MOTIVATIONS.md" file that explains the design goals of this build system and it's pros/cons compared to other approaches
-		[ ] Talk about memory management in a build script
-		[ ] List out the primary concerns a build system has. Which concerns does this system help with? Which ones does it not help with?
-			[ ] String manipulation
-			[ ] Command-line argument composition
-			[ ] Injesting configuration options and changing behavior accordingly
-			[ ] Handling forward slashes and back slashes properly
-			[ ] Handling relative paths properly (cross-compilation probably needs to happen in a deeper folder)
-			[ ] Incremental compilation, and tracking of intermediate files
-			[ ] Running other tools before/after the build. For example packaging an .apk for Android, or shdc for shader cross-comp.
-			[ ] Interfacing with build systems from dependencies
-			[ ] Running inside a CI/CD system
-			[ ] Distributing compilation across a fleet of computers ("farm" or unused PCs in office)
-			[ ] Parallel compilation of multiple translation units
-			[ ] Similar cmd-line options to clang/msvc/gcc
-			[ ] Escaping characters in strings. Adding quotes around strings that have spaces
-			[ ] Fast build times, small overhead, minimal startup time
-			[ ] Communicating issues to the user with useful error messages. Handling cases where the computer is in an invalid state gracefully. Forwarding error messages from the compiler/linker/etc.
-			[ ] Check for build dependencies. Help the user know if their computer is ready to compile (do you have a compiler installed, is it a high enough version, etc.) Tell them where they can get the dependencies or automatically get them
-			[ ] Compiling resources on Windows (with "rc")
-			[ ] Uploading built artifacts to Github as a release
-			[ ] Tracking build times and saving stats to a file. Communicating to the user what is currently being built or taking time
-			[ ] Handle differences between different Operating Systems or architectures that are used for compilation
 	[?] Add basic temporary memory arena? Maybe wrap it with something called an "allocator" and have one implementation route to malloc/free?
-	[?] Add a "pig_build_all.h" or maybe just "pig_build.h"?
+	[X] Add a "pig_build_all.h" or maybe just "pig_build.h"?
 	[?] Make a "new_project.bat/sh" script? Should we allow the user to choose the name of the build script file and it's binary name?
 	[ ] Add a system to help with parsing command-line arguments
 	[ ] Move the system for parsing "build_config.h" into it's own file (maybe part of the command-line argument parsing system)
@@ -50,7 +28,7 @@
 	[?] Add AllocStr8?
 	[X] Add types like "u8", "u64", "i32", "r32", etc.
 	[ ] Move all the macros into their own file
-	[ ] Move all the string related functions into their own file
+	[X] Move all the string related functions into their own file
 	[ ] Move all the file related functions into their own file
 		[!] Should we just use fopen and similar functions from cstd?
 	[ ] Can we add support for multiple compilation units easily?
@@ -59,4 +37,32 @@
 	[ ] Should we have an Assert macro? Or just use the one from "<assert.h>"
 	[ ] Add a define or something to enable ">> cl ..." printout for debug purposes
 	[ ] Add some functions that help measure build times and save them to .csv or something
+	[ ] Make sure every file header has a proper description
+	[?] Should we remove all the static inline keywords? They are probably just misleading
 	[ ] 
+
+# Motiviations.md Ideas
+	[ ] Talk about memory management in a build script
+	[ ] Benefits of using a single language
+	[ ] Is C a good scripting language? What makes a good scripting language?
+	[ ] List out the primary concerns a build system has. Which concerns does this system help with? Which ones does it not help with?
+		[ ] String manipulation
+		[ ] Command-line argument composition
+		[ ] Injesting configuration options and changing behavior accordingly
+		[ ] Handling forward slashes and back slashes properly
+		[ ] Handling relative paths properly (cross-compilation probably needs to happen in a deeper folder)
+		[ ] Incremental compilation, and tracking of intermediate files
+		[ ] Running other tools before/after the build. For example packaging an .apk for Android, or shdc for shader cross-comp.
+		[ ] Interfacing with build systems from dependencies
+		[ ] Running inside a CI/CD system
+		[ ] Distributing compilation across a fleet of computers ("farm" or unused PCs in office)
+		[ ] Parallel compilation of multiple translation units
+		[ ] Similar cmd-line options to clang/msvc/gcc
+		[ ] Escaping characters in strings. Adding quotes around strings that have spaces
+		[ ] Fast build times, small overhead, minimal startup time
+		[ ] Communicating issues to the user with useful error messages. Handling cases where the computer is in an invalid state gracefully. Forwarding error messages from the compiler/linker/etc.
+		[ ] Check for build dependencies. Help the user know if their computer is ready to compile (do you have a compiler installed, is it a high enough version, etc.) Tell them where they can get the dependencies or automatically get them
+		[ ] Compiling resources on Windows (with "rc")
+		[ ] Uploading built artifacts to Github as a release
+		[ ] Tracking build times and saving stats to a file. Communicating to the user what is currently being built or taking time
+		[ ] Handle differences between different Operating Systems or architectures that are used for compilation

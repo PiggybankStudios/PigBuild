@@ -27,9 +27,15 @@ The code in this repo used to live in [PigCore](https://github.com/PiggybankStud
 
 	* **NOTE:** The name of your build script must be `build_script.c` right now. If you really want to change this you can change the shell scripts and the defines in `pig_build_recompile.h`.
 
-4. *(Optional)* `#include` any or all of the following files from this repository:
+4. *(Optional)* `#include "pig_build.h"` to get all `pig_build_[x].h` helper files, OR `#include` any or all of the following files from this repository:
 
-	* `#include "pig_build_shared.h"` - **NOTE:** This file is required to be included and included first if you want to use any of the other files. This also includes a few standard library headers that are used in other pig_build files
+	* `#include "pig_build_base.h"` - **NOTE:** This file is required to be included and included first if you want to use any of the other files. This also includes a few standard library headers that are used in other pig_build files
+	
+	* `#include "pig_build_str8.h"`
+	
+	* `#include "pig_build_file.h"`
+	
+	* `#include "pig_build_misc.h"`
 	
 	* `#include "pig_build_recompile.h"` -- **NOTE:** This is required if you want to use `RecompileIfNeeded()`
 	
@@ -52,14 +58,8 @@ The code in this repo used to live in [PigCore](https://github.com/PiggybankStud
 6. Add any logic you want to build your main program. For example:
 
 ```C
-#include "<stdio.h>"
-
-#include "pig_build_shared.h"
-#include "pig_build_recompile.h"
-#include "pig_build_cli_flags.h"
-#include "pig_build_str_array.h"
-#include "pig_build_cli.h"
-#include "pig_build_build_helpers.h"
+#include <stdio.h>
+#include "pig_build.h"
 
 int main(int argc, char* argv[])
 {
