@@ -9,9 +9,10 @@ Date:   06\19\2025
 
 #include "pig_build_base.h"
 #include "pig_build_str8.h"
+#include "pig_build_str_array.h"
 #include "pig_build_file.h"
 #include "pig_build_misc.h"
-#include "pig_build_str_array.h"
+#include "pig_build_recompile.h"
 #include "pig_build_cli.h"
 
 static inline Str8 ExtractStrDefine(Str8 buildConfigContents, Str8 defineName)
@@ -70,8 +71,8 @@ static inline void InitializeMsvcIf(Str8 pigCoreFolder, bool* isMsvcInitialized)
 {
 	if (*isMsvcInitialized == false)
 	{
-		Str8 batchPath = JoinStrings2(pigCoreFolder, StrLit("/init_msvc.bat"), false);
-		Str8 environmentPath = StrLit_Const("msvc_environment.txt");
+		Str8 batchPath = JoinStrings2(pigCoreFolder, StrLit("/" PIG_BUILD_FOLDER_NAME "/shell/init_msvc.bat"), false);
+		Str8 environmentPath = StrLit_Const(MSVC_ENVIRONMENT_TXT_PATH);
 		if (DoesFileExist(environmentPath)) { WriteLine("Loading MSVC Environment..."); }
 		else { WriteLine("Initializing MSVC Compiler..."); }
 		RunBatchFileAndApplyDumpedEnvironment(batchPath, environmentPath, true);
@@ -84,8 +85,8 @@ static inline void InitializeEmsdkIf(Str8 pigCoreFolder, bool* isEmsdkInitialize
 	if (*isEmsdkInitialized == false)
 	{
 		PrintLine("Initializing Emscripten SDK...");
-		Str8 batchPath = JoinStrings2(pigCoreFolder, StrLit("/init_emsdk.bat"), false);
-		RunBatchFileAndApplyDumpedEnvironment(batchPath, StrLit("emsdk_environment.txt"), false);
+		Str8 batchPath = JoinStrings2(pigCoreFolder, StrLit("/" PIG_BUILD_FOLDER_NAME "/shell/init_emsdk.bat"), false);
+		RunBatchFileAndApplyDumpedEnvironment(batchPath, StrLit(EMSDK_ENVIRONMENT_PATH), false);
 		*isEmsdkInitialized = true;
 	}
 }

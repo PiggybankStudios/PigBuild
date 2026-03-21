@@ -41,6 +41,7 @@
 	[?] Should we remove all the static inline keywords? They are probably just misleading
 	[ ] Replace ZEROED usages with Str8_Empty or Str8_Empty_Const where applicable
 	[ ] Remove "/std:clatest" and "-std=gnu2x"
+	[ ] Check if build_script.c compilation failed and exit early int Windows build.bat
 	[ ] 
 
 # Motiviations.md Ideas

@@ -30,6 +30,10 @@ Description:
 #define BUILD_SCRIPT_SOURCE_PATH "../" BUILD_SCRIPT_SOURCE_NAME
 #define PIG_BUILD_FOLDER_NAME "pig_build"
 #define PIG_BUILD_FOLDER_PATH "../" PIG_BUILD_FOLDER_NAME
+#if BUILDING_ON_WINDOWS
+#define MSVC_ENVIRONMENT_TXT_PATH "msvc_environment.txt"
+#define EMSDK_ENVIRONMENT_PATH    "emsdk_environment.txt"
+#endif
 
 bool TryParseHexU64(Str8 str, u64* valueOut)
 {
