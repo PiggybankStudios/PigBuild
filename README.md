@@ -2,7 +2,7 @@
 
 Rather than putting all of our build logic into Bash or Batch, we have a 2-stage build system that uses a small shell script to build a C program that contains the majority of the build logic and then runs that build program.
 
-The build logic for each project is contained in a `build_script.c` file in the root directory of the project with `build.sh`/`build.bat` shell scripts beside it. However, a bunch of logic and types and other systems are re-usable between projects so this repository contains that re-usable code to help support all C build scripts.
+The build logic for each project is contained in a `build_script.c` file in the root directory of the project with `build.sh`/`build.bat` shell scripts beside it. However, a bunch of logic and types and other systems are re-usable between projects so this repository contains that re-usable code to help support all kinds of C build scripts.
 
 All files in this repo are expected to compile with the default settings for MSVC and Clang so that the shell script doesn't have to know anything about the build script in order to build it.
 
@@ -21,7 +21,7 @@ The code in this repo used to live in [PigCore](https://github.com/PiggybankStud
 	
 	* **NOTE:** The folder name must be `pig_build` (with proper capitalization on platforms where that matters). If you really want to change this you can change the shell scripts and the defines in `pig_build_recompile.h`.
 
-2. Copy the `build.bat` and `build.sh` into your project's root folder
+2. Copy the `build.bat` and `build.sh` from the `template/` folder into your project's root folder
 
 3. Create a `build_script.c` with your own `int main(int argc, char* argv[]) { ... }` just like any C program. Feel free to `#include` any standard libraries you would like to use like `<stdio.h>` or `<string.h>`.
 
@@ -52,6 +52,8 @@ The code in this repo used to live in [PigCore](https://github.com/PiggybankStud
 6. Add any logic you want to build your main program. For example:
 
 ```C
+#include "<stdio.h>"
+
 #include "pig_build_shared.h"
 #include "pig_build_recompile.h"
 #include "pig_build_cli_flags.h"
@@ -59,4 +61,14 @@ The code in this repo used to live in [PigCore](https://github.com/PiggybankStud
 #include "pig_build_cli.h"
 #include "pig_build_build_helpers.h"
 
+int main(int argc, char* argv[])
+{
+	RecompileIfNeeded();
+	printf("Building...\n");
+	
+	//... do stuff like system("clang main.c -o my_program");
+	
+	printf("Done!\n");
+	return 0;
+}
 ```
