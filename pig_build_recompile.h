@@ -27,10 +27,10 @@ Description:
 #define PIG_BUILD_FOLDER_NAME "pig_build"
 #define PIG_BUILD_FOLDER_PATH "../" PIG_BUILD_FOLDER_NAME
 
-bool TryParseHexU64(Str8 str, uint64_t* valueOut)
+bool TryParseHexU64(Str8 str, u64* valueOut)
 {
-	uint8_t charIndex = 0;
-	uint64_t result = 0;
+	u8 charIndex = 0;
+	u64 result = 0;
 	str = TrimWhitespace(str);
 	if (str.length >= 2 && str.chars[0] == '0' && str.chars[1] == 'x') { str.chars += 2; str.length-=2; }
 	if (str.length == 0) { return false; }
@@ -38,15 +38,15 @@ bool TryParseHexU64(Str8 str, uint64_t* valueOut)
 	{
 		if (str.chars[0] >= '0' && str.chars[0] <= '9')
 		{
-			result = result * 16ULL + (uint64_t)(str.chars[0] - '0');
+			result = result * 16ULL + (u64)(str.chars[0] - '0');
 		}
 		else if (str.chars[0] >= 'A' && str.chars[0] <= 'F')
 		{
-			result = result * 16ULL + (10 + (uint64_t)(str.chars[0] - 'A'));
+			result = result * 16ULL + (10 + (u64)(str.chars[0] - 'A'));
 		}
 		else if (str.chars[0] >= 'a' && str.chars[0] <= 'f')
 		{
-			result = result * 16ULL + (10 + (uint64_t)(str.chars[0] - 'a'));
+			result = result * 16ULL + (10 + (u64)(str.chars[0] - 'a'));
 		}
 		else
 		{
@@ -58,29 +58,29 @@ bool TryParseHexU64(Str8 str, uint64_t* valueOut)
 	}
 	if (str.length > 0)
 	{
-		PrintLine("String is too long for uint64_t hex! Remaining: [%u]\"%.*s\"", str.length, str.length, str.chars);
+		PrintLine("String is too long for u64 hex! Remaining: [%lu]\"%.*s\"", str.length, StrPrint(str));
 		return false;
 	}
 	if (valueOut != nullptr) { *valueOut = result; }
 	return true;
 }
 
-char GetHexChar(uint8_t hexValue, bool upperCase)
+char GetHexChar(u8 hexValue, bool upperCase)
 {
 	if (hexValue <= 9) { return '0' + hexValue; }
 	else if (hexValue < 16) { return (upperCase ? 'A' : 'a') + (hexValue - 10); }
 	else { return '?'; }
 }
-Str8 ConvertU64ToHexStr(uint64_t value, bool upperCase)
+Str8 ConvertU64ToHexStr(u64 value, bool upperCase)
 {
 	Str8 result;
-	result.length = 2 + (sizeof(uint64_t)*2);
+	result.length = 2 + (sizeof(u64)*2);
 	result.chars = (char*)malloc(result.length+1);
 	result.chars[0] = '0';
 	result.chars[1] = 'x';
-	for (uint8_t bIndex = 0; bIndex < (sizeof(uint64_t)*2); bIndex++)
+	for (u8 bIndex = 0; bIndex < (sizeof(u64)*2); bIndex++)
 	{
-		result.chars[(result.length-1) - bIndex] = GetHexChar((uint8_t)(value & 0x0FULL), upperCase);
+		result.chars[(result.length-1) - bIndex] = GetHexChar((u8)(value & 0x0FULL), upperCase);
 		value = (value >> 4ULL);
 	}
 	result.chars[result.length] = '\0';
@@ -91,11 +91,11 @@ Str8 ConvertU64ToHexStr(uint64_t value, bool upperCase)
 // cryptographically safe or anything, just very unlikely to collide.
 #define FNV_HASH_BASE_U64   0xcbf29ce484222325ULL //= DEC(14,695,981,039,346,656,037)
 #define FNV_HASH_PRIME_U64  0x00000100000001b3ULL //= DEC(1,099,511,628,211)
-uint64_t FnvHash(const void* bufferPntr, uint64_t numBytes, uint64_t startingState)
+u64 FnvHash(const void* bufferPntr, u64 numBytes, u64 startingState)
 {
-	const uint8_t* bytePntr = (const uint8_t*)bufferPntr;
-	uint64_t result = startingState;
-	for (uint64_t bIndex = 0; bIndex < numBytes; bIndex++)
+	const u8* bytePntr = (const u8*)bufferPntr;
+	u64 result = startingState;
+	for (u64 bIndex = 0; bIndex < numBytes; bIndex++)
 	{
 		result = result ^ bytePntr[bIndex];
 		result = result * FNV_HASH_PRIME_U64;
@@ -114,10 +114,10 @@ void RecompileIfNeeded()
 	Str8 buildScriptContents = ZEROED;
 	if (!TryReadFile(buildScriptFilePath, &buildScriptContents))
 	{
-		PrintLine("Failed to read script contents to check if it's changed. Looking at \"%.*s\"", buildScriptFilePath.length, buildScriptFilePath.chars);
+		PrintLine("Failed to read script contents to check if it's changed. Looking at \"%.*s\"", StrPrint(buildScriptFilePath));
 		exit(REBUILD_EXIT_CODE);
 	}
-	uint64_t buildScriptHash = FnvHash(buildScriptContents.chars, buildScriptContents.length, FNV_HASH_BASE_U64);
+	u64 buildScriptHash = FnvHash(buildScriptContents.chars, buildScriptContents.length, FNV_HASH_BASE_U64);
 	free(buildScriptContents.chars);
 	FileIter fileIter = StartFileIter(buildSystemFolderPath);
 	Str8 fileIterPath = ZEROED;
@@ -130,7 +130,7 @@ void RecompileIfNeeded()
 			Str8 buildSystemFileContents = ZEROED;
 			if (!TryReadFile(fileIterPath, &buildSystemFileContents))
 			{
-				PrintLine("Failed to read build system file contents to check if it's changed. Looking at \"%.*s\"", fileIterPath.length, fileIterPath.chars);
+				PrintLine("Failed to read build system file contents to check if it's changed. Looking at \"%.*s\"", StrPrint(fileIterPath));
 				exit(REBUILD_EXIT_CODE);
 			}
 			buildScriptHash = FnvHash(buildSystemFileContents.chars, buildSystemFileContents.length, buildScriptHash);
@@ -139,13 +139,13 @@ void RecompileIfNeeded()
 	}
 	
 	Str8 buildHashFilePath = StrLit(BUILD_SCRIPT_HASH_PATH);
-	uint64_t savedHash = 0;
+	u64 savedHash = 0;
 	bool hashesMatch = false;
 	bool hashFileExisted = false;
 	Str8 buildHashContents = ZEROED;
 	if (TryReadFile(buildHashFilePath, &buildHashContents))
 	{
-		// PrintLine("Opened %u byte hash file: \"%.*s\"", buildHashContents.length, buildHashContents.length, buildHashContents.chars);
+		// PrintLine("Opened %u byte hash file: \"%.*s\"", buildHashContents.length, StrPrint(buildHashContents));
 		hashFileExisted = true;
 		if (TryParseHexU64(buildHashContents, &savedHash))
 		{
@@ -154,14 +154,14 @@ void RecompileIfNeeded()
 				hashesMatch = true;
 			}
 		}
-		else { PrintLine("Couldn't parse \"%.*s\" as hex", buildHashContents.length, buildHashContents.chars); }
+		else { PrintLine("Couldn't parse \"%.*s\" as hex", StrPrint(buildHashContents)); }
 	}
-	else if (DoesFileExist(buildHashFilePath)) { PrintLine("Couldn't open hash file at \"%.*s\"", buildHashFilePath.length, buildHashFilePath.chars); }
+	else if (DoesFileExist(buildHashFilePath)) { PrintLine("Couldn't open hash file at \"%.*s\"", StrPrint(buildHashFilePath)); }
 	
 	if (!hashFileExisted)
 	{
 		Str8 buildScriptHashString = ConvertU64ToHexStr(buildScriptHash, true);
-		// PrintLine("Creating \"%.*s\" Calc=[%d]%.*s", buildHashFilePath.length, buildHashFilePath.chars, buildScriptHashString.length, buildScriptHashString.length, buildScriptHashString.chars);
+		// PrintLine("Creating \"%.*s\" Calc=[%d]%.*s", StrPrint(buildHashFilePath), buildScriptHashString.length, StrPrint(buildScriptHashString));
 		CreateAndWriteFile(buildHashFilePath, buildScriptHashString, true);
 	}
 	else if (!hashesMatch)

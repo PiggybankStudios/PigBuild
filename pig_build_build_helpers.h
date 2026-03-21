@@ -12,7 +12,7 @@ static inline Str8 ExtractStrDefine(Str8 buildConfigContents, Str8 defineName)
 	Str8 defineValueStr = ZEROED;
 	if (!TryExtractDefineFrom(buildConfigContents, defineName, &defineValueStr))
 	{
-		PrintLine_E("Couldn't find #define %.*s in build_config.h!", defineName.length, defineName.chars);
+		PrintLine_E("Couldn't find #define %.*s in build_config.h!", StrPrint(defineName));
 		exit(4);
 	}
 	return defineValueStr;
@@ -23,7 +23,7 @@ static inline bool ExtractBoolDefine(Str8 buildConfigContents, Str8 defineName)
 	bool result = false;
 	if (!TryParseBoolArg(defineValueStr, &result))
 	{
-		PrintLine_E("#define %.*s has a non-bool value: \"%.*s\"", defineName.length, defineName.chars, defineValueStr.length, defineValueStr.chars);
+		PrintLine_E("#define %.*s has a non-bool value: \"%.*s\"", StrPrint(defineName), StrPrint(defineValueStr));
 		exit(4);
 	}
 	return result;
@@ -41,7 +41,7 @@ static inline void RunBatchFileAndApplyDumpedEnvironment(Str8 batchFilePath, Str
 		int statusCode = RunCliProgram(fixedBatchFilePath, &cmd); //this batch file runs emsdk_env.bat and then dumps it's environment variables to environment.txt. We can then open and parse that file and change our environment to match what emsdk_env.bat changed
 		if (statusCode != 0)
 		{
-			PrintLine_E("%.*s failed! Status Code: %d", fixedBatchFilePath.length, fixedBatchFilePath.chars, statusCode);
+			PrintLine_E("%.*s failed! Status Code: %d", StrPrint(fixedBatchFilePath), statusCode);
 			exit(statusCode);
 		}
 	}
@@ -49,7 +49,7 @@ static inline void RunBatchFileAndApplyDumpedEnvironment(Str8 batchFilePath, Str
 	Str8 environmentFileContents = ZEROED;
 	if (!TryReadFile(environmentFilePath, &environmentFileContents))
 	{
-		PrintLine_E("%.*s did not create \"%.*s\"! Or we can't open it for some reason", batchFilePath.length, batchFilePath.chars, environmentFilePath.length, environmentFilePath.chars);
+		PrintLine_E("%.*s did not create \"%.*s\"! Or we can't open it for some reason", StrPrint(batchFilePath), StrPrint(environmentFilePath));
 		exit(4);
 	}
 	
@@ -89,14 +89,14 @@ static inline void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str8 
 	//      Just because we are building on Windows doesn't mean all these .js files are using Windows style line-endings
 	
 	StrArray allFilesContents = ZEROED;
-	uxx totalLength = 0;
-	for (uxx fIndex = 0; fIndex < pathArray->length; fIndex++)
+	u64 totalLength = 0;
+	for (u64 fIndex = 0; fIndex < pathArray->length; fIndex++)
 	{
 		Str8 inputPath = pathArray->strings[fIndex];
 		Str8 inputFileContents = ZEROED;
 		if (!TryReadFile(inputPath, &inputFileContents))
 		{
-			PrintLine_E("Couldn't find/open \"%.*s\"!", inputPath.length, inputPath.chars);
+			PrintLine_E("Couldn't find/open \"%.*s\"!", StrPrint(inputPath));
 			exit(8);
 		}
 		AddStr(&allFilesContents, inputFileContents);
@@ -109,8 +109,8 @@ static inline void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str8 
 	combinedContents.length = totalLength;
 	combinedContents.pntr = malloc(combinedContents.length + 1);
 	
-	uxx writeIndex = 0;
-	for (uxx fIndex = 0; fIndex < allFilesContents.length; fIndex++)
+	u64 writeIndex = 0;
+	for (u64 fIndex = 0; fIndex < allFilesContents.length; fIndex++)
 	{
 		Str8 inputFileContents = allFilesContents.strings[fIndex];
 		if (writeIndex > 0)
@@ -233,7 +233,7 @@ static inline Str8 GetPlaydateSdkPath()
 	while((linePntr)->length > 0)                                                                            \
 	{                                                                                                        \
 		bool isInExpectedStr = false;                                                                        \
-		for (uxx cIndex = 0; cIndex < (expectedCharsStr).length; cIndex++)                                   \
+		for (u64 cIndex = 0; cIndex < (expectedCharsStr).length; cIndex++)                                   \
 		{                                                                                                    \
 			if ((linePntr)->chars[0] == (expectedCharsStr).chars[cIndex]) { isInExpectedStr = true; break; } \
 		}                                                                                                    \
@@ -248,7 +248,7 @@ static inline Str8 GetPlaydateSdkPath()
 	while((linePntr)->length > 0)                                                                            \
 	{                                                                                                        \
 		bool isInExpectedStr = false;                                                                        \
-		for (uxx cIndex = 0; cIndex < (expectedCharsStr).length; cIndex++)                                   \
+		for (u64 cIndex = 0; cIndex < (expectedCharsStr).length; cIndex++)                                   \
 		{                                                                                                    \
 			if ((linePntr)->chars[0] == (expectedCharsStr).chars[cIndex]) { isInExpectedStr = true; break; } \
 		}                                                                                                    \
@@ -274,7 +274,7 @@ static inline bool IsShaderHeaderLine_Name(Str8 line, Str8* nameOut)
 	Str8 nameStr = line;
 	CONSUME_UNTIL_NOT_CHARS(&line, StrLit(IDENTIFIER_CHARS));
 	if (line.chars == nameStr.chars) { return false; }
-	nameStr.length = (uxx)(line.chars - nameStr.chars);
+	nameStr.length = (u64)(line.chars - nameStr.chars);
 	CONSUME_NT_STR(&line, "\':");
 	CONSUME_WHITESPACE(&line);
 	if (line.length > 0) { return false; }
@@ -293,7 +293,7 @@ static inline bool IsShaderHeaderLine_Attribute(Str8 shaderName, Str8 line, Str8
 	Str8 nameStr = line;
 	CONSUME_UNTIL_NOT_CHARS(&line, StrLit(IDENTIFIER_CHARS));
 	if (line.chars == nameStr.chars) { return false; }
-	nameStr.length = (uxx)(line.chars - nameStr.chars);
+	nameStr.length = (u64)(line.chars - nameStr.chars);
 	CONSUME_WHITESPACE(&line);
 	CONSUME_NT_STR(&line, "(");
 	CONSUME_UNTIL_NOT_CHARS(&line, StrLit(NUMBER_CHARS));
@@ -315,7 +315,7 @@ static inline bool IsShaderHeaderLine_View(Str8 shaderName, Str8 line, Str8* nam
 	Str8 nameStr = line;
 	CONSUME_UNTIL_NOT_CHARS(&line, StrLit(IDENTIFIER_CHARS));
 	if (line.chars == nameStr.chars) { return false; }
-	nameStr.length = (uxx)(line.chars - nameStr.chars);
+	nameStr.length = (u64)(line.chars - nameStr.chars);
 	CONSUME_WHITESPACE(&line);
 	CONSUME_NT_STR(&line, "(");
 	CONSUME_UNTIL_NOT_CHARS(&line, StrLit(NUMBER_CHARS));
@@ -337,7 +337,7 @@ static inline bool IsShaderHeaderLine_Sampler(Str8 shaderName, Str8 line, Str8* 
 	Str8 nameStr = line;
 	CONSUME_UNTIL_NOT_CHARS(&line, StrLit(IDENTIFIER_CHARS));
 	if (line.chars == nameStr.chars) { return false; }
-	nameStr.length = (uxx)(line.chars - nameStr.chars);
+	nameStr.length = (u64)(line.chars - nameStr.chars);
 	CONSUME_WHITESPACE(&line);
 	CONSUME_NT_STR(&line, "(");
 	CONSUME_UNTIL_NOT_CHARS(&line, StrLit(NUMBER_CHARS));
@@ -366,7 +366,7 @@ static inline bool IsShaderHeaderLine_UniformStruct(Str8 shaderName, Str8 line, 
 	Str8 nameStr = line;
 	CONSUME_UNTIL(&line, StrLit("_t"));
 	if (line.chars == nameStr.chars) { return false; }
-	nameStr.length = (uxx)(line.chars - nameStr.chars);
+	nameStr.length = (u64)(line.chars - nameStr.chars);
 	CONSUME_NT_STR(&line, "_t");
 	CONSUME_WHITESPACE(&line);
 	CONSUME_NT_STR(&line, "{");
@@ -398,12 +398,12 @@ static inline bool IsShaderHeaderLine_UniformMember(Str8 line, Str8* typeOut, St
 	Str8 typeStr = line;
 	CONSUME_UNTIL_CHARS(&line, StrLit(" \t"));
 	if (line.chars == typeStr.chars) { return false; }
-	typeStr.length = (uxx)(line.chars - typeStr.chars);
+	typeStr.length = (u64)(line.chars - typeStr.chars);
 	CONSUME_WHITESPACE(&line);
 	Str8 nameStr = line;
 	CONSUME_UNTIL_NOT_CHARS(&line, StrLit(IDENTIFIER_CHARS));
 	if (line.chars == nameStr.chars) { return false; }
-	nameStr.length = (uxx)(line.chars - nameStr.chars);
+	nameStr.length = (u64)(line.chars - nameStr.chars);
 	CONSUME_NT_STR(&line, ";");
 	CONSUME_WHITESPACE(&line);
 	if (line.length > 0) { return false; }
@@ -435,7 +435,7 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 			if (IsShaderHeaderLine_Name(line, &shaderName))
 			{
 				assert(shaderName.length > 0);
-				// PrintLine("Shader name: \"%.*s\"", shaderName.length, shaderName.chars);
+				// PrintLine("Shader name: \"%.*s\"", StrPrint(shaderName));
 			}
 		}
 		else if (insideUniformBlock)
@@ -448,7 +448,7 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 			}
 			else if (IsShaderHeaderLine_UniformMember(line, &uniformType, &uniformName))
 			{
-				// PrintLine("Found uniform \"%.*s\" \"%.*s\"", uniformType.length, uniformType.chars, uniformName.length, uniformName.chars);
+				// PrintLine("Found uniform \"%.*s\" \"%.*s\"", StrPrint(uniformType), StrPrint(uniformName));
 				AddStr(&shaderUniforms, uniformName);
 				AddStr(&shaderUniformsBlockNames, uniformBlockName);
 			}
@@ -458,22 +458,22 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 			Str8 name = ZEROED;
 			if (IsShaderHeaderLine_Attribute(shaderName, line, &name))
 			{
-				// PrintLine("Found attribute \"%.*s\"", name.length, name.chars);
+				// PrintLine("Found attribute \"%.*s\"", StrPrint(name));
 				AddStr(&shaderAttributes, name);
 			}
 			else if (IsShaderHeaderLine_View(shaderName, line, &name))
 			{
-				// PrintLine("Found view \"%.*s\"", name.length, name.chars);
+				// PrintLine("Found view \"%.*s\"", StrPrint(name));
 				AddStr(&shaderViews, name);
 			}
 			else if (IsShaderHeaderLine_Sampler(shaderName, line, &name))
 			{
-				// PrintLine("Found sampler \"%.*s\"", name.length, name.chars);
+				// PrintLine("Found sampler \"%.*s\"", StrPrint(name));
 				AddStr(&shaderSamplers, name);
 			}
 			else if (IsShaderHeaderLine_UniformStruct(shaderName, line, &name))
 			{
-				// PrintLine("Found uniform block \"%.*s\"", name.length, name.chars);
+				// PrintLine("Found uniform block \"%.*s\"", StrPrint(name));
 				uniformBlockName = name;
 				insideUniformBlock = true;
 			}
@@ -494,8 +494,8 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 	);
 	AppendPrintToFile(headerPath,
 		"#define %.*s_SHADER_FILE_PATH \"%.*s\"\n",
-		shaderName.length, shaderName.chars,
-		escapedFullShaderPath.length, escapedFullShaderPath.chars
+		StrPrint(shaderName),
+		StrPrint(escapedFullShaderPath)
 	);
 	
 	//Attributes
@@ -503,24 +503,24 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 		AppendPrintToFile(headerPath,
 			"#define %.*s_SHADER_ATTR_COUNT %u\n"
 			"#define %.*s_SHADER_ATTR_DEFS { \\\n",
-			shaderName.length, shaderName.chars,
+			StrPrint(shaderName),
 			shaderAttributes.length,
-			shaderName.length, shaderName.chars
+			StrPrint(shaderName)
 		);
 		free(shaderFullPath.chars);
 		free(escapedFullShaderPath.chars);
-		for (uxx attributeIndex = 0; attributeIndex < shaderAttributes.length; attributeIndex++)
+		for (u64 attributeIndex = 0; attributeIndex < shaderAttributes.length; attributeIndex++)
 		{
 			Str8 attributeName = shaderAttributes.strings[attributeIndex];
 			AppendPrintToFile(headerPath,
 				"\t{ .name=\"%.*s\", .index=ATTR_%.*s_%.*s }, \\\n",
-				attributeName.length, attributeName.chars,
-				shaderName.length, shaderName.chars,
-				attributeName.length, attributeName.chars
+				StrPrint(attributeName),
+				StrPrint(shaderName),
+				StrPrint(attributeName)
 			);
 		}
 		if (shaderAttributes.length == 0) { AppendToFile(headerPath, StrLit("\t{ .name=NO_ENTRIES_STR, .index=0 } \\\n"), true); }
-		AppendToFile(headerPath, StrLit("} // These should match ShaderAttributeDef plex found in gfx_shader.h\n"), true);
+		AppendToFile(headerPath, StrLit("} // These should match ShaderAttributeDef struct found in gfx_shader.h\n"), true);
 	}
 	
 	//Views
@@ -528,23 +528,23 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 		AppendPrintToFile(headerPath,
 			"#define %.*s_SHADER_VIEW_COUNT %u\n"
 			"#define %.*s_SHADER_VIEW_DEFS { \\\n",
-			shaderName.length, shaderName.chars,
+			StrPrint(shaderName),
 			shaderViews.length,
-			shaderName.length, shaderName.chars
+			StrPrint(shaderName)
 		);
-		for (uxx viewIndex = 0; viewIndex < shaderViews.length; viewIndex++)
+		for (u64 viewIndex = 0; viewIndex < shaderViews.length; viewIndex++)
 		{
 			Str8 viewName = shaderViews.strings[viewIndex];
 			AppendPrintToFile(headerPath,
 				"\t{ .name=\"%.*s_%.*s\", .index=VIEW_%.*s_%.*s }, \\\n",
-				shaderName.length, shaderName.chars,
-				viewName.length, viewName.chars,
-				shaderName.length, shaderName.chars,
-				viewName.length, viewName.chars
+				StrPrint(shaderName),
+				StrPrint(viewName),
+				StrPrint(shaderName),
+				StrPrint(viewName)
 			);
 		}
 		if (shaderViews.length == 0) { AppendToFile(headerPath, StrLit("\t{ .name=NO_ENTRIES_STR, .index=0 } \\\n"), true); }
-		AppendToFile(headerPath, StrLit("} // These should match ShaderViewDef plex found in gfx_shader.h\n"), true);
+		AppendToFile(headerPath, StrLit("} // These should match ShaderViewDef struct found in gfx_shader.h\n"), true);
 	}
 	
 	//Samplers
@@ -552,23 +552,23 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 		AppendPrintToFile(headerPath,
 			"#define %.*s_SHADER_SAMPLER_COUNT %u\n"
 			"#define %.*s_SHADER_SAMPLER_DEFS { \\\n",
-			shaderName.length, shaderName.chars,
+			StrPrint(shaderName),
 			shaderSamplers.length,
-			shaderName.length, shaderName.chars
+			StrPrint(shaderName)
 		);
-		for (uxx samplerIndex = 0; samplerIndex < shaderSamplers.length; samplerIndex++)
+		for (u64 samplerIndex = 0; samplerIndex < shaderSamplers.length; samplerIndex++)
 		{
 			Str8 samplerName = shaderSamplers.strings[samplerIndex];
 			AppendPrintToFile(headerPath,
 				"\t{ .name=\"%.*s_%.*s\", .index=SMP_%.*s_%.*s }, \\\n",
-				shaderName.length, shaderName.chars,
-				samplerName.length, samplerName.chars,
-				shaderName.length, shaderName.chars,
-				samplerName.length, samplerName.chars
+				StrPrint(shaderName),
+				StrPrint(samplerName),
+				StrPrint(shaderName),
+				StrPrint(samplerName)
 			);
 		}
 		if (shaderSamplers.length == 0) { AppendToFile(headerPath, StrLit("\t{ .name=NO_ENTRIES_STR, .index=0 } \\\n"), true); }
-		AppendToFile(headerPath, StrLit("} // These should match ShaderSamplerDef plex found in gfx_shader.h\n"), true);
+		AppendToFile(headerPath, StrLit("} // These should match ShaderSamplerDef struct found in gfx_shader.h\n"), true);
 	}
 	
 	//Uniforms
@@ -576,11 +576,11 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 		AppendPrintToFile(headerPath,
 			"#define %.*s_SHADER_UNIFORM_COUNT %u\n"
 			"#define %.*s_SHADER_UNIFORM_DEFS { \\\n",
-			shaderName.length, shaderName.chars,
+			StrPrint(shaderName),
 			shaderUniforms.length,
-			shaderName.length, shaderName.chars
+			StrPrint(shaderName)
 		);
-		for (uxx uniformIndex = 0; uniformIndex < shaderUniforms.length; uniformIndex++)
+		for (u64 uniformIndex = 0; uniformIndex < shaderUniforms.length; uniformIndex++)
 		{
 			Str8 uniformName = shaderUniforms.strings[uniformIndex];
 			Str8 uniformBlockName = shaderUniformsBlockNames.strings[uniformIndex];
@@ -589,28 +589,23 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 				".blockIndex=UB_%.*s_%.*s, "
 				".offset=STRUCT_VAR_OFFSET(%.*s_%.*s_t, %.*s), "
 				".size=STRUCT_VAR_SIZE(%.*s_%.*s_t, %.*s) }, \\\n",
-				uniformName.length, uniformName.chars,
-				shaderName.length, shaderName.chars,
-				uniformBlockName.length, uniformBlockName.chars,
-				shaderName.length, shaderName.chars,
-				uniformBlockName.length, uniformBlockName.chars,
-				uniformName.length, uniformName.chars,
-				shaderName.length, shaderName.chars,
-				uniformBlockName.length, uniformBlockName.chars,
-				uniformName.length, uniformName.chars
+				StrPrint(uniformName),
+				StrPrint(shaderName), StrPrint(uniformBlockName),
+				StrPrint(shaderName), StrPrint(uniformBlockName), StrPrint(uniformName),
+				StrPrint(shaderName), StrPrint(uniformBlockName), StrPrint(uniformName)
 			);
 		}
 		if (shaderUniforms.length == 0) { AppendToFile(headerPath, StrLit("\t{ .name=NO_ENTRIES_STR, .blockIndex=0, .offset=0 } \\\n"), true); }
-		AppendToFile(headerPath, StrLit("} // These should match ShaderUniformDef plex found in gfx_shader.h\n"), true);
+		AppendToFile(headerPath, StrLit("} // These should match ShaderUniformDef struct found in gfx_shader.h\n"), true);
 	}
 	
 	free(headerFileContents.chars);
 }
 
-typedef plex FindShadersContext FindShadersContext;
-plex FindShadersContext
+typedef struct FindShadersContext FindShadersContext;
+struct FindShadersContext
 {
-	uxx ignoreListLength;
+	u64 ignoreListLength;
 	Str8* ignoreList;
 	StrArray shaderPaths;
 	StrArray headerPaths;
@@ -628,7 +623,7 @@ RECURSIVE_DIR_WALK_CALLBACK_DEF(FindShaderFilesCallback)
 	FindShadersContext* context = (FindShadersContext*)contextPntr;
 	if (isFolder)
 	{
-		for (uxx iIndex = 0; iIndex < context->ignoreListLength; iIndex++)
+		for (u64 iIndex = 0; iIndex < context->ignoreListLength; iIndex++)
 		{
 			if (StrExactContains(path, context->ignoreList[iIndex])) { return false; }
 		}

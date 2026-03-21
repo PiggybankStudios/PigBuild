@@ -6,7 +6,7 @@ The build logic for each project is contained in a `build_script.c` file in the 
 
 All files in this repo are expected to compile with the default settings for MSVC and Clang so that the shell script doesn't have to know anything about the build script in order to build it.
 
-Additionally, rather than building the `build_script.c` every time we want to build the project we only build it if it either the binary doesn't exist OR if the current binary exits with a special return code saying that it wants to be re-compiled. This allows the `build_script.c` to do whatever work it needs to check it's own source code for changes and request compilation if the code has changed since the last time the script was compiled. Usually this is hashing all the files in this repo and the `build_script.c` and saving the hash to disk so it can compare and detect changes to any of those files' contents.
+Additionally, rather than building the `build_script.c` every time we want to build the project we only build it if either the binary doesn't exist OR if the current binary exits with a special return code saying that it wants to be re-compiled. This allows the `build_script.c` to do whatever work it needs to check it's own source code for changes and request compilation if the code has changed since the last time the script was compiled. This work is hashing all the files in this repo and the `build_script.c` and saving the hash to disk so it can compare and detect changes to any of those files' contents.
 
 The code in this repo used to live in [PigCore](https://github.com/PiggybankStudios/PigCore), for a full history of changes check the commits in that repository. I have opted to pull this logic out for 2 reasons:
 
@@ -72,3 +72,7 @@ int main(int argc, char* argv[])
 	return 0;
 }
 ```
+
+7. Run `build.sh` or `build.bat` whenever you want to build. Build errors for your `build_script.c` are reported in the same manner as errors from your main program so they should be easy to match. You can also debug the `builder` executable if you have crashes during the build process that you need to debug.
+
+8. **NOTE:** If, for any reason, the `builder` and the `build_hash.txt` get out of sync and automatic recompilation is not happening. You can either delete both of these files and run `build.sh`/`build.bat` OR you can just make a small change to build_script.c, like adding a temporary comment on some random line, and then removing it on the next build.

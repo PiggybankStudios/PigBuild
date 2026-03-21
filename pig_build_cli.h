@@ -32,20 +32,20 @@ Description:
 #define EXEC_PROGRAM_IN_FOLDER_PREFIX "./"
 #endif
 
-typedef plex CliArg CliArg;
-plex CliArg
+typedef struct CliArg CliArg;
+struct CliArg
 {
 	Str8 format;
 	Str8 value;
 };
 
 #define CLI_MAX_ARGS 256
-typedef plex CliArgList CliArgList;
-plex CliArgList
+typedef struct CliArgList CliArgList;
+struct CliArgList
 {
 	Str8 rootDirPath;
 	char pathSepChar;
-	uxx numArgs;
+	u64 numArgs;
 	CliArg args[CLI_MAX_ARGS];
 };
 
@@ -56,8 +56,8 @@ Str8 FormatArg(const CliArg* arg, Str8 rootDirPath, char pathSepChar)
 	Str8 valueStr = StrReplace(arg->value, StrLit(CLI_ROOT_DIR), rootDirPath, false);
 	FixPathSlashes(valueStr, pathSepChar);
 	
-	uxx insertValIndex = formatStr.length;
-	for (uxx cIndex = 0; cIndex + valTargetStr.length <= formatStr.length; cIndex++)
+	u64 insertValIndex = formatStr.length;
+	for (u64 cIndex = 0; cIndex + valTargetStr.length <= formatStr.length; cIndex++)
 	{
 		if (StrExactEquals(StrSlice(formatStr, cIndex, cIndex+valTargetStr.length), valTargetStr))
 		{
@@ -74,14 +74,14 @@ Str8 FormatArg(const CliArg* arg, Str8 rootDirPath, char pathSepChar)
 	}
 	if (valueStr.length > 0 && insertValIndex >= formatStr.length)
 	{
-		PrintLine_E("Tried to fill value in CLI argument that doesn't take a value! %.*s", formatStr.length, formatStr.chars);
+		PrintLine_E("Tried to fill value in CLI argument that doesn't take a value! %.*s", StrPrint(formatStr));
 		exit(4);
 	}
 	if (valueStr.length == 0 && insertValIndex < formatStr.length)
 	{
-		PrintLine_E("Missing value in CLI argument that takes a value! %.*s - %.*s - %.*s", formatStr.length, formatStr.chars, valueStr.length, valueStr.chars, arg->value.length, arg->value.chars);
+		PrintLine_E("Missing value in CLI argument that takes a value! %.*s - %.*s - %.*s", StrPrint(formatStr), StrPrint(valueStr), StrPrint(arg->value));
 		// PrintLine_E("There are %u arguments in this list:", list->numArgs);
-		// for (uxx aIndex = 0; aIndex < list->numArgs; aIndex++) { PrintLine_E("\t[%u] \"%.*s\"", aIndex, list->args[aIndex].length, list->args[aIndex].chars); }
+		// for (u64 aIndex = 0; aIndex < list->numArgs; aIndex++) { PrintLine_E("\t[%u] \"%.*s\"", aIndex, StrPrint(list->args[aIndex])); }
 		exit(4);
 	}
 	
@@ -110,12 +110,12 @@ void AddArgNt(CliArgList* list, const char* formatStrNt, const char* valueStr)
 {
 	AddArgStr(list, formatStrNt, MakeStr8Nt(valueStr));
 }
-void AddArgInt(CliArgList* list, const char* formatStrNt, int32_t valueInt)
+void AddArgInt(CliArgList* list, const char* formatStrNt, i32 valueInt)
 {
 	char printBuffer[12];
 	int printResult = snprintf(&printBuffer[0], 12, "%d", valueInt);
 	printBuffer[printResult] = '\0';
-	AddArgStr(list, formatStrNt, MakeStr8((uxx)printResult, &printBuffer[0]));
+	AddArgStr(list, formatStrNt, MakeStr8((u64)printResult, &printBuffer[0]));
 }
 void AddArg(CliArgList* list, const char* formatStrNt)
 {
@@ -125,7 +125,7 @@ void AddArg(CliArgList* list, const char* formatStrNt)
 void AddArgList(CliArgList* dest, const CliArgList* source)
 {
 	if (dest->numArgs + source->numArgs > CLI_MAX_ARGS) { WriteLine_E("Too many CLI arguments!"); exit(4); }
-	for (uxx aIndex = 0; aIndex < source->numArgs; aIndex++)
+	for (u64 aIndex = 0; aIndex < source->numArgs; aIndex++)
 	{
 		dest->args[dest->numArgs].format = CopyStr8(source->args[aIndex].format, false);
 		dest->args[dest->numArgs].value = CopyStr8(source->args[aIndex].value, false);
@@ -143,8 +143,8 @@ Str8 JoinCliArgsList(Str8 prefix, const CliArgList* list, bool addNullTerm)
 	FixPathSlashes(rootDirPath, pathSepChar);
 	
 	Str8* formattedStrings = (list->numArgs > 0) ? (Str8*)malloc(sizeof(Str8) * list->numArgs) : nullptr;
-	uxx totalLength = prefix.length;
-	for (uxx aIndex = 0; aIndex < list->numArgs; aIndex++)
+	u64 totalLength = prefix.length;
+	for (u64 aIndex = 0; aIndex < list->numArgs; aIndex++)
 	{
 		formattedStrings[aIndex] = FormatArg(&list->args[aIndex], rootDirPath, pathSepChar);
 		if (formattedStrings[aIndex].length > 0)
@@ -159,10 +159,10 @@ Str8 JoinCliArgsList(Str8 prefix, const CliArgList* list, bool addNullTerm)
 	result.length = totalLength;
 	result.pntr = malloc(result.length + (addNullTerm ? 1 : 0));
 	
-	uxx writeIndex = 0;
+	u64 writeIndex = 0;
 	memcpy(&result.chars[writeIndex], &prefix.chars[0], prefix.length); writeIndex += prefix.length;
 	
-	for (uxx aIndex = 0; aIndex < list->numArgs; aIndex++)
+	for (u64 aIndex = 0; aIndex < list->numArgs; aIndex++)
 	{
 		if (formattedStrings[aIndex].length > 0)
 		{
@@ -204,8 +204,8 @@ void RunCliProgramAndExitOnFailure(Str8 programName, const CliArgList* args, Str
 	{
 		Str8 programNamePart = GetFileNamePart(programName, true);
 		PrintLine_E("%.*s\n%.*s Status Code: %d",
-			errorMessage.length, errorMessage.chars,
-			programNamePart.length, programNamePart.chars,
+			StrPrint(errorMessage),
+			StrPrint(programNamePart),
 			statusCode
 		);
 		exit(statusCode);
@@ -214,10 +214,10 @@ void RunCliProgramAndExitOnFailure(Str8 programName, const CliArgList* args, Str
 
 void ParseAndApplyEnvironmentVariables(Str8 environmentVars)
 {
-	uxx lineIndex = 0;
-	uxx lineStart = 0;
-	uxx equalsIndex = 0;
-	for (uxx cIndex = 0; cIndex < environmentVars.length; cIndex++)
+	u64 lineIndex = 0;
+	u64 lineStart = 0;
+	u64 equalsIndex = 0;
+	for (u64 cIndex = 0; cIndex < environmentVars.length; cIndex++)
 	{
 		char character = environmentVars.chars[cIndex];
 		char nextChar = (cIndex+1 < environmentVars.length) ? environmentVars.chars[cIndex+1] : '\0';
@@ -230,7 +230,7 @@ void ParseAndApplyEnvironmentVariables(Str8 environmentVars)
 				Str8 varName = StrSlice(line, 0, equalsIndex-lineStart);
 				Str8 varValue = StrSliceFrom(line, (equalsIndex-lineStart)+1);
 				
-				// PrintLine("set %.*s=%.*s", varName.length, varName.chars, varValue.length, varValue.chars);
+				// PrintLine("set %.*s=%.*s", StrPrint(varName), StrPrint(varValue));
 				varName = CopyStr8(varName, true);
 				varValue = CopyStr8(varValue, true);
 				#if BUILDING_ON_WINDOWS
@@ -244,7 +244,7 @@ void ParseAndApplyEnvironmentVariables(Str8 environmentVars)
 			}
 			else if (line.length > 0)
 			{
-				PrintLine_E("WARNING: No \'=\' character found in line %u of environment file. Ignoring line: \"%.*s\"", lineIndex+1, line.length, line.chars);
+				PrintLine_E("WARNING: No \'=\' character found in line %lu of environment file. Ignoring line: \"%.*s\"", lineIndex+1, StrPrint(line));
 			}
 			
 			if (character == '\r' && nextChar == '\n') { cIndex++; }

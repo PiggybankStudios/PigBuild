@@ -7,17 +7,17 @@ Date:   06\20\2025
 #ifndef _PIG_BUILD_STR_ARRAY_H
 #define _PIG_BUILD_STR_ARRAY_H
 
-typedef plex StrArray StrArray;
-plex StrArray
+typedef struct StrArray StrArray;
+struct StrArray
 {
-	uxx length;
-	uxx allocLength;
+	u64 length;
+	u64 allocLength;
 	Str8* strings;
 };
 
 void FreeStrArray(StrArray* array)
 {
-	for (uxx sIndex = 0; sIndex < array->length; sIndex++)
+	for (u64 sIndex = 0; sIndex < array->length; sIndex++)
 	{
 		if (array->strings[sIndex].chars != nullptr) { free(array->strings[sIndex].chars); }
 	}
@@ -30,7 +30,7 @@ Str8* AddStr(StrArray* array, Str8 newString)
 {
 	if (array->length >= array->allocLength)
 	{
-		uxx newAllocLength = array->allocLength;
+		u64 newAllocLength = array->allocLength;
 		if (newAllocLength < 8) { newAllocLength = 8; }
 		else { newAllocLength = newAllocLength*2; }
 		Str8* newAllocSpace = (Str8*)malloc(sizeof(Str8) * newAllocLength);
@@ -46,7 +46,7 @@ Str8* AddStr(StrArray* array, Str8 newString)
 	return result;
 }
 
-Str8* InsertStr(StrArray* array, Str8 newString, uxx insertIndex)
+Str8* InsertStr(StrArray* array, Str8 newString, u64 insertIndex)
 {
 	Str8 strAtEnd = *AddStr(array, newString);
 	if (insertIndex < array->length)
@@ -57,7 +57,7 @@ Str8* InsertStr(StrArray* array, Str8 newString, uxx insertIndex)
 	return &array->strings[insertIndex];
 }
 
-void RemoveStrAtIndex(StrArray* array, uxx index)
+void RemoveStrAtIndex(StrArray* array, u64 index)
 {
 	assert(index < array->length);
 	if (array->strings[index].chars != nullptr) { free(array->strings[index].chars); }
@@ -68,9 +68,9 @@ void RemoveStrAtIndex(StrArray* array, uxx index)
 	array->length--;
 }
 
-uxx FindStr(const StrArray* array, Str8 targetStr)
+u64 FindStr(const StrArray* array, Str8 targetStr)
 {
-	for (uxx sIndex = 0; sIndex < array->length; sIndex++)
+	for (u64 sIndex = 0; sIndex < array->length; sIndex++)
 	{
 		if (StrExactEquals(array->strings[sIndex], targetStr))
 		{
@@ -86,7 +86,7 @@ bool ContainsStr(const StrArray* array, Str8 targetStr)
 
 bool RemoveStr(StrArray* array, Str8 targetStr)
 {
-	uxx index = FindStr(array, targetStr);
+	u64 index = FindStr(array, targetStr);
 	if (index >= array->length) { return false; }
 	else
 	{

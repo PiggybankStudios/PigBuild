@@ -13,7 +13,7 @@ Description:
 #define _PIG_BUILD_SHARED_H
 
 // +--------------------------------------------------------------+
-// |                     Std Library Includes                     |
+// |                  Standard Library Includes                   |
 // +--------------------------------------------------------------+
 #include <stdint.h>
 #include <stdlib.h>
@@ -33,9 +33,6 @@ Description:
 // +--------------------------------------------------------------+
 // |                           Defines                            |
 // +--------------------------------------------------------------+
-#define plex struct
-#define car union
-
 #ifdef __cplusplus
 #define LANGUAGE_IS_C   0
 #define LANGUAGE_IS_CPP 1
@@ -96,24 +93,31 @@ Description:
 // +--------------------------------------------------------------+
 // |                            Types                             |
 // +--------------------------------------------------------------+
-typedef unsigned int uxx;
+typedef uint8_t  u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+typedef int8_t  i8;
+typedef int16_t i16;
+typedef int32_t i32;
+typedef int64_t i64;
+typedef float r32;
+typedef double r64;
 
-#define UINTXX_MAX UINT_MAX
-
-typedef plex Str8 Str8;
-plex Str8
+typedef struct Str8 Str8;
+struct Str8
 {
-	uxx length;
-	car { char* chars; uint8_t* bytes; void* pntr; };
+	u64 length;
+	union { char* chars; u8* bytes; void* pntr; };
 };
 
-typedef plex FileIter FileIter;
-plex FileIter
+typedef struct FileIter FileIter;
+struct FileIter
 {
 	bool finished;
 	Str8 folderPathNt;
-	uxx index;
-	uxx nextIndex;
+	u64 index;
+	u64 nextIndex;
 	
 	#if BUILDING_ON_WINDOWS
 	Str8 folderPathWithWildcard;
@@ -124,12 +128,12 @@ plex FileIter
 	#endif
 };
 
-typedef plex LineParser LineParser;
-plex LineParser
+typedef struct LineParser LineParser;
+struct LineParser
 {
-	uxx byteIndex;
-	uxx lineBeginByteIndex;
-	uxx lineIndex; //This is not zero based! It's more like a line number you'd see in the gutter of a text editor! It also contains the total number of lines in the input after the iteration has finished
+	u64 byteIndex;
+	u64 lineBeginByteIndex;
+	u64 lineIndex; //This is not zero based! It's more like a line number you'd see in the gutter of a text editor! It also contains the total number of lines in the input after the iteration has finished
 	Str8 inputStr;
 	//TODO: Should we add support for Streams again?
 };
@@ -152,10 +156,14 @@ typedef RECURSIVE_DIR_WALK_CALLBACK_DEF(RecursiveDirWalkCallback_f);
 
 #define IS_SLASH(character) ((character) == '\\' || (character) == '/')
 
+//NOTE: This is meant to be used when formatting Str8 using any printf like functions
+//      Use the format specifier %.*s and then this macro in the var-args
+#define StrPrint(string)   (int)(string).length, (string).chars
+
 // +--------------------------------------------------------------+
 // |                        Str Functions                         |
 // +--------------------------------------------------------------+
-static inline Str8 MakeStr8(uxx length, const void* pntr)
+static inline Str8 MakeStr8(u64 length, const void* pntr)
 {
 	Str8 result;
 	result.length = length;
@@ -165,7 +173,7 @@ static inline Str8 MakeStr8(uxx length, const void* pntr)
 static inline Str8 MakeStr8Nt(const void* nullTermPntr)
 {
 	Str8 result;
-	result.length = (uxx)strlen(nullTermPntr);
+	result.length = (u64)strlen(nullTermPntr);
 	result.pntr = (void*)nullTermPntr; //throw away const qualifier
 	return result;
 }
@@ -178,14 +186,14 @@ static inline bool StrExactEquals(Str8 left, Str8 right)
 	assert(right.chars != nullptr);
 	return (memcmp(left.chars, right.chars, left.length) == 0);
 }
-static inline Str8 StrSlice(Str8 target, uxx startIndex, uxx endIndex)
+static inline Str8 StrSlice(Str8 target, u64 startIndex, u64 endIndex)
 {
 	assert(startIndex <= target.length);
 	assert(endIndex <= target.length);
 	assert(startIndex <= endIndex);
 	return MakeStr8(endIndex - startIndex, target.chars + startIndex);
 }
-static inline Str8 StrSliceFrom(Str8 target, uxx startIndex)
+static inline Str8 StrSliceFrom(Str8 target, u64 startIndex)
 {
 	return StrSlice(target, startIndex, target.length);
 }
@@ -193,7 +201,7 @@ static inline bool StrExactContains(Str8 haystack, Str8 needle)
 {
 	assert(needle.length > 0);
 	if (haystack.length < needle.length) { return false; }
-	for (uxx bIndex = 0; bIndex <= haystack.length - needle.length; bIndex++)
+	for (u64 bIndex = 0; bIndex <= haystack.length - needle.length; bIndex++)
 	{
 		if (StrExactEquals(StrSlice(haystack, bIndex, bIndex+needle.length), needle)) { return true; }
 	}
@@ -213,8 +221,8 @@ static inline bool StrExactEndsWith(Str8 target, Str8 suffix)
 }
 static inline Str8 GetDirectoryPart(Str8 fullPath, bool includeTrailingSlash)
 {
-	uxx lastSlashIndex = fullPath.length;
-	for (uxx cIndex = 0; cIndex < fullPath.length; cIndex++)
+	u64 lastSlashIndex = fullPath.length;
+	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
 	{
 		char character = fullPath.chars[cIndex];
 		if (IS_SLASH(character)) { lastSlashIndex = cIndex; }
@@ -224,8 +232,8 @@ static inline Str8 GetDirectoryPart(Str8 fullPath, bool includeTrailingSlash)
 }
 static inline Str8 GetFileNamePart(Str8 fullPath, bool includeExtension)
 {
-	uxx lastSlashIndex = fullPath.length;
-	for (uxx cIndex = 0; cIndex < fullPath.length; cIndex++)
+	u64 lastSlashIndex = fullPath.length;
+	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
 	{
 		char character = fullPath.chars[cIndex];
 		if (IS_SLASH(character)) { lastSlashIndex = cIndex; }
@@ -235,8 +243,8 @@ static inline Str8 GetFileNamePart(Str8 fullPath, bool includeExtension)
 }
 static inline Str8 GetFileExtPart(Str8 fullPath)
 {
-	uxx periodIndex = fullPath.length;
-	for (uxx cIndex = 0; cIndex < fullPath.length; cIndex++)
+	u64 periodIndex = fullPath.length;
+	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
 	{
 		char character = fullPath.chars[cIndex];
 		if (IS_SLASH(character)) { periodIndex = fullPath.length; } //reset periodIndex
@@ -267,19 +275,19 @@ static inline Str8 TrimWhitespace(Str8 target)
 	while (result.length > 0 && IsCharWhitespace(result.chars[result.length-1])) { result.length--; }
 	return result;
 }
-static inline uxx FindNextWhitespace(Str8 targetStr, uxx startIndex)
+static inline u64 FindNextWhitespace(Str8 targetStr, u64 startIndex)
 {
 	assert(startIndex <= targetStr.length);
-	for (uxx bIndex = startIndex; bIndex < targetStr.length; bIndex++)
+	for (u64 bIndex = startIndex; bIndex < targetStr.length; bIndex++)
 	{
 		if (IsCharWhitespace(targetStr.chars[bIndex])) { return bIndex; }
 	}
 	return targetStr.length;
 }
-static inline uxx FindNextNonIdentifierChar(Str8 targetStr, uxx startIndex)
+static inline u64 FindNextNonIdentifierChar(Str8 targetStr, u64 startIndex)
 {
 	assert(startIndex <= targetStr.length);
-	for (uxx bIndex = startIndex; bIndex < targetStr.length; bIndex++)
+	for (u64 bIndex = startIndex; bIndex < targetStr.length; bIndex++)
 	{
 		if (!IsCharIdentifier(targetStr.chars[bIndex], (bIndex == startIndex))) { return bIndex; }
 	}
@@ -311,8 +319,8 @@ static inline Str8 EscapeString(Str8 unescapedString, bool addNullTerm)
 	Str8 result = ZEROED;
 	for (int pass = 0; pass < 2; pass++)
 	{
-		uxx byteIndex = 0;
-		for (uxx cIndex = 0; cIndex < unescapedString.length; cIndex++)
+		u64 byteIndex = 0;
+		for (u64 cIndex = 0; cIndex < unescapedString.length; cIndex++)
 		{
 			char character = unescapedString.chars[cIndex];
 			if (character == '\"' || character == '\\' || character == '\'')
@@ -378,10 +386,10 @@ static inline Str8 JoinStrings3(Str8 left, Str8 middle, Str8 right, bool addNull
 #define CONCAT3(leftNt, middleNt, rightNt) JoinStrings3(MakeStr8Nt(leftNt), MakeStr8Nt(middleNt), MakeStr8Nt(rightNt), true)
 
 //Returns the number of target characters that were replaced
-static inline uxx StrReplaceChars(Str8 haystack, char targetChar, char replaceChar)
+static inline u64 StrReplaceChars(Str8 haystack, char targetChar, char replaceChar)
 {
-	uxx numReplacements = 0;
-	for (uxx cIndex = 0; cIndex < haystack.length; cIndex++)
+	u64 numReplacements = 0;
+	for (u64 cIndex = 0; cIndex < haystack.length; cIndex++)
 	{
 		if (haystack.chars[cIndex] == targetChar)
 		{
@@ -400,7 +408,7 @@ static inline void FixPathSlashes(Str8 path, char slashChar)
 static inline Str8 StrReplace(Str8 haystack, Str8 target, Str8 replacement, bool addNullTerm)
 {
 	Str8 result = ZEROED;
-	for (uxx cIndex = 0; cIndex < haystack.length; cIndex++)
+	for (u64 cIndex = 0; cIndex < haystack.length; cIndex++)
 	{
 		if (cIndex + target.length <= haystack.length &&
 			StrExactEquals(StrSlice(haystack, cIndex, cIndex+target.length), target))
@@ -411,8 +419,8 @@ static inline Str8 StrReplace(Str8 haystack, Str8 target, Str8 replacement, bool
 		else { result.length += 1; }
 	}
 	result.pntr = malloc(result.length + (addNullTerm ? 1 : 0));
-	uxx writeIndex = 0;
-	for (uxx cIndex = 0; cIndex < haystack.length; cIndex++)
+	u64 writeIndex = 0;
+	for (u64 cIndex = 0; cIndex < haystack.length; cIndex++)
 	{
 		if (cIndex + target.length <= haystack.length &&
 			StrExactEquals(StrSlice(haystack, cIndex, cIndex+target.length), target))
@@ -434,9 +442,9 @@ static inline Str8 StrReplace(Str8 haystack, Str8 target, Str8 replacement, bool
 // +--------------------------------------------------------------+
 // |                        Print Helpers                         |
 // +--------------------------------------------------------------+
-void TwoPassPrint(Str8* resultStr, uxx* currentByteIndex, const char* formatString, ...)
+void TwoPassPrint(Str8* resultStr, u64* currentByteIndex, const char* formatString, ...)
 {
-	uxx printSize = 0;
+	u64 printSize = 0;
 	va_list args;
 	
 	va_start(args, formatString);
@@ -444,11 +452,11 @@ void TwoPassPrint(Str8* resultStr, uxx* currentByteIndex, const char* formatStri
 	va_end(args);
 	assert(measureResult >= 0);
 	
-	printSize = (uxx)measureResult;
+	printSize = (u64)measureResult;
 	if (resultStr->chars != nullptr)
 	{
 		assert(*currentByteIndex <= resultStr->length);
-		uxx spaceLeft = resultStr->length - *currentByteIndex;
+		u64 spaceLeft = resultStr->length - *currentByteIndex;
 		assert(printSize <= spaceLeft);
 		va_start(args, formatString);
 		int printResult = vsnprintf(&resultStr->chars[*currentByteIndex], measureResult+1, formatString, args);
@@ -478,8 +486,8 @@ static inline bool LineParserGetLine(LineParser* parser, Str8* lineOut)
 	parser->lineIndex++;
 	parser->lineBeginByteIndex = parser->byteIndex;
 	
-	uxx endOfLineByteSize = 0;
-	uxx startIndex = parser->byteIndex;
+	u64 endOfLineByteSize = 0;
+	u64 startIndex = parser->byteIndex;
 	while (parser->byteIndex < parser->inputStr.length)
 	{
 		char nextChar = parser->inputStr.chars[parser->byteIndex];
@@ -532,7 +540,7 @@ static inline Str8 GetFullPath(Str8 relativePath, char slashChar)
 		);
 		assert(getPathResult1 != 0);
 		
-		result.length = (uxx)getPathResult1-1;
+		result.length = (u64)getPathResult1-1;
 		result.chars = (char*)malloc(result.length + 1);
 		
 		// Returns the length of the string (not +1) when nBufferLength is large enough
@@ -557,7 +565,7 @@ static inline Str8 GetFullPath(Str8 relativePath, char slashChar)
 		char* realPathResult = realpath(relativePathNt.chars, temporaryBuffer);
 		assert(realPathResult != nullptr);
 		
-		result.length = (uxx)strlen(realPathResult);
+		result.length = (u64)strlen(realPathResult);
 		result.chars = (char*)malloc(result.length + 1);
 		memcpy(result.chars, realPathResult, result.length);
 		result.chars[result.length] = '\0';
@@ -585,7 +593,7 @@ static inline bool TryReadFile(Str8 filePath, Str8* contentsOut)
 	free(filePathNt.chars);
 	if (fileHandle == nullptr)
 	{
-		// fprintf(stderr, "Couldn't open file at \"%.*s\"!\n", filePath.length, filePath.chars);
+		// fprintf(stderr, "Couldn't open file at \"%.*s\"!\n", StrPrint(filePath));
 		return false;
 	}
 	
@@ -593,7 +601,7 @@ static inline bool TryReadFile(Str8 filePath, Str8* contentsOut)
 	long fileSize = ftell(fileHandle); assert(fileSize >= 0); assert(fileSize <= INT_MAX);
 	int seekResult2 = fseek(fileHandle, 0, SEEK_SET); assert(seekResult2 == 0);
 	
-	contentsOut->length = (uxx)fileSize;
+	contentsOut->length = (u64)fileSize;
 	contentsOut->chars = (char*)malloc(fileSize+1);
 	assert(contentsOut->chars != nullptr);
 	
@@ -656,7 +664,7 @@ static inline void CreateAndWriteFile(Str8 filePath, Str8 contents, bool convert
 				0 //lpOverlapped
 			);
 			assert(writeResult == TRUE);
-			assert((uxx)bytesWritten == contents.length);
+			assert((u64)bytesWritten == contents.length);
 		}
 		CloseHandle(fileHandle);
 		if (convertNewLines) { free(contents.chars); }
@@ -674,7 +682,7 @@ static inline void CreateAndWriteFile(Str8 filePath, Str8 contents, bool convert
 				fileHandle //stream
 			);
 			assert(writeResult >= 0);
-			assert((uxx)writeResult == contents.length);
+			assert((u64)writeResult == contents.length);
 		}
 		fclose(fileHandle);
 	}
@@ -727,7 +735,7 @@ static inline void AppendToFile(Str8 filePath, Str8 contentsToAppend, bool conve
 				0 //lpOverlapped
 			);
 			assert(writeResult == TRUE);
-			assert((uxx)bytesWritten == contentsToAppend.length);
+			assert((u64)bytesWritten == contentsToAppend.length);
 		}
 		CloseHandle(fileHandle);
 		if (convertNewLines) { free(contentsToAppend.chars); }
@@ -745,7 +753,7 @@ static inline void AppendToFile(Str8 filePath, Str8 contentsToAppend, bool conve
 				fileHandle //stream
 			);
 			assert(writeResult >= 0);
-			assert((uxx)writeResult == contentsToAppend.length);
+			assert((u64)writeResult == contentsToAppend.length);
 		}
 		fclose(fileHandle);
 	}
@@ -765,7 +773,7 @@ static inline void AppendPrintToFile(Str8 filePath, const char* formatString, ..
 	va_end(args);
 	assert(printResult >= 0);
 	assert(printResult < ArrayCount(printBuffer));
-	Str8 printedStr = MakeStr8((uxx)printResult, &printBuffer[0]);
+	Str8 printedStr = MakeStr8((u64)printResult, &printBuffer[0]);
 	AppendToFile(filePath, printedStr, true);
 }
 
@@ -830,12 +838,12 @@ static inline void MyRemoveDirectory(Str8 folderPath, bool recursive)
 				
 				if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 				{
-					// PrintLine("Recursing into \"%.*s\"", fullPath.length, fullPath.chars);
+					// PrintLine("Recursing into \"%.*s\"", StrPrint(fullPath));
 					MyRemoveDirectory(fullPath, true);
 				}
 				else
 				{
-					// PrintLine("Removing file \"%.*s\"", fullPath.length, fullPath.chars);
+					// PrintLine("Removing file \"%.*s\"", StrPrint(fullPath));
 					RemoveFile(fullPath);
 				}
 				
@@ -914,7 +922,7 @@ static inline void AssertFileExist(Str8 filePath, bool wasCreatedByBuild)
 {
 	if (!DoesFileExist(filePath))
 	{
-		PrintLine_E("Missing file \"%.*s\" %s!", filePath.length, filePath.chars, wasCreatedByBuild ? "was not created" : "was not found");
+		PrintLine_E("Missing file \"%.*s\" %s!", StrPrint(filePath), wasCreatedByBuild ? "was not created" : "was not found");
 		exit(6);
 	}
 }
@@ -922,7 +930,7 @@ static inline void AssertFileExist(Str8 filePath, bool wasCreatedByBuild)
 static inline FileIter StartFileIter(Str8 folderPath)
 {
 	FileIter result = ZEROED;
-	result.index = UINTXX_MAX;
+	result.index = UINT64_MAX;
 	result.nextIndex = 0;
 	result.finished = false;
 	bool needsTrailingSlash = (folderPath.length == 0 || (folderPath.chars[folderPath.length-1] != '\\' && folderPath.chars[folderPath.length-1] != '/'));
@@ -959,7 +967,7 @@ static bool StepFileIter(FileIter* fileIter, Str8* pathOut, bool* isFolderOut)
 	{
 		while (true)
 		{
-			bool firstIteration = (fileIter->index == UINTXX_MAX);
+			bool firstIteration = (fileIter->index == UINT64_MAX);
 			fileIter->index = fileIter->nextIndex;
 			if (firstIteration)
 			{
@@ -1007,7 +1015,7 @@ static bool StepFileIter(FileIter* fileIter, Str8* pathOut, bool* isFolderOut)
 	{
 		while (true)
 		{
-			bool firstIteration = (fileIter->index == UINTXX_MAX);
+			bool firstIteration = (fileIter->index == UINT64_MAX);
 			fileIter->index = fileIter->nextIndex;
 			if (firstIteration)
 			{
@@ -1020,7 +1028,7 @@ static bool StepFileIter(FileIter* fileIter, Str8* pathOut, bool* isFolderOut)
 				}
 			}
 			
-			plex dirent* entry = readdir(fileIter->dirHandle);
+			struct dirent* entry = readdir(fileIter->dirHandle);
 			if (entry == nullptr)
 			{
 				free(fileIter->folderPathNt.chars); fileIter->folderPathNt.chars = nullptr;
@@ -1034,7 +1042,7 @@ static bool StepFileIter(FileIter* fileIter, Str8* pathOut, bool* isFolderOut)
 			Str8 fullPath = JoinStrings2(fileIter->folderPathNt, fileName, true);
 			if (isFolderOut != nullptr)
 			{
-				plex stat statStruct = ZEROED;
+				struct stat statStruct = ZEROED;
 				int statResult = stat(fullPath.chars, &statStruct);
 				if (statResult == 0)
 				{
@@ -1048,7 +1056,7 @@ static bool StepFileIter(FileIter* fileIter, Str8* pathOut, bool* isFolderOut)
 					}
 					else
 					{
-						PrintLine_E("Unknown file type for \"%.*s\"", fullPath.length, fullPath.chars);
+						PrintLine_E("Unknown file type for \"%.*s\"", StrPrint(fullPath));
 						continue;
 					}
 				}
@@ -1088,14 +1096,14 @@ static void RecursiveDirWalk(Str8 rootDir, RecursiveDirWalkCallback_f* callback,
 static bool IsHeaderLineDefine(Str8 targetDefineName, Str8 line, Str8* valueStrOut)
 {
 	line = TrimWhitespace(line);
-	uxx firstWhitespaceIndex = FindNextWhitespace(line, 0);
+	u64 firstWhitespaceIndex = FindNextWhitespace(line, 0);
 	if (firstWhitespaceIndex < line.length)
 	{
 		Str8 firstToken = StrSlice(line, 0, firstWhitespaceIndex);
 		if (StrExactEquals(firstToken, StrLit("#define")))
 		{
 			line = TrimWhitespace(StrSliceFrom(line, firstWhitespaceIndex+1));
-			uxx identifierEndIndex = FindNextNonIdentifierChar(line, 0);
+			u64 identifierEndIndex = FindNextNonIdentifierChar(line, 0);
 			if (identifierEndIndex < line.length)
 			{
 				Str8 nameStr = StrSlice(line, 0, identifierEndIndex);
@@ -1113,8 +1121,8 @@ static bool IsHeaderLineDefine(Str8 targetDefineName, Str8 line, Str8* valueStrO
 
 bool TryExtractDefineFrom(Str8 headerFileContents, Str8 defineName, Str8* valueOut)
 {
-	uxx lineStartIndex = 0;
-	for (uxx byteIndex = 0; byteIndex < headerFileContents.length; byteIndex++)
+	u64 lineStartIndex = 0;
+	for (u64 byteIndex = 0; byteIndex < headerFileContents.length; byteIndex++)
 	{
 		char character = headerFileContents.chars[byteIndex];
 		char nextCharacter = headerFileContents.chars[byteIndex+1]; //requires null-terminator we added above

@@ -5,4 +5,23 @@
 			"path": ".",
 		}
 	],
+	"settings":
+	{
+		"build_options":
+		[
+		],
+		"custom_constants":
+		[
+		],
+		"custom_functions":
+		[
+			"#define StrPrint(string)"
+		],
+		"custom_globals":
+		[
+		],
+		"custom_types":
+		[
+		]
+	},
 }

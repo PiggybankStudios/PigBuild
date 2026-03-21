@@ -5,7 +5,11 @@
 	[X] Clean up and rename the build_system files as needed
 		[X] Rename `build_system_flags_....h`
 	[X] Add a system that hashes all the build_script related files and checks for changes
+	[X] Proofread and fix typos in README.md
+	[X] Get rid of uxx type
+	[X] Fix all usages of %.*s with StrPrint
 	[!] Fix up "build.bat" for Windows
+	[!] Add all functions types etc. to custom types list in PigBuild.sublime-project
 	[ ] Add an example "build_script.c" file
 	[ ] Add a "MOTIVATIONS.md" file that explains the design goals of this build system and it's pros/cons compared to other approaches
 		[ ] Talk about memory management in a build script
@@ -40,10 +44,10 @@
 	[ ] Should we add ourselves to the .gitignore of the parent directory inside "new_project.bat"? Or maybe just instruct the user to do so inside "README.md"
 	[ ] Move "init_msvc.bat" into this repo. Also add information about MSVC compiler and "vcvarsall.bat"/"VsDevCmd.bat" and how we can save the environment to txt file
 	[ ] Move "init_emsdk.bat" into this repo
-	[ ] Remove "plex" and "car" aliases
+	[X] Remove "plex" and "car" aliases
 	[ ] Document why we need each of the standard library #includes
 	[?] Add Str8_Empty?
-	[ ] Add types like "u8", "u64", "i32", "r32", etc.
+	[X] Add types like "u8", "u64", "i32", "r32", etc.
 	[ ] Move all the macros into their own file
 	[ ] Move all the string related functions into their own file
 	[ ] Move all the file related functions into their own file
@@ -53,4 +57,5 @@
 	[ ] Move more of the "build_script.c" code into "pig_build"
 	[ ] Should we have an Assert macro? Or just use the one from "<assert.h>"
 	[ ] Add a define or something to enable ">> cl ..." printout for debug purposes
+	[ ] Add some functions that help measure build times and save them to .csv or something
 	[ ] 
