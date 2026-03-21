@@ -1,0 +1,17 @@
+
+# TODO List
+	[X] Move all the `tools/` files to a separate `build_system/` folder
+	[X] Change that folder into it's own git repository
+	[X] Clean up and rename the build_system files as needed
+		[X] Rename `build_system_flags_....h`
+	[X] Add a system that hashes all the build_script related files and checks for changes
+	[!] Fix up "build.bat" for Windows
+	[ ] Add an example "build_script.c" file
+	[ ] Add a "MOTIVATIONS.md" file that explains the design goals of this build system and it's pros/cons compared to other approaches
+	[?] Add a "pig_build_all.h" or maybe just "pig_build.h"?
+	[?] Make a "new_project.bat/sh" script? Should we allow the user to choose the name of the build script file and it's binary name?
+	[ ] Add a system to help with parsing command-line arguments
+	[ ] Move the system for parsing build_config.h into it's own file (maybe part of the command-line argument parsing system)
+	[ ] Add information for how you might do a bulk/parallel build of all configurations at once
+	[ ] Can we do anything to make this system compatible with Github Actions? and other CI/CD systems?
+	[ ] 
