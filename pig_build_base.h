@@ -90,14 +90,18 @@ Date:   03\21\2026
 // +--------------------------------------------------------------+
 // |                    stdint.h Type Aliases                     |
 // +--------------------------------------------------------------+
+// NOTE: Both "long" and "long long" in Clang are 8 bytes, so int64_t/uint64_t are "long"
+//       Meanwhile in MSVC "long" is 4 bytes while "long long" is 8 bytes, so int64_t/uint64_t are "long long"
+//       Format arguments like %llu will complain if this is technically a "long" and not a "long long"
+//       So to make sure we can always use %llu arguments across Windows and Linux we specifically typedef long long, not int64_t/uint64_t from stdint.h.
 typedef uint8_t  u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
-typedef uint64_t u64;
+typedef unsigned long long u64;
 typedef int8_t  i8;
 typedef int16_t i16;
 typedef int32_t i32;
-typedef int64_t i64;
+typedef long long i64;
 typedef float r32;
 typedef double r64;
 

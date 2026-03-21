@@ -254,7 +254,7 @@ void ParseAndApplyEnvironmentVariables(Str8 environmentVars)
 			}
 			else if (line.length > 0)
 			{
-				PrintLine_E("WARNING: No \'=\' character found in line %lu of environment file. Ignoring line: \"%.*s\"", lineIndex+1, StrPrint(line));
+				PrintLine_E("WARNING: No \'=\' character found in line %llu of environment file. Ignoring line: \"%.*s\"", lineIndex+1, StrPrint(line));
 			}
 			
 			if (character == '\r' && nextChar == '\n') { cIndex++; }

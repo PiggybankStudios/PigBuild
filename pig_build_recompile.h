@@ -62,7 +62,7 @@ bool TryParseHexU64(Str8 str, u64* valueOut)
 	}
 	if (str.length > 0)
 	{
-		PrintLine("String is too long for u64 hex! Remaining: [%lu]\"%.*s\"", str.length, StrPrint(str));
+		PrintLine("String is too long for u64 hex! Remaining: [%llu]\"%.*s\"", str.length, StrPrint(str));
 		return false;
 	}
 	if (valueOut != nullptr) { *valueOut = result; }
