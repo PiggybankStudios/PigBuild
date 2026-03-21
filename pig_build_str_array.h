@@ -1,11 +1,11 @@
 /*
-File:   build_system_str_array.h
+File:   pig_build_str_array.h
 Author: Taylor Robbins
 Date:   06\20\2025
 */
 
-#ifndef _BUILD_SYSTEM_STR_ARRAY_H
-#define _BUILD_SYSTEM_STR_ARRAY_H
+#ifndef _PIG_BUILD_STR_ARRAY_H
+#define _PIG_BUILD_STR_ARRAY_H
 
 typedef plex StrArray StrArray;
 plex StrArray
@@ -95,4 +95,4 @@ bool RemoveStr(StrArray* array, Str8 targetStr)
 	}
 }
 
-#endif //  _BUILD_SYSTEM_STR_ARRAY_H
+#endif //  _PIG_BUILD_STR_ARRAY_H

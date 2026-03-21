@@ -1,5 +1,5 @@
 /*
-File:   build_system_cli_flags.h
+File:   pig_build_cli_flags.h
 Author: Taylor Robbins
 Date:   06\16\2025
 Description:
@@ -7,8 +7,8 @@ Description:
 	** Supported CLI Tools: msvc cl\link\rc, clang, gcc, emcc, shdc, pdc
 */
 
-#ifndef _BUILD_SYSTEM_CLI_FLAGS_H
-#define _BUILD_SYSTEM_CLI_FLAGS_H
+#ifndef _PIG_BUILD_CLI_FLAGS_H
+#define _PIG_BUILD_CLI_FLAGS_H
 
 // +--------------------------------------------------------------+
 // |                   MSVC Compiler CLI Flags                    |
@@ -265,4 +265,4 @@ Description:
 #define PDC_SKIP_UNKNOWN  "--skip-unknown" //skip unrecognized files instead of copying them to the pdx folder
 #define PDC_CHECK_FONTS   "--check-fonts" //perform additional validation on font data (may produce false warnings)
 
-#endif //  _BUILD_SYSTEM_CLI_FLAGS_H
+#endif //  _PIG_BUILD_CLI_FLAGS_H

@@ -1,5 +1,5 @@
 /*
-File:   build_system_recompile.h
+File:   pig_build_recompile.h
 Author: Taylor Robbins
 Date:   03\20\2026
 Description:
@@ -7,11 +7,11 @@ Description:
 	** need to rebuild the build_script.c (if any of the source
 	** files that the build script depends on changed).
 	** We do this by calculating a combined hash of the build_script.c
-	** file and all supporting files in this folder "build_system/"
+	** file and all supporting files in this folder "pig_build/"
 */
 
-#ifndef _BUILD_SYSTEM_RECOMPILE_H
-#define _BUILD_SYSTEM_RECOMPILE_H
+#ifndef _PIG_BUILD_RECOMPILE_H
+#define _PIG_BUILD_RECOMPILE_H
 
 // NOTE: If you want to change any of these #defines, make sure you change them in build.sh and build.bat
 // If we exit(REBUILD_EXIT_CODE) then the shell script will re-compile and re-run us
@@ -23,9 +23,9 @@ Description:
 #endif
 #define BUILD_SCRIPT_HASH_PATH "builder_hash.txt"
 #define BUILD_SCRIPT_SOURCE_NAME "build_script.c"
-#define BUILD_SYSTEM_FOLDER_NAME "build_system"
 #define BUILD_SCRIPT_SOURCE_PATH "../" BUILD_SCRIPT_SOURCE_NAME
-#define BUILD_SYSTEM_FOLDER_PATH "../" BUILD_SYSTEM_FOLDER_NAME
+#define PIG_BUILD_FOLDER_NAME "pig_build"
+#define PIG_BUILD_FOLDER_PATH "../" PIG_BUILD_FOLDER_NAME
 
 bool TryParseHexU64(Str8 str, uint64_t* valueOut)
 {
@@ -109,7 +109,7 @@ uint64_t FnvHash(const void* bufferPntr, uint64_t numBytes, uint64_t startingSta
 void RecompileIfNeeded()
 {
 	Str8 buildScriptFilePath = StrLit(BUILD_SCRIPT_SOURCE_PATH);
-	Str8 buildSystemFolderPath = StrLit(BUILD_SYSTEM_FOLDER_PATH);
+	Str8 buildSystemFolderPath = StrLit(PIG_BUILD_FOLDER_PATH);
 	
 	Str8 buildScriptContents = ZEROED;
 	if (!TryReadFile(buildScriptFilePath, &buildScriptContents))
@@ -172,4 +172,4 @@ void RecompileIfNeeded()
 	// else { PrintLine("No changes to " BUILD_SCRIPT_SOURCE_NAME ". Calc=0x%016lX Saved=0x%016lX", buildScriptHash, savedHash); }
 }
 
-#endif //  _BUILD_SYSTEM_RECOMPILE_H
+#endif //  _PIG_BUILD_RECOMPILE_H

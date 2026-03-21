@@ -1,11 +1,11 @@
 /*
-File:   build_system_android_build_helpers.h
+File:   pig_build_android_helpers.h
 Author: Taylor Robbins
 Date:   09\16\2025
 */
 
-#ifndef _BUILD_SYSTEM_ANDROID_BUILD_HELPERS_H
-#define _BUILD_SYSTEM_ANDROID_BUILD_HELPERS_H
+#ifndef _PIG_BUILD_ANDROID_HELPERS_H
+#define _PIG_BUILD_ANDROID_HELPERS_H
 
 typedef enum AndroidTargetArchitechture AndroidTargetArchitechture;
 enum AndroidTargetArchitechture
@@ -73,4 +73,4 @@ static inline Str8 GetAndroidSdkPath()
 	return result;
 }
 
-#endif //  _BUILD_SYSTEM_ANDROID_BUILD_HELPERS_H
+#endif //  _PIG_BUILD_ANDROID_HELPERS_H
