@@ -15,7 +15,7 @@ Date:   06\19\2025
 #include "pig_build_recompile.h"
 #include "pig_build_cli.h"
 
-static inline Str8 ExtractStrDefine(Str8 buildConfigContents, Str8 defineName)
+Str8 ExtractStrDefine(Str8 buildConfigContents, Str8 defineName)
 {
 	Str8 defineValueStr = ZEROED;
 	if (!TryExtractDefineFrom(buildConfigContents, defineName, &defineValueStr))
@@ -25,7 +25,7 @@ static inline Str8 ExtractStrDefine(Str8 buildConfigContents, Str8 defineName)
 	}
 	return defineValueStr;
 }
-static inline bool ExtractBoolDefine(Str8 buildConfigContents, Str8 defineName)
+bool ExtractBoolDefine(Str8 buildConfigContents, Str8 defineName)
 {
 	Str8 defineValueStr = ExtractStrDefine(buildConfigContents, defineName);
 	bool result = false;
@@ -37,7 +37,7 @@ static inline bool ExtractBoolDefine(Str8 buildConfigContents, Str8 defineName)
 	return result;
 }
 
-static inline void RunBatchFileAndApplyDumpedEnvironment(Str8 batchFilePath, Str8 environmentFilePath, bool skipRunningIfFileExists)
+void RunBatchFileAndApplyDumpedEnvironment(Str8 batchFilePath, Str8 environmentFilePath, bool skipRunningIfFileExists)
 {
 	CliArgList cmd = ZEROED;
 	AddArgStr(&cmd, CLI_QUOTED_ARG, environmentFilePath);
@@ -67,7 +67,7 @@ static inline void RunBatchFileAndApplyDumpedEnvironment(Str8 batchFilePath, Str
 	free(environmentFileContents.chars);
 }
 
-static inline void InitializeMsvcIf(Str8 pigCoreFolder, bool* isMsvcInitialized)
+void InitializeMsvcIf(Str8 pigCoreFolder, bool* isMsvcInitialized)
 {
 	if (*isMsvcInitialized == false)
 	{
@@ -80,7 +80,7 @@ static inline void InitializeMsvcIf(Str8 pigCoreFolder, bool* isMsvcInitialized)
 	}
 }
 
-static inline void InitializeEmsdkIf(Str8 pigCoreFolder, bool* isEmsdkInitialized)
+void InitializeEmsdkIf(Str8 pigCoreFolder, bool* isEmsdkInitialized)
 {
 	if (*isEmsdkInitialized == false)
 	{
@@ -91,7 +91,7 @@ static inline void InitializeEmsdkIf(Str8 pigCoreFolder, bool* isEmsdkInitialize
 	}
 }
 
-static inline void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str8 outputFilePath)
+void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str8 outputFilePath)
 {
 	//TODO: We really should handle new-line differences between Windows and Linux/etc. a little smarter here
 	//      Just because we are building on Windows doesn't mean all these .js files are using Windows style line-endings
@@ -143,7 +143,7 @@ static inline void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str8 
 	FreeStrArray(&allFilesContents);
 }
 
-static inline Str8 GetEmscriptenSdkPath()
+Str8 GetEmscriptenSdkPath()
 {
 	const char* sdkEnvVariable = getenv("EMSCRIPTEN_SDK_PATH");
 	if (sdkEnvVariable == nullptr)
@@ -160,7 +160,7 @@ static inline Str8 GetEmscriptenSdkPath()
 
 #define FILENAME_ORCA_SDK_PATH  "orca_sdk_path.txt"
 
-static inline Str8 GetOrcaSdkPath()
+Str8 GetOrcaSdkPath()
 {
 	CliArgList cmd = ZEROED;
 	AddArg(&cmd, "sdk-path");
@@ -182,7 +182,7 @@ static inline Str8 GetOrcaSdkPath()
 	return result;
 }
 
-static inline Str8 GetPlaydateSdkPath()
+Str8 GetPlaydateSdkPath()
 {
 	const char* sdkEnvVariable = getenv("PLAYDATE_SDK_PATH");
 	if (sdkEnvVariable == nullptr)
@@ -271,7 +271,7 @@ static inline Str8 GetPlaydateSdkPath()
 #define NUMBER_CHARS "0123456789"
 #define IDENTIFIER_CHARS "_" NUMBER_CHARS UPPERCASE_CHARS LOWERCASE_CHARS
 
-static inline bool IsShaderHeaderLine_Name(Str8 line, Str8* nameOut)
+bool IsShaderHeaderLine_Name(Str8 line, Str8* nameOut)
 {
 	//Matches something like:
 	//	Shader program: 'main2d':
@@ -290,7 +290,7 @@ static inline bool IsShaderHeaderLine_Name(Str8 line, Str8* nameOut)
 	return true;
 }
 
-static inline bool IsShaderHeaderLine_Attribute(Str8 shaderName, Str8 line, Str8* nameOut)
+bool IsShaderHeaderLine_Attribute(Str8 shaderName, Str8 line, Str8* nameOut)
 {
 	//Matches something like:
 	//	#define ATTR_main2d_position (0)
@@ -312,7 +312,7 @@ static inline bool IsShaderHeaderLine_Attribute(Str8 shaderName, Str8 line, Str8
 	return true;
 }
 
-static inline bool IsShaderHeaderLine_View(Str8 shaderName, Str8 line, Str8* nameOut)
+bool IsShaderHeaderLine_View(Str8 shaderName, Str8 line, Str8* nameOut)
 {
 	//Matches something like:
 	//	#define IMG_main2d_texture0 (0)
@@ -334,7 +334,7 @@ static inline bool IsShaderHeaderLine_View(Str8 shaderName, Str8 line, Str8* nam
 	return true;
 }
 
-static inline bool IsShaderHeaderLine_Sampler(Str8 shaderName, Str8 line, Str8* nameOut)
+bool IsShaderHeaderLine_Sampler(Str8 shaderName, Str8 line, Str8* nameOut)
 {
 	//Matches something like:
 	//	#define SMP_main2d_sampler0 (0)
@@ -356,7 +356,7 @@ static inline bool IsShaderHeaderLine_Sampler(Str8 shaderName, Str8 line, Str8* 
 	return true;
 }
 
-static inline bool IsShaderHeaderLine_UniformStruct(Str8 shaderName, Str8 line, Str8* nameOut)
+bool IsShaderHeaderLine_UniformStruct(Str8 shaderName, Str8 line, Str8* nameOut)
 {
 	//Matches something like:
 	//	SOKOL_SHDC_ALIGN(16) typedef struct main2d_VertParams_t {
@@ -383,7 +383,7 @@ static inline bool IsShaderHeaderLine_UniformStruct(Str8 shaderName, Str8 line, 
 	if (nameOut != nullptr) { *nameOut = nameStr; }
 	return true;
 }
-static inline bool IsShaderHeaderLine_UniformStructEnd(Str8 shaderName, Str8 uniformBlockName, Str8 line)
+bool IsShaderHeaderLine_UniformStructEnd(Str8 shaderName, Str8 uniformBlockName, Str8 line)
 {
 	//Matches something like:
 	//	} main2d_VertParams_t;
@@ -398,7 +398,7 @@ static inline bool IsShaderHeaderLine_UniformStructEnd(Str8 shaderName, Str8 uni
 	if (line.length > 0) { return false; }
 	return true;
 }
-static inline bool IsShaderHeaderLine_UniformMember(Str8 line, Str8* typeOut, Str8* nameOut)
+bool IsShaderHeaderLine_UniformMember(Str8 line, Str8* typeOut, Str8* nameOut)
 {
 	//Matches something like:
 	//	mat4 world;

@@ -36,7 +36,7 @@ struct Str8
 // +--------------------------------------------------------------+
 // |                        Str8 Functions                        |
 // +--------------------------------------------------------------+
-static inline bool StrExactEquals(Str8 left, Str8 right)
+bool StrExactEquals(Str8 left, Str8 right)
 {
 	if (left.length != right.length) { return false; }
 	if (left.length == 0) { return true; }
@@ -44,18 +44,18 @@ static inline bool StrExactEquals(Str8 left, Str8 right)
 	assert(right.chars != nullptr);
 	return (memcmp(left.chars, right.chars, left.length) == 0);
 }
-static inline Str8 StrSlice(Str8 target, u64 startIndex, u64 endIndex)
+Str8 StrSlice(Str8 target, u64 startIndex, u64 endIndex)
 {
 	assert(startIndex <= target.length);
 	assert(endIndex <= target.length);
 	assert(startIndex <= endIndex);
 	return MakeStr8(endIndex - startIndex, target.chars + startIndex);
 }
-static inline Str8 StrSliceFrom(Str8 target, u64 startIndex)
+Str8 StrSliceFrom(Str8 target, u64 startIndex)
 {
 	return StrSlice(target, startIndex, target.length);
 }
-static inline bool StrExactContains(Str8 haystack, Str8 needle)
+bool StrExactContains(Str8 haystack, Str8 needle)
 {
 	assert(needle.length > 0);
 	if (haystack.length < needle.length) { return false; }
@@ -65,19 +65,19 @@ static inline bool StrExactContains(Str8 haystack, Str8 needle)
 	}
 	return false;
 }
-static inline bool StrExactStartsWith(Str8 target, Str8 prefix)
+bool StrExactStartsWith(Str8 target, Str8 prefix)
 {
 	assert(prefix.length > 0);
 	if (target.length < prefix.length) { return false; }
 	return StrExactEquals(StrSlice(target, 0, prefix.length), prefix);
 }
-static inline bool StrExactEndsWith(Str8 target, Str8 suffix)
+bool StrExactEndsWith(Str8 target, Str8 suffix)
 {
 	assert(suffix.length > 0);
 	if (target.length < suffix.length) { return false; }
 	return StrExactEquals(StrSlice(target, target.length - suffix.length, target.length), suffix);
 }
-static inline Str8 GetDirectoryPart(Str8 fullPath, bool includeTrailingSlash)
+Str8 GetDirectoryPart(Str8 fullPath, bool includeTrailingSlash)
 {
 	u64 lastSlashIndex = fullPath.length;
 	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
@@ -88,7 +88,7 @@ static inline Str8 GetDirectoryPart(Str8 fullPath, bool includeTrailingSlash)
 	if (lastSlashIndex < fullPath.length) { return StrSlice(fullPath, 0, lastSlashIndex + (includeTrailingSlash ? 1 : 0)); }
 	else { return fullPath; }
 }
-static inline Str8 GetFileNamePart(Str8 fullPath, bool includeExtension)
+Str8 GetFileNamePart(Str8 fullPath, bool includeExtension)
 {
 	u64 lastSlashIndex = fullPath.length;
 	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
@@ -99,7 +99,7 @@ static inline Str8 GetFileNamePart(Str8 fullPath, bool includeExtension)
 	if (lastSlashIndex < fullPath.length) { return StrSliceFrom(fullPath, lastSlashIndex+1); }
 	else { return fullPath; }
 }
-static inline Str8 GetFileExtPart(Str8 fullPath)
+Str8 GetFileExtPart(Str8 fullPath)
 {
 	u64 periodIndex = fullPath.length;
 	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
@@ -111,13 +111,13 @@ static inline Str8 GetFileExtPart(Str8 fullPath)
 	if (periodIndex < fullPath.length) { return StrSliceFrom(fullPath, periodIndex); }
 	else { return StrSliceFrom(fullPath, fullPath.length); }
 }
-static inline bool IsCharWhitespace(char character)
+bool IsCharWhitespace(char character)
 {
 	if (character == ' ') { return true; }
 	else if (character == '\t') { return true; }
 	else { return false; }
 }
-static inline bool IsCharIdentifier(char character, bool isFirstChar)
+bool IsCharIdentifier(char character, bool isFirstChar)
 {
 	if (character == '_') { return true; }
 	if (character >= 'A' && character <= 'Z') { return true; }
@@ -125,7 +125,7 @@ static inline bool IsCharIdentifier(char character, bool isFirstChar)
 	if (!isFirstChar && character >= '0' && character <= '9') { return true; }
 	return false;
 }
-static inline Str8 TrimWhitespace(Str8 target)
+Str8 TrimWhitespace(Str8 target)
 {
 	assert(target.length == 0 || target.chars != nullptr);
 	Str8 result = target;
@@ -133,7 +133,7 @@ static inline Str8 TrimWhitespace(Str8 target)
 	while (result.length > 0 && IsCharWhitespace(result.chars[result.length-1])) { result.length--; }
 	return result;
 }
-static inline u64 FindNextWhitespace(Str8 targetStr, u64 startIndex)
+u64 FindNextWhitespace(Str8 targetStr, u64 startIndex)
 {
 	assert(startIndex <= targetStr.length);
 	for (u64 bIndex = startIndex; bIndex < targetStr.length; bIndex++)
@@ -142,7 +142,7 @@ static inline u64 FindNextWhitespace(Str8 targetStr, u64 startIndex)
 	}
 	return targetStr.length;
 }
-static inline u64 FindNextNonIdentifierChar(Str8 targetStr, u64 startIndex)
+u64 FindNextNonIdentifierChar(Str8 targetStr, u64 startIndex)
 {
 	assert(startIndex <= targetStr.length);
 	for (u64 bIndex = startIndex; bIndex < targetStr.length; bIndex++)
@@ -152,7 +152,7 @@ static inline u64 FindNextNonIdentifierChar(Str8 targetStr, u64 startIndex)
 	return targetStr.length;
 }
 
-static inline bool TryParseBoolArg(Str8 boolStr, bool* valueOut)
+bool TryParseBoolArg(Str8 boolStr, bool* valueOut)
 {
 	if (StrExactEquals(boolStr, StrLit("1"))) { *valueOut = true; return true; }
 	if (StrExactEquals(boolStr, StrLit("0"))) { *valueOut = false; return true; }
@@ -161,7 +161,7 @@ static inline bool TryParseBoolArg(Str8 boolStr, bool* valueOut)
 	return false;
 }
 
-static inline Str8 CopyStr8(Str8 strToCopy, bool addNullTerm)
+Str8 CopyStr8(Str8 strToCopy, bool addNullTerm)
 {
 	Str8 result = ZEROED;
 	if (strToCopy.length == 0) { return result; }
@@ -172,7 +172,7 @@ static inline Str8 CopyStr8(Str8 strToCopy, bool addNullTerm)
 	return result;
 }
 
-static inline Str8 EscapeString(Str8 unescapedString, bool addNullTerm)
+Str8 EscapeString(Str8 unescapedString, bool addNullTerm)
 {
 	Str8 result = ZEROED;
 	for (int pass = 0; pass < 2; pass++)
@@ -218,7 +218,7 @@ static inline Str8 EscapeString(Str8 unescapedString, bool addNullTerm)
 	return result;
 }
 
-static inline Str8 JoinStrings2(Str8 left, Str8 right, bool addNullTerm)
+Str8 JoinStrings2(Str8 left, Str8 right, bool addNullTerm)
 {
 	Str8 result;
 	result.length = left.length + right.length;
@@ -228,7 +228,7 @@ static inline Str8 JoinStrings2(Str8 left, Str8 right, bool addNullTerm)
 	if (addNullTerm) { result.chars[result.length] = '\0'; }
 	return result;
 }
-static inline Str8 JoinStrings3(Str8 left, Str8 middle, Str8 right, bool addNullTerm)
+Str8 JoinStrings3(Str8 left, Str8 middle, Str8 right, bool addNullTerm)
 {
 	Str8 result;
 	result.length = left.length + middle.length + right.length;
@@ -241,7 +241,7 @@ static inline Str8 JoinStrings3(Str8 left, Str8 middle, Str8 right, bool addNull
 }
 
 //Returns the number of target characters that were replaced
-static inline u64 StrReplaceChars(Str8 haystack, char targetChar, char replaceChar)
+u64 StrReplaceChars(Str8 haystack, char targetChar, char replaceChar)
 {
 	u64 numReplacements = 0;
 	for (u64 cIndex = 0; cIndex < haystack.length; cIndex++)
@@ -255,12 +255,12 @@ static inline u64 StrReplaceChars(Str8 haystack, char targetChar, char replaceCh
 	return numReplacements;
 }
 
-static inline void FixPathSlashes(Str8 path, char slashChar)
+void FixPathSlashes(Str8 path, char slashChar)
 {
 	StrReplaceChars(path, (slashChar == '/') ? '\\' : '/', slashChar);
 }
 
-static inline Str8 StrReplace(Str8 haystack, Str8 target, Str8 replacement, bool addNullTerm)
+Str8 StrReplace(Str8 haystack, Str8 target, Str8 replacement, bool addNullTerm)
 {
 	Str8 result = ZEROED;
 	for (u64 cIndex = 0; cIndex < haystack.length; cIndex++)

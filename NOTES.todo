@@ -8,8 +8,8 @@
 	[X] Proofread and fix typos in README.md
 	[X] Get rid of uxx type
 	[X] Fix all usages of %.*s with StrPrint
-	[!] Fix up "build.bat" for Windows
-	[!] Add all functions types etc. to custom types list in PigBuild.sublime-project
+	[X] Fix up "build.bat" for Windows
+	[X] Add all functions types etc. to custom types list in PigBuild.sublime-project
 	[ ] Add an example "build_script.c" file
 	[ ] Add a "MOTIVATIONS.md" file that explains the design goals of this build system and it's pros/cons compared to other approaches
 	[?] Add basic temporary memory arena? Maybe wrap it with something called an "allocator" and have one implementation route to malloc/free?
@@ -38,7 +38,7 @@
 	[X] Add a define or something to enable ">> cl ..." printout for debug purposes
 	[ ] Add some functions that help measure build times and save them to .csv or something
 	[ ] Make sure every file header has a proper description
-	[?] Should we remove all the static inline keywords? They are probably just misleading
+	[X] Should we remove all the static inline keywords? They are probably just misleading
 	[ ] Replace ZEROED usages with Str8_Empty or Str8_Empty_Const where applicable
 	[ ] Remove "/std:clatest" and "-std=gnu2x"
 	[ ] Check if build_script.c compilation failed and exit early int Windows build.bat

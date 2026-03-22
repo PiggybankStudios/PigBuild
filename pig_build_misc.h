@@ -55,7 +55,7 @@ void TwoPassPrint(Str8* resultStr, u64* currentByteIndex, const char* formatStri
 // +--------------------------------------------------------------+
 // |                         Line Parser                          |
 // +--------------------------------------------------------------+
-static inline LineParser NewLineParser(Str8 inputStr)
+LineParser NewLineParser(Str8 inputStr)
 {
 	LineParser result = ZEROED;
 	result.byteIndex = 0;
@@ -64,7 +64,7 @@ static inline LineParser NewLineParser(Str8 inputStr)
 	return result;
 }
 
-static inline bool LineParserGetLine(LineParser* parser, Str8* lineOut)
+bool LineParserGetLine(LineParser* parser, Str8* lineOut)
 {
 	if (parser->byteIndex >= parser->inputStr.length) { return false; }
 	parser->lineIndex++;
@@ -104,7 +104,7 @@ static inline bool LineParserGetLine(LineParser* parser, Str8* lineOut)
 // +--------------------------------------------------------------+
 // |                     Extract Define Logic                     |
 // +--------------------------------------------------------------+
-static bool IsHeaderLineDefine(Str8 targetDefineName, Str8 line, Str8* valueStrOut)
+bool IsHeaderLineDefine(Str8 targetDefineName, Str8 line, Str8* valueStrOut)
 {
 	line = TrimWhitespace(line);
 	u64 firstWhitespaceIndex = FindNextWhitespace(line, 0);

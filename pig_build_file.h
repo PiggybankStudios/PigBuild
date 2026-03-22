@@ -35,7 +35,7 @@ typedef RECURSIVE_DIR_WALK_CALLBACK_DEF(RecursiveDirWalkCallback_f);
 // +--------------------------------------------------------------+
 // Result is always null-terminated
 // TODO: On linux this will not work properly for paths to folders that don't exist yet
-static inline Str8 GetFullPath(Str8 relativePath, char slashChar)
+Str8 GetFullPath(Str8 relativePath, char slashChar)
 {
 	Str8 result = ZEROED;
 	
@@ -94,7 +94,7 @@ static inline Str8 GetFullPath(Str8 relativePath, char slashChar)
 	return result;
 }
 
-static inline bool TryReadFile(Str8 filePath, Str8* contentsOut)
+bool TryReadFile(Str8 filePath, Str8* contentsOut)
 {
 	Str8 filePathNt = CopyStr8(filePath, true);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
@@ -140,7 +140,7 @@ static inline bool TryReadFile(Str8 filePath, Str8* contentsOut)
 	return true;
 }
 //NOTE: We can't name this "ReadFile" because it conflicts with a Windows function
-static inline Str8 ReadEntireFile(Str8 filePath)
+Str8 ReadEntireFile(Str8 filePath)
 {
 	Str8 result = ZEROED;
 	bool readSuccess = TryReadFile(filePath, &result);
@@ -148,7 +148,7 @@ static inline Str8 ReadEntireFile(Str8 filePath)
 	return result;
 }
 
-static inline void CreateAndWriteFile(Str8 filePath, Str8 contents, bool convertNewLines)
+void CreateAndWriteFile(Str8 filePath, Str8 contents, bool convertNewLines)
 {
 	Str8 filePathNt = CopyStr8(filePath, true);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
@@ -206,7 +206,7 @@ static inline void CreateAndWriteFile(Str8 filePath, Str8 contents, bool convert
 	free(filePathNt.chars);
 }
 
-static inline void AppendToFile(Str8 filePath, Str8 contentsToAppend, bool convertNewLines)
+void AppendToFile(Str8 filePath, Str8 contentsToAppend, bool convertNewLines)
 {
 	Str8 filePathNt = CopyStr8(filePath, true);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
@@ -276,7 +276,7 @@ static inline void AppendToFile(Str8 filePath, Str8 contentsToAppend, bool conve
 	
 	free(filePathNt.chars);
 }
-static inline void AppendPrintToFile(Str8 filePath, const char* formatString, ...)
+void AppendPrintToFile(Str8 filePath, const char* formatString, ...)
 {
 	char printBuffer[512];
 	
@@ -290,7 +290,7 @@ static inline void AppendPrintToFile(Str8 filePath, const char* formatString, ..
 	AppendToFile(filePath, printedStr, true);
 }
 
-static inline void RemoveFile(Str8 filePath)
+void RemoveFile(Str8 filePath)
 {
 	Str8 filePathNt = CopyStr8(filePath, true);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
@@ -309,7 +309,7 @@ static inline void RemoveFile(Str8 filePath)
 	#endif
 }
 
-static inline void MyRemoveDirectory(Str8 folderPath, bool recursive)
+void MyRemoveDirectory(Str8 folderPath, bool recursive)
 {
 	Str8 folderPathNt = CopyStr8(folderPath, true);
 	FixPathSlashes(folderPathNt, PATH_SEP_CHAR);
@@ -376,7 +376,7 @@ static inline void MyRemoveDirectory(Str8 folderPath, bool recursive)
 	}
 }
 
-static inline void CopyFileToPath(Str8 filePath, Str8 newFilePath, bool copyPermissions)
+void CopyFileToPath(Str8 filePath, Str8 newFilePath, bool copyPermissions)
 {
 	Str8 fileContents = ZEROED;
 	bool readSuccess = TryReadFile(filePath, &fileContents);
@@ -399,7 +399,7 @@ static inline void CopyFileToPath(Str8 filePath, Str8 newFilePath, bool copyPerm
 	}
 	#endif
 }
-static inline void CopyFileToFolder(Str8 filePath, Str8 folderPath, bool copyPermissions)
+void CopyFileToFolder(Str8 filePath, Str8 folderPath, bool copyPermissions)
 {
 	Str8 fileName = GetFileNamePart(filePath, true);
 	const char* joinStr = (folderPath.length == 0 || !IS_SLASH(folderPath.chars[folderPath.length-1])) ? "/" : "";
@@ -408,7 +408,7 @@ static inline void CopyFileToFolder(Str8 filePath, Str8 folderPath, bool copyPer
 	free(newPath.chars);
 }
 
-static inline bool DoesFileExist(Str8 filePath)
+bool DoesFileExist(Str8 filePath)
 {
 	char* filePathNt = (char*)malloc(filePath.length+1);
 	memcpy(filePathNt, filePath.chars, filePath.length);
@@ -431,7 +431,7 @@ static inline bool DoesFileExist(Str8 filePath)
 	#endif
 }
 
-static inline void AssertFileExist(Str8 filePath, bool wasCreatedByBuild)
+void AssertFileExist(Str8 filePath, bool wasCreatedByBuild)
 {
 	if (!DoesFileExist(filePath))
 	{
@@ -440,7 +440,7 @@ static inline void AssertFileExist(Str8 filePath, bool wasCreatedByBuild)
 	}
 }
 
-static inline FileIter StartFileIter(Str8 folderPath)
+FileIter StartFileIter(Str8 folderPath)
 {
 	FileIter result = ZEROED;
 	result.index = UINT64_MAX;
@@ -472,7 +472,7 @@ static inline FileIter StartFileIter(Str8 folderPath)
 }
 
 // Ex version gives isFolderOut
-static bool StepFileIter(FileIter* fileIter, Str8* pathOut, bool* isFolderOut)
+bool StepFileIter(FileIter* fileIter, Str8* pathOut, bool* isFolderOut)
 {
 	if (fileIter->finished) { return false; }
 	
@@ -588,7 +588,7 @@ static bool StepFileIter(FileIter* fileIter, Str8* pathOut, bool* isFolderOut)
 	return false;
 }
 
-static void RecursiveDirWalk(Str8 rootDir, RecursiveDirWalkCallback_f* callback, void* contextPntr)
+void RecursiveDirWalk(Str8 rootDir, RecursiveDirWalkCallback_f* callback, void* contextPntr)
 {
 	FileIter iter = StartFileIter(rootDir);
 	Str8 path = ZEROED;

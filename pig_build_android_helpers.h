@@ -58,7 +58,7 @@ const char* GetAndroidTargetArchitechtureToolchainFolderStr(AndroidTargetArchite
 	}
 }
 
-static inline Str8 GetAndroidSdkPath()
+Str8 GetAndroidSdkPath()
 {
 	const char* sdkEnvVariable = getenv("ANDROID_SDK");
 	if (sdkEnvVariable == nullptr)
