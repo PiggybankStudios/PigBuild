@@ -28,6 +28,17 @@ Date:   03\21\2026
 #define BUILDING_ON_OSX 0
 #endif
 
+#if !BUILDING_ON_OSX
+#define BUILDING_ON_OSX_ARM   0
+#define BUILDING_ON_OSX_INTEL 0
+#elif defined(__arm64__) || defined(__aarch64__)
+#define BUILDING_ON_OSX_ARM   1
+#define BUILDING_ON_OSX_INTEL 0
+#else
+#define BUILDING_ON_OSX_ARM   0
+#define BUILDING_ON_OSX_INTEL 1
+#endif
+
 #ifdef __cplusplus
 #define LANGUAGE_IS_C   0
 #define LANGUAGE_IS_CPP 1
@@ -108,16 +119,21 @@ typedef double r64;
 // +--------------------------------------------------------------+
 // |                            Macros                            |
 // +--------------------------------------------------------------+
+// Arrays can be measures using sizeof(array) and dividing by the size of each element in the array sizeof(array[0])
 #define ArrayCount(array) (sizeof(array) / sizeof((array)[0]))
-#define CheckStrLit(stringLiteral) ("" stringLiteral "")
-//In C, when assigning a structure to a designated initializer AFTER it has been declared, we must have the type prefixing the curly brackets
-#define NEW_STRUCT(type) (type)
 
-#define WriteLine(messageStr) printf(messageStr "\n")
-#define WriteLine_E(messageStr) fprintf(stderr, messageStr "\n")
-#define PrintLine(formatStr, ...) printf(formatStr "\n", ##__VA_ARGS__)
+// This macro does nothing when stringLiteral IS actually a string literally. If it's a pointer or an array or anything else it will produce a compile-time error
+// We often use this macro when we want to do sizeof(stringLiteral) in a macro and we are expecting number of chars in the string (+1 for null-term char)
+#define CheckStrLit(stringLiteral) ("" stringLiteral "")
+
+// We often don't like typing "\n" at the end of our format strings, since writing to the console without a new-line is the less-common case
+// These macros make adding "\n" implicit. Additionally when printing errors we should route to stderr without explicitly writing fprintf(stderr, ...)
+#define WriteLine(messageStr)       printf(messageStr "\n")
+#define WriteLine_E(messageStr)     fprintf(stderr, messageStr "\n")
+#define PrintLine(formatStr, ...)   printf(formatStr "\n", ##__VA_ARGS__)
 #define PrintLine_E(formatStr, ...) fprintf(stderr, formatStr "\n", ##__VA_ARGS__)
 
-#define IS_SLASH(character) ((character) == '\\' || (character) == '/')
+// Shorthand for checking both forward and backslash (often a thing we do in build scripts because of Windows vs OtherOS path separating characters)
+#define IsSlash(character) ((character) == '\\' || (character) == '/')
 
 #endif //  _PIG_BUILD_BASE_H

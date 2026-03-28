@@ -238,7 +238,10 @@ Description:
 #elif BUILDING_ON_LINUX
 #define EXE_SHDC        "third_party/_tools/linux/sokol-shdc"
 #define EXE_SHDC_NAME   "sokol-shdc"
-#elif BUILDING_ON_OSX
+#elif BUILDING_ON_OSX_ARM
+#define EXE_SHDC        "third_party/_tools/osx_arm64/sokol-shdc"
+#define EXE_SHDC_NAME   "sokol-shdc"
+#elif BUILDING_ON_OSX_INTEL
 #define EXE_SHDC        "third_party/_tools/osx/sokol-shdc"
 #define EXE_SHDC_NAME   "sokol-shdc"
 #endif

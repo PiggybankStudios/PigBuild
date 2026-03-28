@@ -139,8 +139,10 @@ void Fill_clang_LinuxOrOsxFlags(CliArgList* clang_LinuxOrOsxFlags, bool DEBUG_BU
 	AddArgNt(clang_LinuxOrOsxFlags, CLANG_OPTIMIZATION_LEVEL, DEBUG_BUILD ? "0" : "2");
 	AddArgNt(clang_LinuxOrOsxFlags, CLANG_INCLUDE_DIR, "[ROOT]");
 	AddArgStr(clang_LinuxOrOsxFlags, CLANG_LIBRARY_DIR, DEBUG_BUILD ? StrLit("[ROOT]/third_party/_lib_debug") : StrLit("[ROOT]/third_party/_lib_release"));
+	#if !BUILDING_ON_OSX
 	AddArgNt(clang_LinuxOrOsxFlags, CLANG_M_FLAG, "ssse3"); //For MeowHash to work we need sse3 support
 	AddArgNt(clang_LinuxOrOsxFlags, CLANG_M_FLAG, "aes"); //For MeowHash to work we need aes support
+	#endif
 	//TODO: Really we should do `pkg-config dbus-1 --cflags`
 	AddArgNt(clang_LinuxOrOsxFlags, CLANG_INCLUDE_DIR, "/usr/include/dbus-1.0");
 	AddArgNt(clang_LinuxOrOsxFlags, CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/dbus-1.0/include"); //This was the path on Lubuntu

@@ -67,7 +67,7 @@ Str8 GetAndroidSdkPath()
 		exit(7);
 	}
 	Str8 result = MakeStr8Nt(sdkEnvVariable);
-	if (IS_SLASH(result.chars[result.length-1])) { result.length--; }
+	if (IsSlash(result.chars[result.length-1])) { result.length--; }
 	result = CopyStr8(result, true);
 	FixPathSlashes(result, PATH_SEP_CHAR);
 	return result;

@@ -402,7 +402,7 @@ void CopyFileToPath(Str8 filePath, Str8 newFilePath, bool copyPermissions)
 void CopyFileToFolder(Str8 filePath, Str8 folderPath, bool copyPermissions)
 {
 	Str8 fileName = GetFileNamePart(filePath, true);
-	const char* joinStr = (folderPath.length == 0 || !IS_SLASH(folderPath.chars[folderPath.length-1])) ? "/" : "";
+	const char* joinStr = (folderPath.length == 0 || !IsSlash(folderPath.chars[folderPath.length-1])) ? "/" : "";
 	Str8 newPath = JoinStrings3(folderPath, MakeStr8Nt(joinStr), fileName, false);
 	CopyFileToPath(filePath, newPath, copyPermissions);
 	free(newPath.chars);

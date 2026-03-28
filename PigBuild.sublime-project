@@ -260,7 +260,7 @@
 			"#define CONSUME_UNTIL_NOT_CHARS(linePntr, expectedCharsStr)",
 			"#define CONSUME_WHITESPACE(linePntr)",
 			"#define CheckStrLit(stringLiteral)",
-			"#define IS_SLASH(character)",
+			"#define IsSlash(character)",
 			"#define MakeStr8(length, pntr)",
 			"#define MakeStr8Nt(nullTermPntr)",
 			"#define MakeStr8_Const(lengthValue, pntrValue)",

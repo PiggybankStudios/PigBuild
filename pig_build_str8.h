@@ -20,7 +20,7 @@ struct Str8
 // |                         Str8 Macros                          |
 // +--------------------------------------------------------------+
 #define MakeStr8_Const(lengthValue, pntrValue) { .length=(lengthValue), .pntr=(void*)(pntrValue) }
-#define MakeStr8(length, pntr) NEW_STRUCT(Str8)MakeStr8_Const((length), (pntr))
+#define MakeStr8(length, pntr) (Str8)MakeStr8_Const((length), (pntr))
 #define Str8_Empty_Const MakeStr8_Const(0, nullptr)
 #define Str8_Empty       MakeStr8(0, nullptr)
 
@@ -83,7 +83,7 @@ Str8 GetDirectoryPart(Str8 fullPath, bool includeTrailingSlash)
 	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
 	{
 		char character = fullPath.chars[cIndex];
-		if (IS_SLASH(character)) { lastSlashIndex = cIndex; }
+		if (IsSlash(character)) { lastSlashIndex = cIndex; }
 	}
 	if (lastSlashIndex < fullPath.length) { return StrSlice(fullPath, 0, lastSlashIndex + (includeTrailingSlash ? 1 : 0)); }
 	else { return fullPath; }
@@ -94,7 +94,7 @@ Str8 GetFileNamePart(Str8 fullPath, bool includeExtension)
 	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
 	{
 		char character = fullPath.chars[cIndex];
-		if (IS_SLASH(character)) { lastSlashIndex = cIndex; }
+		if (IsSlash(character)) { lastSlashIndex = cIndex; }
 	}
 	if (lastSlashIndex < fullPath.length) { return StrSliceFrom(fullPath, lastSlashIndex+1); }
 	else { return fullPath; }
@@ -105,7 +105,7 @@ Str8 GetFileExtPart(Str8 fullPath)
 	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
 	{
 		char character = fullPath.chars[cIndex];
-		if (IS_SLASH(character)) { periodIndex = fullPath.length; } //reset periodIndex
+		if (IsSlash(character)) { periodIndex = fullPath.length; } //reset periodIndex
 		else if (character == '.') { periodIndex = cIndex; }
 	}
 	if (periodIndex < fullPath.length) { return StrSliceFrom(fullPath, periodIndex); }
