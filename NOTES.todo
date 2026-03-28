@@ -10,11 +10,14 @@
 	[X] Fix all usages of %.*s with StrPrint
 	[X] Fix up "build.bat" for Windows
 	[X] Add all functions types etc. to custom types list in PigBuild.sublime-project
+	[!] Make a tag-based cmd-line corraling sytem
+	[!] Throw a clear error if the compiler is not found (esp. on Windows)
+	[!] Make a "new_project.bat/sh" script?
+	[?] Should we allow the user to choose the name of the build script file and it's binary name?
 	[ ] Add an example "build_script.c" file
 	[ ] Add a "MOTIVATIONS.md" file that explains the design goals of this build system and it's pros/cons compared to other approaches
 	[?] Add basic temporary memory arena? Maybe wrap it with something called an "allocator" and have one implementation route to malloc/free?
 	[X] Add a "pig_build_all.h" or maybe just "pig_build.h"?
-	[?] Make a "new_project.bat/sh" script? Should we allow the user to choose the name of the build script file and it's binary name?
 	[ ] Add a system to help with parsing command-line arguments
 	[ ] Move the system for parsing "build_config.h" into it's own file (maybe part of the command-line argument parsing system)
 	[ ] Add information for how you might do a bulk/parallel build of all configurations at once

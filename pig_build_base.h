@@ -7,6 +7,11 @@ Date:   03\21\2026
 #ifndef _PIG_BUILD_BASE_H
 #define _PIG_BUILD_BASE_H
 
+//#define this before including this file to enable a printout inside `RunCliProgram` like `>> clang main.c -O0 -g -o program`
+#ifndef PIG_BUILD_PRINT_SYS_CMDS
+#define PIG_BUILD_PRINT_SYS_CMDS 0
+#endif
+
 // +--------------------------------------------------------------+
 // |                    BUILDING_ON_X Defines                     |
 // +--------------------------------------------------------------+

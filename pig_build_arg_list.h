@@ -1,22 +1,25 @@
 /*
-File:   pig_build_cli.h
+File:   pig_build_arg_list.h
 Author: Taylor Robbins
 Date:   06\16\2025
 Description:
-	** Holds various things that help us build up arguments for a CLI program in a readable way,
-	** and then join them together and run an external CLI tool with those arguments.
+	** Holds the CliArgList structure which is sort of just a list of strings
+	** There are a few extra features that help us when putting together arguments
+	** for the compiler or other CLI tools we want to call:
+	**  1. We can add arguments that have a format string with "[VAL]" somewhere in it, that will get replaced with some argument (see AddArgNt\AddArgStr\AddArgInt). If [VAL] is in quotes, then the argument will be escaped
+	**  2. Paths will have their slashes replaced with forward or backslash, based on "pathSepChar" (usually we set this if running a Windows program, otherwise it defaults to '/')
+	**  3. Lists can be easily joined together to make longer argument lists TODO: We might want to add support for deduplicating arguments when joining?
+	**  4. Since we are running a build script, we don't have to worry about freeing memory, so we just allocate all the strings we need and never worry about freeing them
+	**
+	** NOTE: See RunCliProgram which lives in pig_build_build_helpers.h which
+	**       is used to actually call a program with arguments in a CliArgList
 */
 
-#ifndef _PIG_BUILD_CLI_H
-#define _PIG_BUILD_CLI_H
+#ifndef _PIG_BUILD_ARG_LIST_H
+#define _PIG_BUILD_ARG_LIST_H
 
 #include "pig_build_base.h"
 #include "pig_build_str8.h"
-
-//#define this before including this file to enable a printout inside `RunCliProgram` like `>> clang main.c -O0 -g -o program`
-#ifndef PIG_BUILD_PRINT_SYS_CMDS
-#define PIG_BUILD_PRINT_SYS_CMDS 0
-#endif
 
 // +--------------------------------------------------------------+
 // |                   Composing Argument Lists                   |
@@ -189,91 +192,4 @@ Str8 JoinCliArgsList(Str8 prefix, const CliArgList* list, bool addNullTerm)
 	return result;
 }
 
-// +--------------------------------------------------------------+
-// |                      Running CLI Tools                       |
-// +--------------------------------------------------------------+
-
-#include <stdlib.h>
-
-int RunCliProgram(Str8 programName, const CliArgList* args)
-{
-	Str8 joinedArgs = JoinCliArgsList(programName, args, true);
-	#if PIG_BUILD_PRINT_SYS_CMDS
-	PrintLine(">> %s", joinedArgs.chars);
-	#endif
-	fflush(stdout);
-	fflush(stderr);
-	int resultCode = system(joinedArgs.chars);
-	free(joinedArgs.chars);
-	return resultCode;
-}
-void RunCliProgramAndExitOnFailure(Str8 programName, const CliArgList* args, Str8 errorMessage)
-{
-	int statusCode = RunCliProgram(programName, args);
-	if (statusCode != 0)
-	{
-		Str8 programNamePart = GetFileNamePart(programName, true);
-		PrintLine_E("%.*s\n%.*s Status Code: %d",
-			StrPrint(errorMessage),
-			StrPrint(programNamePart),
-			statusCode
-		);
-		exit(statusCode);
-	}
-}
-
-void ParseAndApplyEnvironmentVariables(Str8 environmentVars)
-{
-	u64 lineIndex = 0;
-	u64 lineStart = 0;
-	u64 equalsIndex = 0;
-	for (u64 cIndex = 0; cIndex < environmentVars.length; cIndex++)
-	{
-		char character = environmentVars.chars[cIndex];
-		char nextChar = (cIndex+1 < environmentVars.length) ? environmentVars.chars[cIndex+1] : '\0';
-		if (character == '\n' || (character == '\r' && nextChar == '\n'))
-		{
-			Str8 line = MakeStr8(cIndex - lineStart, &environmentVars.chars[lineStart]);
-			
-			if (equalsIndex >= lineStart)
-			{
-				Str8 varName = StrSlice(line, 0, equalsIndex-lineStart);
-				Str8 varValue = StrSliceFrom(line, (equalsIndex-lineStart)+1);
-				
-				// PrintLine("set %.*s=%.*s", StrPrint(varName), StrPrint(varValue));
-				varName = CopyStr8(varName, true);
-				varValue = CopyStr8(varValue, true);
-				#if BUILDING_ON_WINDOWS
-				_putenv_s(varName.chars, varValue.chars);
-				#else
-				Str8 varEqualsValueStr = JoinStrings3(varName, StrLit("="), varValue, true);
-				putenv(varEqualsValueStr.chars);
-				#endif
-				free(varName.chars);
-				free(varValue.chars);
-			}
-			else if (line.length > 0)
-			{
-				PrintLine_E("WARNING: No \'=\' character found in line %llu of environment file. Ignoring line: \"%.*s\"", lineIndex+1, StrPrint(line));
-			}
-			
-			if (character == '\r' && nextChar == '\n') { cIndex++; }
-			lineStart = cIndex + 1;
-			lineIndex++;
-		}
-		if (character == '=') { equalsIndex = cIndex; }
-	}
-}
-
-bool WasMsvcDevBatchRun()
-{
-	const char* versionEnvVarValue = getenv("VSCMD_VER");
-    return (versionEnvVarValue != nullptr);
-}
-bool WasEmsdkEnvBatchRun()
-{
-	const char* sdkEnvVarValue = getenv("EMSDK");
-    return (sdkEnvVarValue != nullptr);
-}
-
-#endif //  _PIG_BUILD_CLI_H
+#endif //  _PIG_BUILD_ARG_LIST_H

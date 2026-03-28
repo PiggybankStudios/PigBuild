@@ -16,8 +16,48 @@ Description:
 #include "pig_build_file.h"
 #include "pig_build_misc.h"
 #include "pig_build_recompile.h"
-#include "pig_build_cli.h"
+#include "pig_build_arg_list.h"
 
+int RunCliProgram(Str8 programName, const CliArgList* args)
+{
+	Str8 joinedArgs = JoinCliArgsList(programName, args, true);
+	#if PIG_BUILD_PRINT_SYS_CMDS
+	PrintLine(">> %s", joinedArgs.chars);
+	#endif
+	fflush(stdout);
+	fflush(stderr);
+	int resultCode = system(joinedArgs.chars);
+	free(joinedArgs.chars);
+	return resultCode;
+}
+void RunCliProgramAndExitOnFailure(Str8 programName, const CliArgList* args, Str8 errorMessage)
+{
+	int statusCode = RunCliProgram(programName, args);
+	if (statusCode != 0)
+	{
+		Str8 programNamePart = GetFileNamePart(programName, true);
+		PrintLine_E("%.*s\n%.*s Status Code: %d",
+			StrPrint(errorMessage),
+			StrPrint(programNamePart),
+			statusCode
+		);
+		exit(statusCode);
+	}
+}
+
+bool WasMsvcDevBatchRun()
+{
+	const char* versionEnvVarValue = getenv("VSCMD_VER");
+    return (versionEnvVarValue != nullptr);
+}
+bool WasEmsdkEnvBatchRun()
+{
+	const char* sdkEnvVarValue = getenv("EMSDK");
+    return (sdkEnvVarValue != nullptr);
+}
+
+// We like to have a build_config.h that we pull information from to decide what kind of build we are doing.
+// These functions help us find a particular #define in a C/C++ header file and retrieve it's value
 Str8 ExtractStrDefine(Str8 buildConfigContents, Str8 defineName)
 {
 	Str8 defineValueStr = ZEROED;
@@ -40,6 +80,50 @@ bool ExtractBoolDefine(Str8 buildConfigContents, Str8 defineName)
 	return result;
 }
 
+// In order to avoid running VsDevCmd.bat every single time we compile, we run it once and dump the modified environment variables to a .txt file
+// Then on later runs we just open this .txt file and apply all the environment variable values before trying to run the compiler
+void ParseAndApplyEnvironmentVariables(Str8 environmentVars)
+{
+	u64 lineIndex = 0;
+	u64 lineStart = 0;
+	u64 equalsIndex = 0;
+	for (u64 cIndex = 0; cIndex < environmentVars.length; cIndex++)
+	{
+		char character = environmentVars.chars[cIndex];
+		char nextChar = (cIndex+1 < environmentVars.length) ? environmentVars.chars[cIndex+1] : '\0';
+		if (character == '\n' || (character == '\r' && nextChar == '\n'))
+		{
+			Str8 line = MakeStr8(cIndex - lineStart, &environmentVars.chars[lineStart]);
+			
+			if (equalsIndex >= lineStart)
+			{
+				Str8 varName = StrSlice(line, 0, equalsIndex-lineStart);
+				Str8 varValue = StrSliceFrom(line, (equalsIndex-lineStart)+1);
+				
+				// PrintLine("set %.*s=%.*s", StrPrint(varName), StrPrint(varValue));
+				varName = CopyStr8(varName, true);
+				varValue = CopyStr8(varValue, true);
+				#if BUILDING_ON_WINDOWS
+				_putenv_s(varName.chars, varValue.chars);
+				#else
+				Str8 varEqualsValueStr = JoinStrings3(varName, StrLit("="), varValue, true);
+				putenv(varEqualsValueStr.chars);
+				#endif
+				free(varName.chars);
+				free(varValue.chars);
+			}
+			else if (line.length > 0)
+			{
+				PrintLine_E("WARNING: No \'=\' character found in line %llu of environment file. Ignoring line: \"%.*s\"", lineIndex+1, StrPrint(line));
+			}
+			
+			if (character == '\r' && nextChar == '\n') { cIndex++; }
+			lineStart = cIndex + 1;
+			lineIndex++;
+		}
+		if (character == '=') { equalsIndex = cIndex; }
+	}
+}
 void RunBatchFileAndApplyDumpedEnvironment(Str8 batchFilePath, Str8 environmentFilePath, bool skipRunningIfFileExists)
 {
 	CliArgList cmd = ZEROED;
@@ -70,6 +154,9 @@ void RunBatchFileAndApplyDumpedEnvironment(Str8 batchFilePath, Str8 environmentF
 	free(environmentFileContents.chars);
 }
 
+// We only need initialize MSVC once but we may not need to initialize at all.
+// So we pass a pointer to a bool that tracks if we have initialized and we pepper
+// these calls before any spot in the build_script.c that needs to use the MSVC compiler
 void InitializeMsvcIf(Str8 pigCoreFolder, bool* isMsvcInitialized)
 {
 	if (*isMsvcInitialized == false)
@@ -82,7 +169,6 @@ void InitializeMsvcIf(Str8 pigCoreFolder, bool* isMsvcInitialized)
 		*isMsvcInitialized = true;
 	}
 }
-
 void InitializeEmsdkIf(Str8 pigCoreFolder, bool* isEmsdkInitialized)
 {
 	if (*isEmsdkInitialized == false)
@@ -94,7 +180,8 @@ void InitializeEmsdkIf(Str8 pigCoreFolder, bool* isEmsdkInitialized)
 	}
 }
 
-//This is mostly useful for WebAssembly builds where we need to do stitching of multiple Javascript files into one
+// This is mostly useful for WebAssembly builds where we need to do stitching of multiple Javascript files into one
+// TODO: We could use something like WebPack to minify and join but it doesn't seem worth it right now
 void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str8 outputFilePath)
 {
 	//TODO: We really should handle new-line differences between Windows and Linux/etc. a little smarter here
@@ -147,6 +234,7 @@ void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str8 outputFilePath
 	FreeStrArray(&allFilesContents);
 }
 
+// For the time being we just require the user to set up an EMSCRIPTEN_SDK_PATH environment variable to tell us where the Emscripten SDK lives
 Str8 GetEmscriptenSdkPath()
 {
 	const char* sdkEnvVariable = getenv("EMSCRIPTEN_SDK_PATH");

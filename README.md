@@ -39,13 +39,17 @@ The code in this repo used to live in [PigCore](https://github.com/PiggybankStud
 	
 	* `#include "pig_build_misc.h"`
 	
+	* `#include "pig_build_not_regex.h"`
+	
 	* `#include "pig_build_recompile.h"` -- **NOTE:** This is required if you want to use `RecompileIfNeeded()`
 	
 	* `#include "pig_build_cli_flags.h"`
 	
-	* `#include "pig_build_cli.h"`
+	* `#include "pig_build_arg_list.h"`
 	
 	* `#include "pig_build_build_helpers.h"`
+	
+	* `#include "pig_build_shader_scraping.h"`
 	
 	* `#include "pig_build_pig_core_build_flags.h"` - **NOTE:** This is only used in [PigCore](https://github.com/PiggybankStudios/PigCore) projects
 	
