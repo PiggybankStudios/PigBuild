@@ -11,12 +11,15 @@ Description:
 	** Usually though, in build scripts we just need a somewhat reasonable way to compose
 	** various kinds of logic together into a certain kind of well-defined walked over
 	** the input string using a series of "rules".
-	** This file is an experiement in trying to avoid implementing regular expressions
+	** This file is an experiment in trying to avoid implementing regular expressions
 	** while accomplishing a small set of tasks we normally would use regex for.
 */
 
 #ifndef _PIG_BUILD_NOT_REGEX_H
 #define _PIG_BUILD_NOT_REGEX_H
+
+#include "pig_build_base.h"
+#include "pig_build_str8.h"
 
 //NOTE: The macros and functions below act sort of like regular expressions.
 //      For example, CONSUME_WHITESPACE is similar to \s* in RE syntax.
