@@ -141,4 +141,9 @@ typedef double r64;
 // Shorthand for checking both forward and backslash (often a thing we do in build scripts because of Windows vs OtherOS path separating characters)
 #define IsSlash(character) ((character) == '\\' || (character) == '/')
 
+// Used when doing debug logs in english, a particular number might have sway on the plurality of a following word
+// For example we say "1 bird" and "3 birds", and also "0 birds". So basically use a suffix (like "s") when the number != 1
+#define PluralEx(number, singularSuffix, multipleSuffix) (((number) == 1) ? (singularSuffix) : (multipleSuffix))
+#define Plural(number, multipleSuffix) (((number) == 1) ? "" : (multipleSuffix))
+
 #endif //  _PIG_BUILD_BASE_H

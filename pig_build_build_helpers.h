@@ -18,9 +18,9 @@ Description:
 #include "pig_build_recompile.h"
 #include "pig_build_arg_list.h"
 
-int RunCliProgram(Str8 programName, const CliArgList* args)
+int RunCliProgramTagArray(Str8 programPath, StrArray* tagsListPntr, const CliArgList* args)
 {
-	Str8 joinedArgs = JoinCliArgsList(programName, args, true);
+	Str8 joinedArgs = JoinCliArgsList(programPath, args, tagsListPntr, true);
 	#if PIG_BUILD_PRINT_SYS_CMDS
 	PrintLine(">> %s", joinedArgs.chars);
 	#endif
@@ -30,12 +30,25 @@ int RunCliProgram(Str8 programName, const CliArgList* args)
 	free(joinedArgs.chars);
 	return resultCode;
 }
-void RunCliProgramAndExitOnFailure(Str8 programName, const CliArgList* args, Str8 errorMessage)
+int RunCliProgram(Str8 programPath, const char* tagsListStr, const CliArgList* args)
 {
-	int statusCode = RunCliProgram(programName, args);
+	StrArray tagArray = ZEROED;
+	SplitTagsListStr(MakeStr8Nt(tagsListStr), &tagArray);
+	// if (tagArray.length > 0)
+	// {
+	// 	PrintLine("%.*s with %llu tag%s:", StrPrint(programPath), tagArray.length, Plural(tagArray.length, "s"));
+	// 	for (u64 tIndex = 0; tIndex < tagArray.length; tIndex++) { PrintLine("\t[%llu] \"%.*s\"", tIndex, StrPrint(tagArray.strings[tIndex])); }
+	// }
+	int result = RunCliProgramTagArray(programPath, &tagArray, args);
+	FreeStrArray(&tagArray);
+	return result;
+}
+void RunCliProgramTagArrayAndExitOnFailure(Str8 programPath, StrArray* tagsListPntr, const CliArgList* args, Str8 errorMessage)
+{
+	int statusCode = RunCliProgramTagArray(programPath, tagsListPntr, args);
 	if (statusCode != 0)
 	{
-		Str8 programNamePart = GetFileNamePart(programName, true);
+		Str8 programNamePart = GetFileNamePart(programPath, true);
 		PrintLine_E("%.*s\n%.*s Status Code: %d",
 			StrPrint(errorMessage),
 			StrPrint(programNamePart),
@@ -43,6 +56,13 @@ void RunCliProgramAndExitOnFailure(Str8 programName, const CliArgList* args, Str
 		);
 		exit(statusCode);
 	}
+}
+void RunCliProgramAndExitOnFailure(Str8 programPath, const char* tagListStr, const CliArgList* args, Str8 errorMessage)
+{
+	StrArray tagArray = ZEROED;
+	SplitTagsListStr(MakeStr8Nt(tagListStr), &tagArray);
+	RunCliProgramTagArrayAndExitOnFailure(programPath, &tagArray, args, errorMessage);
+	FreeStrArray(&tagArray);
 }
 
 bool WasMsvcDevBatchRun()
@@ -133,7 +153,7 @@ void RunBatchFileAndApplyDumpedEnvironment(Str8 batchFilePath, Str8 environmentF
 	
 	if (!DoesFileExist(environmentFilePath) || !skipRunningIfFileExists)
 	{
-		int statusCode = RunCliProgram(fixedBatchFilePath, &cmd); //this batch file runs emsdk_env.bat and then dumps it's environment variables to environment.txt. We can then open and parse that file and change our environment to match what emsdk_env.bat changed
+		int statusCode = RunCliProgram(fixedBatchFilePath, "", &cmd); //this batch file runs emsdk_env.bat and then dumps it's environment variables to environment.txt. We can then open and parse that file and change our environment to match what emsdk_env.bat changed
 		if (statusCode != 0)
 		{
 			PrintLine_E("%.*s failed! Status Code: %d", StrPrint(fixedBatchFilePath), statusCode);
@@ -257,7 +277,7 @@ Str8 GetOrcaSdkPath()
 	CliArgList cmd = ZEROED;
 	AddArg(&cmd, "sdk-path");
 	AddArgNt(&cmd, CLI_PIPE_OUTPUT_TO_FILE, FILENAME_ORCA_SDK_PATH);
-	int statusCode = RunCliProgram(StrLit("orca"), &cmd);
+	int statusCode = RunCliProgram(StrLit("orca"), "", &cmd);
 	if (statusCode != 0)
 	{
 		PrintLine_E("Failed to run \"orca sdk-path\"! Status code: %d", statusCode);

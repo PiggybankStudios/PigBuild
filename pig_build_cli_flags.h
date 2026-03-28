@@ -178,6 +178,7 @@ Description:
 // +--------------------------------------------------------------+
 // |                        GCC CLI Flags                         |
 // +--------------------------------------------------------------+
+#define EXE_GCC     "gcc"
 #define EXE_ARM_GCC "arm-none-eabi-gcc" //we use this when compiling for the Playdate device
 
 #define GCC_COMPILE                  "-c"
@@ -258,6 +259,8 @@ Description:
 // +--------------------------------------------------------------+
 // |               Playdate Packager PDC CLI Flags                |
 // +--------------------------------------------------------------+
+#define EXE_PDC "pdc"
+
 #define PDC_SDK_PATH      "-sdkpath \"[VAL]\"" //use the SDK at the given path instead of the default
 #define PDC_LIBPATH       "--libpath \"[VAL]\"" //add the given path to the list of folders to search when resolving imports
 #define PDC_STRIP         "--strip" //strip debug symbols
