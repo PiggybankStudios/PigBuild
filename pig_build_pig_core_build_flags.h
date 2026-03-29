@@ -18,7 +18,11 @@ Description:
 #include "pig_build_cli_flags.h"
 #include "pig_build_arg_list.h"
 
-void FillPigCoreFlags(CliArgList* listOut, Str8 pigCoreThirdPartyPath, Str8 androidNdkDir, Str8 androidNdkToolchainDir, Str8 orcaSdkPath, Str8 playdateSdkDir, Str8 playdateSdkDir_C_API)
+void FillPigCoreFlags(CliArgList* listOut,
+	Str8 pigCoreThirdPartyPath,
+	Str8 androidNdkDir, Str8 androidNdkToolchainDir,
+	Str8 orcaSdkPath,
+	Str8 playdateSdkDir, Str8 playdateSdkDir_C_API)
 {
 	// +==============================+
 	// |        cl_CommonFlags        |

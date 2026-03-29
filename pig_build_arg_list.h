@@ -46,7 +46,7 @@ Description:
 
 //TODO: We should probably change these from fixed array to VarArray-like structure
 //      We are blowing the stack on main entry if we set these too high and we try and put a CliArgList on the stack
-#define CLI_MAX_ARGS 512
+#define CLI_MAX_ARGS 400
 
 typedef struct CliArg CliArg;
 struct CliArg
@@ -63,7 +63,7 @@ struct CliArgList
 	Str8 rootDirPath;
 	char pathSepChar;
 	u64 numArgs;
-	CliArg args[CLI_MAX_ARGS];
+	CliArg* args;
 };
 
 Str8 FormatArg(const CliArg* arg, Str8 rootDirPath, char pathSepChar)
@@ -155,6 +155,11 @@ void SplitIncludeExcludeTagsListStr(Str8 tagsListStr, StrArray* includeArrayPntr
 
 CliArg* AddTaggedArgStr(CliArgList* list, const char* includeExcludeTagsStr, const char* formatStrNt, Str8 valueStr)
 {
+	if (list->args == nullptr)
+	{
+		list->args = (CliArg*)malloc(sizeof(CliArg) * CLI_MAX_ARGS);
+		assert(list->args != nullptr);
+	}
 	if (list->numArgs >= CLI_MAX_ARGS) { WriteLine_E("Too many CLI arguments!"); exit(4); }
 	CliArg* newArg = &list->args[list->numArgs];
 	memset(newArg, 0x00, sizeof(CliArg));
