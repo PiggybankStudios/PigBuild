@@ -205,8 +205,19 @@ void AddArgList(CliArgList* dest, const CliArgList* source)
 	if (dest->numArgs + source->numArgs > CLI_MAX_ARGS) { WriteLine_E("Too many CLI arguments!"); exit(4); }
 	for (u64 aIndex = 0; aIndex < source->numArgs; aIndex++)
 	{
-		dest->args[dest->numArgs].format = CopyStr8(source->args[aIndex].format, false);
-		dest->args[dest->numArgs].value = CopyStr8(source->args[aIndex].value, false);
+		const CliArg* sourceArg = &source->args[aIndex];
+		CliArg* destArg = &dest->args[dest->numArgs];
+		memset(destArg, 0x00, sizeof(CliArg));
+		destArg->format = CopyStr8(sourceArg->format, false);
+		destArg->value = CopyStr8(sourceArg->value, false);
+		for (u64 iIndex = 0; iIndex < sourceArg->includeTags.length; iIndex++)
+		{
+			AddStr(&destArg->includeTags, sourceArg->includeTags.strings[iIndex]);
+		}
+		for (u64 eIndex = 0; eIndex < sourceArg->excludeTags.length; eIndex++)
+		{
+			AddStr(&destArg->excludeTags, sourceArg->excludeTags.strings[eIndex]);
+		}
 		dest->numArgs++;
 	}
 }
@@ -252,8 +263,11 @@ bool DoesArgMatchTags(const CliArg* arg, const StrArray* tagsListPntr)
 	return true;
 }
 
-Str8 JoinCliArgsList(Str8 prefix, const CliArgList* list, StrArray* tagsListPntr, bool addNullTerm)
+Str8 FilterAndJoinCliArgsList(Str8 prefix, const CliArgList* list, StrArray* tagsListPntr, bool addNullTerm)
 {
+	StrArray localEmptyTagList = ZEROED;
+	if (tagsListPntr == nullptr) { tagsListPntr = &localEmptyTagList; }
+	
 	char pathSepChar = list->pathSepChar;
 	if (pathSepChar == '\0') { pathSepChar = PATH_SEP_CHAR; }
 	Str8 rootDirPath = ZEROED;
@@ -303,6 +317,7 @@ Str8 JoinCliArgsList(Str8 prefix, const CliArgList* list, StrArray* tagsListPntr
 	assert(writeIndex == result.length);
 	
 	if (addNullTerm) { result.chars[writeIndex] = '\0'; }
+	// PrintLine("Filtered %llu arguments to %llu", list->numArgs, numFormattedStrings);
 	return result;
 }
 

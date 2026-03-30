@@ -264,11 +264,11 @@ void FillPigCoreFlags(CliArgList* compilerFlags, CliArgList* linkerFlags,
 	// | clang_PigCoreLinuxLibraries  |
 	// +==============================+
 	{
-		AddTaggedArgNt(linkerFlags, EXE_CLANG, CLANG_SYSTEM_LIBRARY, "pthread");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG, CLANG_SYSTEM_LIBRARY, "fontconfig");
+		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux", CLANG_SYSTEM_LIBRARY, "pthread");
+		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux", CLANG_SYSTEM_LIBRARY, "fontconfig");
 		
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|BUILD_WITH_SOKOL_GFX", CLANG_SYSTEM_LIBRARY, "GL");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|BUILD_WITH_BOX2D", CLANG_SYSTEM_LIBRARY, "box2d");
+		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_SOKOL_GFX", CLANG_SYSTEM_LIBRARY, "GL");
+		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_BOX2D", CLANG_SYSTEM_LIBRARY, "box2d");
 	}
 	
 	// +==============================+

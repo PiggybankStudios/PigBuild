@@ -20,7 +20,8 @@ Description:
 
 int RunCliProgramTagArray(Str8 programPath, StrArray* tagsListPntr, const CliArgList* args)
 {
-	Str8 joinedArgs = JoinCliArgsList(programPath, args, tagsListPntr, true);
+	// PrintLine("Joining/filtering %llu arguments against %llu tags for \"%.*s\"", args->numArgs, (tagsListPntr != nullptr) ? tagsListPntr->length : 0ULL, StrPrint(programPath));
+	Str8 joinedArgs = FilterAndJoinCliArgsList(programPath, args, tagsListPntr, true);
 	#if PIG_BUILD_PRINT_SYS_CMDS
 	PrintLine(">> %s", joinedArgs.chars);
 	#endif
