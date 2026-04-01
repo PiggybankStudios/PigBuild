@@ -236,6 +236,8 @@ void FillPigCoreFlags(CliArgList* compilerFlags, CliArgList* linkerFlags,
 	{
 		AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_APP", CLANG_FRAMEWORK, "Cocoa");
 		AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_APP", CLANG_FRAMEWORK, "QuartzCore");
+		AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "CoreText");
+		AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "CoreFoundation");
 		// AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_APP", CLANG_FRAMEWORK, "AudioToolbox");
 	}
 	
