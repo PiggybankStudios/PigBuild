@@ -60,6 +60,28 @@ Str8* InsertStr(StrArray* array, Str8 newString, u64 insertIndex)
 	return &array->strings[insertIndex];
 }
 
+Str8* AddStrArray(StrArray* dest, const StrArray* src)
+{
+	if (src->length == 0) { return nullptr; }
+	if (dest->length + src->length > dest->allocLength)
+	{
+		u64 newAllocLength = dest->allocLength;
+		if (newAllocLength < 8) { newAllocLength = 8; }
+		while (newAllocLength < dest->length + src->length) { newAllocLength = newAllocLength*2; }
+		Str8* newAllocSpace = (Str8*)malloc(sizeof(Str8) * newAllocLength);
+		if (dest->length > 0) { memcpy(newAllocSpace, dest->strings, sizeof(Str8) * dest->length); }
+		if (dest->strings != nullptr) { free(dest->strings); }
+		dest->strings = newAllocSpace;
+		dest->allocLength = newAllocLength;
+	}
+	u64 resultIndex = dest->length;
+	for (u64 sIndex = 0; sIndex < src->length; sIndex++)
+	{
+		AddStr(dest, src->strings[sIndex]);
+	}
+	return &dest->strings[resultIndex];
+}
+
 void RemoveStrAtIndex(StrArray* array, u64 index)
 {
 	assert(index < array->length);

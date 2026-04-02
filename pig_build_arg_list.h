@@ -202,6 +202,11 @@ CliArg* AddArg(CliArgList* list, const char* formatStrNt)                       
 
 void AddArgList(CliArgList* dest, const CliArgList* source)
 {
+	if (dest->args == nullptr)
+	{
+		dest->args = (CliArg*)malloc(sizeof(CliArg) * CLI_MAX_ARGS);
+		assert(dest->args != nullptr);
+	}
 	if (dest->numArgs + source->numArgs > CLI_MAX_ARGS) { WriteLine_E("Too many CLI arguments!"); exit(4); }
 	for (u64 aIndex = 0; aIndex < source->numArgs; aIndex++)
 	{

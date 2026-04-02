@@ -226,7 +226,7 @@ void AppendToFile(Str8 filePath, Str8 contentsToAppend, bool convertNewLines)
 		if (fileHandle == INVALID_HANDLE_VALUE)
 		{
 			DWORD errorCode = GetLastError();
-			PrintLine("CreateFileA error: %d", errorCode);
+			PrintLine_E("CreateFileA error: %d", errorCode);
 			assert(fileHandle != INVALID_HANDLE_VALUE);
 		}
 		
