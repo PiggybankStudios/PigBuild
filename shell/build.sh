@@ -11,6 +11,13 @@ pushd build > /dev/null
 # The flags are only used when compiling the build_script.c (not for compiling your main program, those flags should be defined inside the build_script.c)
 compiler_flags="-std=gnu2x -fdiagnostics-absolute-paths -O0 -g -I.. -I../pig_build/src -o builder ../build_script.c"
 
+# Check if clang is installed
+clang --version &> /dev/null
+if [ $? -ne 0 ]; then
+	echo "Clang is not installed. Clang needs to be installed and available as 'clang' in order to compile this project"
+	exit
+fi
+
 build_and_run() {
     rm -fr builder builder_hash.txt builder.dSYM
 	echo "Compiling build_script.c..."

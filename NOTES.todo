@@ -10,7 +10,7 @@
 	[X] Fix all usages of %.*s with StrPrint
 	[X] Fix up "build.bat" for Windows
 	[X] Add all functions types etc. to custom types list in PigBuild.sublime-project
-	[!] Make a tag-based cmd-line corraling sytem
+	[X] Make a tag-based cmd-line corraling sytem
 	[!] Throw a clear error if the compiler is not found (esp. on Windows)
 	[!] Rename pig_build_build_helpers.h
 	[!] Add an AllocStr function?

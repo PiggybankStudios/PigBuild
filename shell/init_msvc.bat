@@ -1,5 +1,21 @@
 @echo off
 
+REM This file does a few things. We need to run the batch file that sets up the
+REM environment variables that are required for running the MSVC C/C++ compiler.
+
+REM This is called VsDevCmd.bat but used to be called vcvarsall.bat, the location
+REM of this batch file also depends on which version of Visual Studio you installed.
+REM This batch file takes multiple seconds to run so we also try very hard to not
+REM run it if we don't need to. To do this we can dump the environment variables to
+REM a file after we run the batch file and then rather than running it for the next build
+REM we just parse the dumped file and set the environment variables based off that.
+
+REM TODO: Eventually we should try and find the compiler in a "smart" way and we should
+REM.      be a little more careful about what we dump to the msvc_environment.txt file
+
+REM Finally we also want to track and report how long the batch file takes so we can
+REM separate that time from our actual build time.
+
 if "%~1"=="" (
 	echo Usage: init_msvc.bat output_file.txt
 	exit /b 1
@@ -11,6 +27,7 @@ for /F "tokens=1-4 delims=:.," %%a in ("%time%") do (
 
 echo Initializing MSVC compiler...
 
+REM TODO: Report a nice error message if we don't find the compiler/VsDevCmd.bat
 REM set VSCMD_DEBUG=3
 REM NOTE: Uncomment or change one of these lines to match your installation of Visual Studio compiler
 REM call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
