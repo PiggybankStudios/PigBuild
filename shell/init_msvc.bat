@@ -9,6 +9,8 @@ for /F "tokens=1-4 delims=:.," %%a in ("%time%") do (
 	set /A "vsdevcmd_start_time=(((%%a*60)+1%%b %% 100)*60+1%%c %% 100)*100+1%%d %% 100"
 )
 
+echo Initializing MSVC compiler...
+
 REM set VSCMD_DEBUG=3
 REM NOTE: Uncomment or change one of these lines to match your installation of Visual Studio compiler
 REM call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
