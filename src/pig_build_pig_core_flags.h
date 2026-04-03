@@ -24,273 +24,231 @@ void FillPigCoreFlags(CliArgList* compilerFlags, CliArgList* linkerFlags,
 	Str8 orcaSdkPath,
 	Str8 playdateSdkDir, Str8 playdateSdkDir_C_API)
 {
-	// +==============================+
-	// |        cl_CommonFlags        |
-	// +==============================+
-	{
-		AddTaggedArg(compilerFlags, EXE_MSVC_CL, CL_FULL_FILE_PATHS); //we need full file paths in errors for Sublime Text to be able to parse the errors and display them in the editor
-		AddTaggedArg(compilerFlags, EXE_MSVC_CL, CL_NO_LOGO); //Suppress the annoying Microsoft logo and copyright info that the compiler prints out
-		AddTaggedArgNt(compilerFlags,  EXE_MSVC_CL, CL_INCLUDE_DIR, "[ROOT]");
-		
-		AddTaggedArg(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD==true", CL_STD_LIB_DYNAMIC_DBG);
-		AddTaggedArg(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD==false", CL_STD_LIB_DYNAMIC);
-		
-		AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD==true",  CL_OPTIMIZATION_LEVEL, "d");
-		AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD==false", CL_OPTIMIZATION_LEVEL, "2");
-		AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD==false", CL_OPTIMIZATION_LEVEL, "y");
-		AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD==false", CL_OPTIMIZATION_LEVEL, "t");
-		
-		AddTaggedArgNt(compilerFlags,  EXE_MSVC_CL, CL_WARNING_LEVEL, "X"); //Treat all warnings as errors
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL, CL_WARNING_LEVEL, 4); //Use warning level 4, then disable various warnings we don't care about
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_LOGICAL_OP_ON_ADDRESS_OF_STR_CONST);
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_NAMELESS_STRUCT_OR_UNION);
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_STRUCT_WAS_PADDED);
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_DECLARATION_HIDES_CLASS_MEMBER);
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_UNREFERENCED_FUNC_REMOVED);
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_USAGE_OF_DEPRECATED);
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_ASSIGNMENT_WITHIN_CONDITIONAL_EXPR);
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_NAMED_TYPEDEF_IN_PARENTHESES);
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL, CL_ENABLE_WARNING, CL_WARNING_SWITCH_FALLTHROUGH);
-		
-		Str8 freetypeDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/freetype/include"), false);
-		AddTaggedArgStr(compilerFlags, EXE_MSVC_CL "|BUILD_WITH_FREETYPE", CL_INCLUDE_DIR, freetypeDir);
-		Str8 plutosvgDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/plutosvg"), false);
-		AddTaggedArgStr(compilerFlags, EXE_MSVC_CL "|BUILD_WITH_FREETYPE", CL_INCLUDE_DIR, plutosvgDir);
-		
-		AddTaggedArg(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD", CL_DEBUG_INFO);
-		//We don't care about these warnings in debug builds, but we will solve them when we go to build in release mode because they probably indicate mistakes at that point
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD", CL_DISABLE_WARNING, CL_WARNING_SWITCH_ONLY_DEFAULT);
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD", CL_DISABLE_WARNING, CL_WARNING_UNREFERENCED_FUNC_PARAMETER);
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD", CL_DISABLE_WARNING, CL_WARNING_UNREFERENCED_LCOAL_VARIABLE);
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD", CL_DISABLE_WARNING, CL_WARNING_CONDITIONAL_EXPR_IS_CONSTANT);
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD", CL_DISABLE_WARNING, CL_WARNING_LOCAL_VAR_INIT_BUT_NOT_REFERENCED);
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD", CL_DISABLE_WARNING, CL_WARNING_UNREACHABLE_CODE_DETECTED);
-		
-		AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|DUMP_ASSEMBLY", CL_GENERATE_ASSEMB_LISTING, "s"); //Generate assembly listing files with source code included
-		
-		AddTaggedArg(compilerFlags, EXE_MSVC_CL "|DUMP_PREPROCESSOR", CL_PRECOMPILE_ONLY);
-		AddTaggedArg(compilerFlags, EXE_MSVC_CL "|DUMP_PREPROCESSOR", CL_PRECOMPILE_PRESERVE_COMMENTS);
-	}
+	// +--------------------------------------------------------------+
+	// |                        Compiler Flags                        |
+	// +--------------------------------------------------------------+
+	// +====================================+
+	// | Common MSVC Compiler/Linker Flags  |
+	// +====================================+
+	AddTaggedArg(compilerFlags, EXE_MSVC_CL, CL_FULL_FILE_PATHS); //we need full file paths in errors for Sublime Text to be able to parse the errors and display them in the editor
+	AddTaggedArg(compilerFlags, EXE_MSVC_CL, CL_NO_LOGO); //Suppress the annoying Microsoft logo and copyright info that the compiler prints out
+	AddTaggedArg(linkerFlags, EXE_MSVC_CL, LINK_DISABLE_INCREMENTAL);
 	
 	// +==============================+
-	// |        cl_LangCFlags         |
+	// | Common Clang Compiler flags  |
 	// +==============================+
-	{
-		AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|LangC", CL_LANG_VERSION, "clatest"); //Use latest C language spec features
-		AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|LangC", CL_EXPERIMENTAL, "c11atomics"); //Enables _Atomic types
-		// AddTaggedArg(compilerFlags, EXE_MSVC_CL "|LangC", CL_ENABLE_ADDRESS_SANATIZER);
-	}
+	AddTaggedArg(compilerFlags, EXE_CLANG, CLANG_FULL_FILE_PATHS); //Print absolute paths in diagnostics TODO: Figure out how to resolve these back to windows paths for Sublime error linking?
+	// AddTaggedArgNt(compilerFlags, EXE_CLANG, CLANG_DEFINE, "_GNU_SOURCE"); //TODO: Maybe we need this for some GNU standard library features?
+	#if !BUILDING_ON_OSX
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_M_FLAG, "ssse3"); //For MeowHash to work we need sse3 support
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_M_FLAG, "aes"); //For MeowHash to work we need aes support
+	#endif
+	//TODO: Really we should do `pkg-config --cflags gtk4`
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_M_FLAG, "fpmath=sse");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_M_FLAG, "sse");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_M_FLAG, "sse2");
+	AddTaggedArg(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", "-pthread");
+	
+	// +==========================================================+
+	// | Language-specific Flags (C vs. C++ vs. Objective-C/C++)  |
+	// +==========================================================+
+	AddTaggedArgNt(compilerFlags,  EXE_MSVC_CL "|LangC", CL_LANG_VERSION, "clatest"); //Use latest C language spec features
+	AddTaggedArgNt(compilerFlags,  EXE_MSVC_CL "|LangC", CL_EXPERIMENTAL, "c11atomics"); //Enables _Atomic types
+	// AddTaggedArg(compilerFlags, EXE_MSVC_CL "|LangC", CL_ENABLE_ADDRESS_SANATIZER);
+	AddTaggedArgNt(compilerFlags,  EXE_CLANG   "|LangC", CLANG_LANG_VERSION, "gnu2x"); //Use C20+ language spec (NOTE: We originally had -std=c2x but that didn't define MAP_ANONYMOUS and mmap was failing)
+	AddTaggedArgNt(compilerFlags,  EXE_MSVC_CL "|LangCpp", CL_LANG_VERSION, "c++20");
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|LangCpp", CL_DISABLE_WARNING, CL_WARNING_ENUMERATION_MUST_HAVE_UNDERLYING_TYPE);
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|LangCpp", CL_DISABLE_WARNING, CL_WARNING_BITWISE_OP_BETWEEN_ENUMS);
+	AddTaggedArgNt(compilerFlags,  EXE_CLANG   "|LangCpp", CLANG_LANG_VERSION, "c++20"); // TODO: What option should we actually choose here?
+	AddTaggedArgNt(compilerFlags,  EXE_CLANG   "|LangCpp", CLANG_SYSTEM_LIBRARY, "stdc++"); // Fixes tracy.so link-time errors regarding stuff like `operator delete(void*, unsigned long)`
+	AddTaggedArgNt(compilerFlags,  EXE_CLANG.  "|LangObjectiveC", CLANG_LANG_VERSION, "gnu2x"); //NOTE: We still ask for gnu23 features in Objective-C mode, the distinguishing factor is that we compile a .m file not a .c file
+	AddTaggedArg(compilerFlags,    EXE_CLANG.  "|LangObjectiveC", CLANG_ENABLE_OBJC_ARC);
+	//TODO: Figure out why these are needed when linking with imgui.o with Clang on Linux
+	// AddTaggedArg(compilerFlags, EXE_CLANG   "|LangC|BUILD_WITH_IMGUI", "-lstdc++"); //TODO: Since this is being added to clang_LangCppFlags flags now (was needed for tracy.so as well as imgui.so) we probably don't need to add it here
+	AddTaggedArg(compilerFlags,    EXE_CLANG   "|LangC|BUILD_WITH_IMGUI", "-fno-threadsafe-statics"); //Eliminates undefined references to stuff like "__cxa_guard_acquire"
+	
+	// +===============================+
+	// | Debug/Release Dependent Flags |
+	// +===============================+
+	AddTaggedArg(compilerFlags,   EXE_MSVC_CL "|DEBUG_BUILD", CL_DEBUG_INFO);
+	AddTaggedArg(compilerFlags,   EXE_MSVC_CL "|DEBUG_BUILD==true", CL_STD_LIB_DYNAMIC_DBG);
+	AddTaggedArg(compilerFlags,   EXE_MSVC_CL "|DEBUG_BUILD==false", CL_STD_LIB_DYNAMIC);
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD==true",  CL_OPTIMIZATION_LEVEL, "d");
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD==false", CL_OPTIMIZATION_LEVEL, "2");
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD==false", CL_OPTIMIZATION_LEVEL, "y");
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD==false", CL_OPTIMIZATION_LEVEL, "t");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|LinuxOrOsx|DEBUG_BUILD==true",  CLANG_OPTIMIZATION_LEVEL, "0");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|LinuxOrOsx|DEBUG_BUILD==false", CLANG_OPTIMIZATION_LEVEL, "2");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|LinuxOrOsx|DEBUG_BUILD", CLANG_DEBUG_INFO, "dwarf-4");
 	
 	// +==============================+
-	// |       cl_LangCppFlags        |
+	// |      Configure warnings      |
 	// +==============================+
-	{
-		AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|LangCpp", CL_LANG_VERSION, "c++20");
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|LangCpp", CL_DISABLE_WARNING, CL_WARNING_ENUMERATION_MUST_HAVE_UNDERLYING_TYPE);
-		AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|LangCpp", CL_DISABLE_WARNING, CL_WARNING_BITWISE_OP_BETWEEN_ENUMS);
-	}
+	AddTaggedArgNt(compilerFlags,  EXE_MSVC_CL, CL_WARNING_LEVEL, "X"); //Treat all warnings as errors
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL, CL_WARNING_LEVEL, 4); //Use warning level 4, then disable various warnings we don't care about
+	AddTaggedArgNt(compilerFlags,  EXE_CLANG,   CLANG_WARNING_LEVEL, "all"); //This enables all the warnings about constructions that some users consider questionable, and that are easy to avoid (or modify to prevent the warning), even in conjunction with macros
+	AddTaggedArgNt(compilerFlags,  EXE_CLANG,   CLANG_WARNING_LEVEL, "extra"); //This enables some extra warning flags that are not enabled by -Wall
+	//We set the highest warning level above and then remove the warnings we don't care about here
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL,                CL_DISABLE_WARNING, CL_WARNING_LOGICAL_OP_ON_ADDRESS_OF_STR_CONST);
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL,                CL_DISABLE_WARNING, CL_WARNING_NAMELESS_STRUCT_OR_UNION);
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL,                CL_DISABLE_WARNING, CL_WARNING_STRUCT_WAS_PADDED);
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL,                CL_DISABLE_WARNING, CL_WARNING_DECLARATION_HIDES_CLASS_MEMBER);
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL,                CL_DISABLE_WARNING, CL_WARNING_UNREFERENCED_FUNC_REMOVED);
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL,                CL_DISABLE_WARNING, CL_WARNING_USAGE_OF_DEPRECATED);
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL,                CL_DISABLE_WARNING, CL_WARNING_ASSIGNMENT_WITHIN_CONDITIONAL_EXPR);
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL,                CL_DISABLE_WARNING, CL_WARNING_NAMED_TYPEDEF_IN_PARENTHESES);
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL,                CL_ENABLE_WARNING, CL_WARNING_SWITCH_FALLTHROUGH);
+	AddTaggedArgNt(compilerFlags,  EXE_CLANG,                  CLANG_ENABLE_WARNING, CLANG_WARNING_SHADOWING);
+	AddTaggedArgNt(compilerFlags,  EXE_CLANG,                  CLANG_ENABLE_WARNING, CLANG_WARNING_MISSING_FALLTHROUGH_IN_SWITCH);
+	AddTaggedArgNt(compilerFlags,  EXE_CLANG,                  CLANG_DISABLE_WARNING, CLANG_WARNING_SWITCH_MISSING_CASES);
+	AddTaggedArgNt(compilerFlags,  EXE_CLANG,                  CLANG_DISABLE_WARNING, CLANG_WARNING_UNUSED_FUNCTION);
+	AddTaggedArgNt(compilerFlags,  EXE_CLANG,                  CLANG_DISABLE_WARNING, CLANG_WARNING_UNUSED_CMD_LINE_ARG);
+	//We don't care about these warnings in DEBUG_BUILDs, but we will solve them when we go to build in release mode because they probably indicate mistakes at that point
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD", CL_DISABLE_WARNING, CL_WARNING_SWITCH_ONLY_DEFAULT);
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD", CL_DISABLE_WARNING, CL_WARNING_UNREFERENCED_FUNC_PARAMETER);
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD", CL_DISABLE_WARNING, CL_WARNING_UNREFERENCED_LCOAL_VARIABLE);
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD", CL_DISABLE_WARNING, CL_WARNING_CONDITIONAL_EXPR_IS_CONSTANT);
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD", CL_DISABLE_WARNING, CL_WARNING_LOCAL_VAR_INIT_BUT_NOT_REFERENCED);
+	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|DEBUG_BUILD", CL_DISABLE_WARNING, CL_WARNING_UNREACHABLE_CODE_DETECTED);
+	AddTaggedArgNt(compilerFlags,  EXE_CLANG   "|DEBUG_BUILD", CLANG_DISABLE_WARNING, "unused-parameter");
+	AddTaggedArgNt(compilerFlags,  EXE_CLANG   "|DEBUG_BUILD", CLANG_DISABLE_WARNING, "unused-variable");
 	
 	// +==============================+
-	// |      clang_CommonFlags       |
+	// |     Include Directories      |
 	// +==============================+
-	{
-		AddTaggedArg(compilerFlags, EXE_CLANG, CLANG_FULL_FILE_PATHS); //Print absolute paths in diagnostics TODO: Figure out how to resolve these back to windows paths for Sublime error linking?
-		AddTaggedArgNt(compilerFlags, EXE_CLANG, CLANG_WARNING_LEVEL, "all"); //This enables all the warnings about constructions that some users consider questionable, and that are easy to avoid (or modify to prevent the warning), even in conjunction with macros
-		AddTaggedArgNt(compilerFlags, EXE_CLANG, CLANG_WARNING_LEVEL, "extra"); //This enables some extra warning flags that are not enabled by -Wall
-		AddTaggedArgNt(compilerFlags, EXE_CLANG, CLANG_ENABLE_WARNING, CLANG_WARNING_SHADOWING);
-		AddTaggedArgNt(compilerFlags, EXE_CLANG, CLANG_ENABLE_WARNING, CLANG_WARNING_MISSING_FALLTHROUGH_IN_SWITCH);
-		AddTaggedArgNt(compilerFlags, EXE_CLANG, CLANG_DISABLE_WARNING, CLANG_WARNING_SWITCH_MISSING_CASES);
-		AddTaggedArgNt(compilerFlags, EXE_CLANG, CLANG_DISABLE_WARNING, CLANG_WARNING_UNUSED_FUNCTION);
-		AddTaggedArgNt(compilerFlags, EXE_CLANG, CLANG_DISABLE_WARNING, CLANG_WARNING_UNUSED_CMD_LINE_ARG);
-		// AddTaggedArgNt(compilerFlags, EXE_CLANG, CLANG_DEFINE, "_GNU_SOURCE"); //TODO: Maybe we need this for some GNU standard library features?
-		
-		Str8 freetypeDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/freetype/include"), false);
-		AddTaggedArgStr(compilerFlags, EXE_CLANG "|BUILD_WITH_FREETYPE", CLANG_INCLUDE_DIR, freetypeDir);
-		Str8 plutosvgDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/plutosvg"), false);
-		AddTaggedArgStr(compilerFlags, EXE_CLANG "|BUILD_WITH_FREETYPE", CLANG_INCLUDE_DIR, plutosvgDir);
-		
-		//We don't care about these warnings in debug builds, but we will solve them when we go to build in release mode because they probably indicate mistakes at that point
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|DEBUG_BUILD", CLANG_DISABLE_WARNING, "unused-parameter");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|DEBUG_BUILD", CLANG_DISABLE_WARNING, "unused-variable");
-		
-		AddTaggedArg(compilerFlags, EXE_CLANG "|DUMP_PREPROCESSOR", CLANG_PRECOMPILE_ONLY);
-		AddTaggedArg(compilerFlags, EXE_CLANG "|DUMP_PREPROCESSOR", CLANG_INCLUDE_MACROS);
-	}
+	AddTaggedArgNt(compilerFlags,  EXE_MSVC_CL, CL_INCLUDE_DIR, "[ROOT]");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_INCLUDE_DIR, "[ROOT]");
+	//TODO: Really we should do `pkg-config dbus-1 --cflags`
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_INCLUDE_DIR, "/usr/include/dbus-1.0");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/dbus-1.0/include"); //This was the path on Lubuntu
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_INCLUDE_DIR, "/usr/lib64/dbus-1.0/include"); //This is the path on Fedora Workstation
+	Str8 freetypeDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/freetype/include"), false);
+	AddTaggedArgStr(compilerFlags, EXE_MSVC_CL "|BUILD_WITH_FREETYPE", CL_INCLUDE_DIR, freetypeDir);
+	AddTaggedArgStr(compilerFlags, EXE_MSVC_CL "|BUILD_WITH_FREETYPE", CL_INCLUDE_DIR, plutosvgDir);
+	Str8 plutosvgDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/plutosvg"), false);
+	AddTaggedArgStr(compilerFlags, EXE_CLANG "|BUILD_WITH_FREETYPE", CLANG_INCLUDE_DIR, freetypeDir);
+	AddTaggedArgStr(compilerFlags, EXE_CLANG "|BUILD_WITH_FREETYPE", CLANG_INCLUDE_DIR, plutosvgDir);
+	//TODO: Really we should do `pkg-config --cflags gtk4`
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/gtk-4.0");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/glib-2.0");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/glib-2.0/include");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/x86_64-linux-gnu");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/cairo");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/pango-1.0");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/harfbuzz");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/freetype2");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/libpng16");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/libmount");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/blkid");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/fribidi");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/pixman-1");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/gdk-pixbuf-2.0");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/webp");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/graphene-1.0");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/graphene-1.0/include");
 	
 	// +==============================+
-	// |       clang_LangCFlags       |
+	// |     Library Directories      |
 	// +==============================+
-	{
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LangC", CLANG_LANG_VERSION, "gnu2x"); //Use C20+ language spec (NOTE: We originally had -std=c2x but that didn't define MAP_ANONYMOUS and mmap was failing)
-		
-		//TODO: Figure out why these are needed when linking with imgui.o with Clang on Linux
-		// AddTaggedArg(compilerFlags, EXE_CLANG "|LangC|BUILD_WITH_IMGUI", "-lstdc++"); //TODO: Since this is being added to clang_LangCppFlags flags now (was needed for tracy.so as well as imgui.so) we probably don't need to add it here
-		AddTaggedArg(compilerFlags, EXE_CLANG "|LangC|BUILD_WITH_IMGUI", "-fno-threadsafe-statics"); //Eliminates undefined references to stuff like "__cxa_guard_acquire"
-	}
+	AddTaggedArgNt(linkerFlags,  EXE_MSVC_CL "|DEBUG_BUILD==true",  LINK_LIBRARY_DIR, "[ROOT]/third_party/_lib_debug");
+	AddTaggedArgNt(linkerFlags,  EXE_MSVC_CL "|DEBUG_BUILD==false", LINK_LIBRARY_DIR, "[ROOT]/third_party/_lib_release");
+	AddTaggedArgStr(linkerFlags, EXE_CLANG   "|LinuxOrOsx|DEBUG_BUILD==true",  CLANG_LIBRARY_DIR, StrLit("[ROOT]/third_party/_lib_debug"));
+	AddTaggedArgStr(linkerFlags, EXE_CLANG   "|LinuxOrOsx|DEBUG_BUILD==false", CLANG_LIBRARY_DIR, StrLit("[ROOT]/third_party/_lib_release"));
 	
 	// +==============================+
-	// |      clang_LangCppFlags      |
+	// |          Libraries           |
 	// +==============================+
-	{
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LangCpp", CLANG_LANG_VERSION, "c++20"); // TODO: What option should we actually choose here?
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LangCpp", CLANG_SYSTEM_LIBRARY, "stdc++"); // Fixes tracy.so link-time errors regarding stuff like `operator delete(void*, unsigned long)`
-	}
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Wasm==false", CLANG_SYSTEM_LIBRARY, "m"); //Include the math library (required for stuff like sinf, atan, etc.)
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Wasm==false", CLANG_SYSTEM_LIBRARY, "dl"); //Needed for dlopen and similar functions
+	AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_RAYLIB", CLI_QUOTED_ARG, "raylib.lib"); //NOTE: raylib.lib MUST be before User32.lib and others
+	AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore", CLI_QUOTED_ARG, "Gdi32.lib"); //Needed for CreateFontA and other Windows graphics functions
+	AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore", CLI_QUOTED_ARG, "User32.lib"); //Needed for GetForegroundWindow, GetDC, etc.
+	AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore", CLI_QUOTED_ARG, "Ole32.lib"); //Needed for Combaseapi.h, CoInitializeEx, CoCreateInstance, etc.
+	AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore", CLI_QUOTED_ARG, "Shell32.lib"); //Needed for SHGetSpecialFolderPathA
+	AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore", CLI_QUOTED_ARG, "Shlwapi.lib"); //Needed for PathFileExistsA
+	AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_RAYLIB", CLI_QUOTED_ARG, "Kernel32.lib");
+	AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_RAYLIB", CLI_QUOTED_ARG, "Winmm.lib");
+	AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_BOX2D",  CLI_QUOTED_ARG, "box2d.lib");
+	AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_SDL",    CLI_QUOTED_ARG, "SDL2.lib");
+	AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_OPENVR", CLI_QUOTED_ARG, "openvr_api.lib");
+	AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_PHYSX",  CLI_QUOTED_ARG, "PhysX_static_64.lib");
+	AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_HTTP",   CLI_QUOTED_ARG, "Winhttp.lib");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|LinuxOrOsx", CLANG_SYSTEM_LIBRARY, "pthread");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|Linux", CLANG_SYSTEM_LIBRARY, "fontconfig");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|Linux|BUILD_WITH_SOKOL_GFX", CLANG_SYSTEM_LIBRARY, "GL");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|LinuxOrOsx|BUILD_WITH_BOX2D", CLANG_SYSTEM_LIBRARY, "box2d");
+	//OSX Frameworks
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_APP", CLANG_FRAMEWORK, "Cocoa");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_APP", CLANG_FRAMEWORK, "QuartzCore");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "CoreText");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "CoreFoundation");
+	// AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_APP", CLANG_FRAMEWORK, "AudioToolbox");
+	// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "Foundation");
+	// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "UIKit");
+	// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "AudioToolbox");
+	// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "AVFoundation");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "Metal");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "MetalKit");
+	// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "OpenGL");
+	// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "OpenGLES");
+	// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "GLKit");
+	//TODO: Really we should do `pkg-config dbus-1 --libs`
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux", CLANG_SYSTEM_LIBRARY, "dbus-1");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_SOKOL_APP", CLANG_SYSTEM_LIBRARY, "X11");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_SOKOL_APP", CLANG_SYSTEM_LIBRARY, "Xi");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_SOKOL_APP", CLANG_SYSTEM_LIBRARY, "Xcursor");
+	//TODO: Really we should do `pkg-config --libs gtk4`
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "gtk-4");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "pangocairo-1.0");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "pango-1.0");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "harfbuzz");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "gdk_pixbuf-2.0");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "cairo-gobject");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "cairo");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "vulkan");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "graphene-1.0");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "gio-2.0");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "gobject-2.0");
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "glib-2.0");
+	
+	// +======================================+
+	// | DUMP_ASSEMBLY and DUMP_PREPROCESSOR  |
+	// +======================================+
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|DUMP_ASSEMBLY", CL_GENERATE_ASSEMB_LISTING, "s"); //Generate assembly listing files with source code included
+	AddTaggedArg(compilerFlags, EXE_MSVC_CL "|DUMP_PREPROCESSOR", CL_PRECOMPILE_ONLY);
+	AddTaggedArg(compilerFlags, EXE_MSVC_CL "|DUMP_PREPROCESSOR", CL_PRECOMPILE_PRESERVE_COMMENTS);
+	AddTaggedArg(compilerFlags, EXE_CLANG "|DUMP_PREPROCESSOR", CLANG_PRECOMPILE_ONLY);
+	AddTaggedArg(compilerFlags, EXE_CLANG "|DUMP_PREPROCESSOR", CLANG_INCLUDE_MACROS);
 	
 	// +==============================+
-	// |  clang_LangObjectiveCFlags   |
+	// |   Flags for Building Tracy   |
 	// +==============================+
-	{
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LangObjectiveC", CLANG_LANG_VERSION, "gnu2x"); //NOTE: We still ask for gnu23 features in Objective-C mode, the distinguishing factor is that we compile a .m file not a .c file
-		AddTaggedArg(compilerFlags, EXE_CLANG "|LangObjectiveC", CLANG_ENABLE_OBJC_ARC);
-	}
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Tracy", CL_INCLUDE_DIR,    "[ROOT]/third_party/tracy");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|Tracy", CLANG_INCLUDE_DIR, "[ROOT]/third_party/tracy");
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Tracy", CL_DEFINE, "TRACY_ENABLE");
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Tracy", CL_DEFINE, "TRACY_EXPORTS");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|Tracy", CLANG_DEFINE, "TRACY_ENABLE");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|Tracy", CLANG_DEFINE, "TRACY_EXPORTS");
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Tracy", CL_CONFIGURE_EXCEPTION_HANDLING, "s"); //enable stack-unwinding
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Tracy", CL_CONFIGURE_EXCEPTION_HANDLING, "c"); //extern "C" functions don't through exceptions
+	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|Tracy", CLANG_DISABLE_WARNING, CLANG_WARNING_SHADOWING); // declaration shadows a local variable
+	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|Tracy", CLANG_DISABLE_WARNING, CLANG_WARNING_MISSING_FIELD_INITIALIZERS); // missing field 'extra' initializer
+	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|Tracy", CLANG_DISABLE_WARNING, CLANG_WARNING_MISSING_FALLTHROUGH_IN_SWITCH); // unannotated fall-through between switch labels
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Tracy|DUMP_ASSEMBLY", CL_ASSEMB_LISTING_FILE, "tracy.asm");
 	
-	// +==============================+
-	// |    clang_LinuxOrOsxFlags     |
-	// +==============================+
-	{
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|DEBUG_BUILD==true",  CLANG_OPTIMIZATION_LEVEL, "0");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|DEBUG_BUILD==false", CLANG_OPTIMIZATION_LEVEL, "2");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_INCLUDE_DIR, "[ROOT]");
-		AddTaggedArgStr(compilerFlags, EXE_CLANG "|LinuxOrOsx|DEBUG_BUILD==true",  CLANG_LIBRARY_DIR, StrLit("[ROOT]/third_party/_lib_debug"));
-		AddTaggedArgStr(compilerFlags, EXE_CLANG "|LinuxOrOsx|DEBUG_BUILD==false", CLANG_LIBRARY_DIR, StrLit("[ROOT]/third_party/_lib_release"));
-		#if !BUILDING_ON_OSX
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_M_FLAG, "ssse3"); //For MeowHash to work we need sse3 support
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_M_FLAG, "aes"); //For MeowHash to work we need aes support
-		#endif
-		//TODO: Really we should do `pkg-config dbus-1 --cflags`
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_INCLUDE_DIR, "/usr/include/dbus-1.0");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/dbus-1.0/include"); //This was the path on Lubuntu
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_INCLUDE_DIR, "/usr/lib64/dbus-1.0/include"); //This is the path on Fedora Workstation
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|DEBUG_BUILD", CLANG_DEBUG_INFO, "dwarf-4");
-		
-		//TODO: Really we should do `pkg-config --cflags gtk4`
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_M_FLAG, "fpmath=sse");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_M_FLAG, "sse");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_M_FLAG, "sse2");
-		AddTaggedArg(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", "-pthread");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/gtk-4.0");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/glib-2.0");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/glib-2.0/include");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/x86_64-linux-gnu");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/cairo");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/pango-1.0");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/harfbuzz");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/freetype2");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/libpng16");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/libmount");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/blkid");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/fribidi");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/pixman-1");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/gdk-pixbuf-2.0");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/webp");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/graphene-1.0");
-		AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/graphene-1.0/include");
-	}
+	// +===============================+
+	// | Flags for Building Dear ImGui |
+	// +===============================+
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Imgui", CL_INCLUDE_DIR,    "[ROOT]/third_party/imgui");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|Imgui", CLANG_INCLUDE_DIR, "[ROOT]/third_party/imgui");
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Imgui|DUMP_ASSEMBLY", CL_ASSEMB_LISTING_FILE, "imgui.asm");
 	
-	// +==============================+
-	// |     cl_CommonLinkerFlags     |
-	// +==============================+
-	{
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|DEBUG_BUILD==true",  LINK_LIBRARY_DIR, "[ROOT]/third_party/_lib_debug");
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|DEBUG_BUILD==false", LINK_LIBRARY_DIR, "[ROOT]/third_party/_lib_release");
-		AddTaggedArg(linkerFlags, EXE_MSVC_CL, LINK_DISABLE_INCREMENTAL);
-	}
-	
-	// +==============================+
-	// |    clang_CommonLibraries     |
-	// +==============================+
-	{
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Wasm==false", CLANG_SYSTEM_LIBRARY, "m"); //Include the math library (required for stuff like sinf, atan, etc.)
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Wasm==false", CLANG_SYSTEM_LIBRARY, "dl"); //Needed for dlopen and similar functions
-	}
-	
-	// +==============================+
-	// |  clang_LinuxCommonLibraries  |
-	// +==============================+
-	{
-		//TODO: Really we should do `pkg-config dbus-1 --libs`
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux", CLANG_SYSTEM_LIBRARY, "dbus-1");
-		
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_SOKOL_APP", CLANG_SYSTEM_LIBRARY, "X11");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_SOKOL_APP", CLANG_SYSTEM_LIBRARY, "Xi");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_SOKOL_APP", CLANG_SYSTEM_LIBRARY, "Xcursor");
-		
-		//TODO: Really we should do `pkg-config --libs gtk4`
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "gtk-4");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "pangocairo-1.0");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "pango-1.0");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "harfbuzz");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "gdk_pixbuf-2.0");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "cairo-gobject");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "cairo");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "vulkan");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "graphene-1.0");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "gio-2.0");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "gobject-2.0");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|Linux|BUILD_WITH_GTK", CLANG_SYSTEM_LIBRARY, "glib-2.0");
-	}
-	
-	// +==============================+
-	// |   clang_OsxCommonLibraries   |
-	// +==============================+
-	{
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_APP", CLANG_FRAMEWORK, "Cocoa");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_APP", CLANG_FRAMEWORK, "QuartzCore");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "CoreText");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "CoreFoundation");
-		// AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_APP", CLANG_FRAMEWORK, "AudioToolbox");
-	}
-	
-	// +==============================+
-	// |     cl_PigCoreLibraries      |
-	// +==============================+
-	{
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_RAYLIB", CLI_QUOTED_ARG, "raylib.lib"); //NOTE: raylib.lib MUST be before User32.lib and others
-		
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore", CLI_QUOTED_ARG, "Gdi32.lib"); //Needed for CreateFontA and other Windows graphics functions
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore", CLI_QUOTED_ARG, "User32.lib"); //Needed for GetForegroundWindow, GetDC, etc.
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore", CLI_QUOTED_ARG, "Ole32.lib"); //Needed for Combaseapi.h, CoInitializeEx, CoCreateInstance, etc.
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore", CLI_QUOTED_ARG, "Shell32.lib"); //Needed for SHGetSpecialFolderPathA
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore", CLI_QUOTED_ARG, "Shlwapi.lib"); //Needed for PathFileExistsA
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_RAYLIB", CLI_QUOTED_ARG, "Kernel32.lib");
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_RAYLIB", CLI_QUOTED_ARG, "Winmm.lib");
-		
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_BOX2D",  CLI_QUOTED_ARG, "box2d.lib");
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_SDL",    CLI_QUOTED_ARG, "SDL2.lib");
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_OPENVR", CLI_QUOTED_ARG, "openvr_api.lib");
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_PHYSX",  CLI_QUOTED_ARG, "PhysX_static_64.lib");
-		AddTaggedArgNt(linkerFlags, EXE_MSVC_CL "|PigCore|BUILD_WITH_HTTP",   CLI_QUOTED_ARG, "Winhttp.lib");
-	}
-	
-	// +==============================+
-	// | clang_PigCoreLinuxLibraries  |
-	// +==============================+
-	{
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|Linux", CLANG_SYSTEM_LIBRARY, "pthread");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|Linux", CLANG_SYSTEM_LIBRARY, "fontconfig");
-		
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|Linux|BUILD_WITH_SOKOL_GFX", CLANG_SYSTEM_LIBRARY, "GL");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|Linux|BUILD_WITH_BOX2D", CLANG_SYSTEM_LIBRARY, "box2d");
-	}
-	
-	// +==============================+
-	// |  clang_PigCoreOsxLibraries   |
-	// +==============================+
-	{
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX", CLANG_SYSTEM_LIBRARY, "pthread");
-		
-		// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "Foundation");
-		// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "UIKit");
-		// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "AudioToolbox");
-		// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "AVFoundation");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "Metal");
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "MetalKit");
-		// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "OpenGL");
-		// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "OpenGLES");
-		// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "GLKit");
-		
-		AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_BOX2D", CLANG_SYSTEM_LIBRARY, "box2d");
-	}
+	// +===============================+
+	// | Flags for Building PhysX_capi |
+	// +===============================+
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|PhysX", CL_INCLUDE_DIR,    "[ROOT]/third_party/physx");
+	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|PhysX", CLANG_INCLUDE_DIR, "[ROOT]/third_party/physx");
+	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|PhysX|DUMP_ASSEMBLY", CL_ASSEMB_LISTING_FILE, "physx.asm");
 	
 	// +==============================+
 	// |      clang_AndroidFlags      |
@@ -530,28 +488,6 @@ void FillPigCoreFlags(CliArgList* compilerFlags, CliArgList* linkerFlags,
 		AddTaggedArg(compilerFlags, EXE_PDC "|Playdate", PDC_QUIET); //Quiet mode, suppress non-error output
 		if (playdateSdkDir.length > 0) { AddTaggedArgStr(compilerFlags, EXE_PDC "|Playdate", PDC_SDK_PATH, playdateSdkDir); }
 	}
-	
-	
-	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Tracy", CL_INCLUDE_DIR,    "[ROOT]/third_party/tracy");
-	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|Tracy", CLANG_INCLUDE_DIR, "[ROOT]/third_party/tracy");
-	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Tracy", CL_DEFINE, "TRACY_ENABLE");
-	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Tracy", CL_DEFINE, "TRACY_EXPORTS");
-	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|Tracy", CLANG_DEFINE, "TRACY_ENABLE");
-	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|Tracy", CLANG_DEFINE, "TRACY_EXPORTS");
-	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Tracy", CL_CONFIGURE_EXCEPTION_HANDLING, "s"); //enable stack-unwinding
-	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Tracy", CL_CONFIGURE_EXCEPTION_HANDLING, "c"); //extern "C" functions don't through exceptions
-	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|Tracy", CLANG_DISABLE_WARNING, CLANG_WARNING_SHADOWING); // declaration shadows a local variable
-	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|Tracy", CLANG_DISABLE_WARNING, CLANG_WARNING_MISSING_FIELD_INITIALIZERS); // missing field 'extra' initializer
-	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|Tracy", CLANG_DISABLE_WARNING, CLANG_WARNING_MISSING_FALLTHROUGH_IN_SWITCH); // unannotated fall-through between switch labels
-	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Tracy|DUMP_ASSEMBLY", CL_ASSEMB_LISTING_FILE, "tracy.asm");
-	
-	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Imgui", CL_INCLUDE_DIR,    "[ROOT]/third_party/imgui");
-	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|Imgui", CLANG_INCLUDE_DIR, "[ROOT]/third_party/imgui");
-	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|Imgui|DUMP_ASSEMBLY", CL_ASSEMB_LISTING_FILE, "imgui.asm");
-	
-	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|PhysX", CL_INCLUDE_DIR,    "[ROOT]/third_party/physx");
-	AddTaggedArgNt(compilerFlags, EXE_CLANG   "|PhysX", CLANG_INCLUDE_DIR, "[ROOT]/third_party/physx");
-	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|PhysX|DUMP_ASSEMBLY", CL_ASSEMB_LISTING_FILE, "physx.asm");
 }
 
 #endif //  _PIG_BUILD_PIG_CORE_FLAGS_H

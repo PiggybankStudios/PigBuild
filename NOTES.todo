@@ -11,14 +11,17 @@
 	[X] Fix up "build.bat" for Windows
 	[X] Add all functions types etc. to custom types list in PigBuild.sublime-project
 	[X] Make a tag-based cmd-line corraling sytem
+	[X] Sort flags in pig_build_core_flags.h
 	[!] TAG_X macros?
-	[!] Sort flags in pig_build_core_flags.h
+	[!] Remove LinuxOrOsx tag
 	[!] Throw a clear error if the compiler is not found on Windows
 	[X] Rename pig_build_build_helpers.h
 	[!] Add an AllocStr function?
 	[!] Add an Assert macro?
 	[!] Make a "new_project.bat/sh" script?
 	[!] If a builder is run without builder_hash.txt but DOESNT generate a new hash file then we can end up in a state where code changes can happen and the builder won't get rebuilt because it will think it's running right after a build
+	[!] Run `pkg-config` to get some kinds of flags automatically
+	[ ] Finish sorting the Android/Web/Orca/Playdate flags in pig_build_core_flags.h
 	[?] Should we allow the user to choose the name of the build script file and it's binary name?
 	[ ] Add an example "build_script.c" file
 	[ ] Add a "MOTIVATIONS.md" file that explains the design goals of this build system and it's pros/cons compared to other approaches
