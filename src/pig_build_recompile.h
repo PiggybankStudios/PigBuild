@@ -115,7 +115,7 @@ u64 FnvHash(const void* bufferPntr, u64 numBytes, u64 startingState)
 void RecompileIfNeeded()
 {
 	Str8 buildScriptFilePath = StrLit_Const(BUILD_SCRIPT_SOURCE_PATH);
-	Str8 buildSystemFolderPath = StrLit_Const(PIG_BUILD_FOLDER_PATH);
+	Str8 pigBuildSrcFolderPath = StrLit_Const(PIG_BUILD_FOLDER_PATH "/src");
 	
 	Str8 buildScriptContents = ZEROED;
 	if (!TryReadFile(buildScriptFilePath, &buildScriptContents))
@@ -125,7 +125,7 @@ void RecompileIfNeeded()
 	}
 	u64 buildScriptHash = FnvHash(buildScriptContents.chars, buildScriptContents.length, FNV_HASH_BASE_U64);
 	free(buildScriptContents.chars);
-	FileIter fileIter = StartFileIter(buildSystemFolderPath);
+	FileIter fileIter = StartFileIter(pigBuildSrcFolderPath);
 	Str8 fileIterPath = ZEROED;
 	bool fileIterIsFolder = false;
 	while (StepFileIter(&fileIter, &fileIterPath, &fileIterIsFolder))
