@@ -1,5 +1,5 @@
 /*
-File:   pig_build_pig_core_build_flags.h
+File:   pig_build_pig_core_flags.h
 Author: Taylor Robbins
 Date:   06\23\2025
 Description: 
@@ -10,8 +10,8 @@ Description:
 
 //test
 
-#ifndef _PIG_BUILD_PIG_CORE_BUILD_FLAGS_H
-#define _PIG_BUILD_PIG_CORE_BUILD_FLAGS_H
+#ifndef _PIG_BUILD_PIG_CORE_FLAGS_H
+#define _PIG_BUILD_PIG_CORE_FLAGS_H
 
 #include "pig_build_base.h"
 #include "pig_build_str8.h"
@@ -554,4 +554,4 @@ void FillPigCoreFlags(CliArgList* compilerFlags, CliArgList* linkerFlags,
 	AddTaggedArgNt(compilerFlags, EXE_MSVC_CL "|PhysX|DUMP_ASSEMBLY", CL_ASSEMB_LISTING_FILE, "physx.asm");
 }
 
-#endif //  _PIG_BUILD_PIG_CORE_BUILD_FLAGS_H
+#endif //  _PIG_BUILD_PIG_CORE_FLAGS_H

@@ -11,8 +11,10 @@
 	[X] Fix up "build.bat" for Windows
 	[X] Add all functions types etc. to custom types list in PigBuild.sublime-project
 	[X] Make a tag-based cmd-line corraling sytem
-	[!] Throw a clear error if the compiler is not found (esp. on Windows)
-	[!] Rename pig_build_build_helpers.h
+	[!] TAG_X macros?
+	[!] Sort flags in pig_build_core_flags.h
+	[!] Throw a clear error if the compiler is not found on Windows
+	[X] Rename pig_build_build_helpers.h
 	[!] Add an AllocStr function?
 	[!] Add an Assert macro?
 	[!] Make a "new_project.bat/sh" script?
