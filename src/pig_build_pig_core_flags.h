@@ -61,8 +61,8 @@ void FillPigCoreFlags(CliArgList* compilerFlags, CliArgList* linkerFlags,
 	AddTaggedArgInt(compilerFlags, EXE_MSVC_CL "|LangCpp", CL_DISABLE_WARNING, CL_WARNING_BITWISE_OP_BETWEEN_ENUMS);
 	AddTaggedArgNt(compilerFlags,  EXE_CLANG   "|LangCpp", CLANG_LANG_VERSION, "c++20"); // TODO: What option should we actually choose here?
 	AddTaggedArgNt(compilerFlags,  EXE_CLANG   "|LangCpp", CLANG_SYSTEM_LIBRARY, "stdc++"); // Fixes tracy.so link-time errors regarding stuff like `operator delete(void*, unsigned long)`
-	AddTaggedArgNt(compilerFlags,  EXE_CLANG.  "|LangObjectiveC", CLANG_LANG_VERSION, "gnu2x"); //NOTE: We still ask for gnu23 features in Objective-C mode, the distinguishing factor is that we compile a .m file not a .c file
-	AddTaggedArg(compilerFlags,    EXE_CLANG.  "|LangObjectiveC", CLANG_ENABLE_OBJC_ARC);
+	AddTaggedArgNt(compilerFlags,  EXE_CLANG   "|LangObjectiveC", CLANG_LANG_VERSION, "gnu2x"); //NOTE: We still ask for gnu23 features in Objective-C mode, the distinguishing factor is that we compile a .m file not a .c file
+	AddTaggedArg(compilerFlags,    EXE_CLANG   "|LangObjectiveC", CLANG_ENABLE_OBJC_ARC);
 	//TODO: Figure out why these are needed when linking with imgui.o with Clang on Linux
 	// AddTaggedArg(compilerFlags, EXE_CLANG   "|LangC|BUILD_WITH_IMGUI", "-lstdc++"); //TODO: Since this is being added to clang_LangCppFlags flags now (was needed for tracy.so as well as imgui.so) we probably don't need to add it here
 	AddTaggedArg(compilerFlags,    EXE_CLANG   "|LangC|BUILD_WITH_IMGUI", "-fno-threadsafe-statics"); //Eliminates undefined references to stuff like "__cxa_guard_acquire"
@@ -124,9 +124,9 @@ void FillPigCoreFlags(CliArgList* compilerFlags, CliArgList* linkerFlags,
 	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_INCLUDE_DIR, "/usr/lib64/dbus-1.0/include"); //This is the path on Fedora Workstation
 	Str8 freetypeDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/freetype/include"), false);
 	AddTaggedArgStr(compilerFlags, EXE_MSVC_CL "|BUILD_WITH_FREETYPE", CL_INCLUDE_DIR, freetypeDir);
-	AddTaggedArgStr(compilerFlags, EXE_MSVC_CL "|BUILD_WITH_FREETYPE", CL_INCLUDE_DIR, plutosvgDir);
-	Str8 plutosvgDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/plutosvg"), false);
 	AddTaggedArgStr(compilerFlags, EXE_CLANG "|BUILD_WITH_FREETYPE", CLANG_INCLUDE_DIR, freetypeDir);
+	Str8 plutosvgDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/plutosvg"), false);
+	AddTaggedArgStr(compilerFlags, EXE_MSVC_CL "|BUILD_WITH_FREETYPE", CL_INCLUDE_DIR, plutosvgDir);
 	AddTaggedArgStr(compilerFlags, EXE_CLANG "|BUILD_WITH_FREETYPE", CLANG_INCLUDE_DIR, plutosvgDir);
 	//TODO: Really we should do `pkg-config --cflags gtk4`
 	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx|BUILD_WITH_GTK", CLANG_INCLUDE_DIR, "/usr/include/gtk-4.0");
