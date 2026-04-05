@@ -15,8 +15,8 @@
 	[X] Vet all the places we do AllocStr-like stuff
 	[X] Move some files into an "optional" folder to avoid confusion
 	[!] Rename pig_build_build_helpers.h
-	[!] TAG_X macros?
-	[!] Remove LinuxOrOsx tag
+	[!] TAG_X macros? Maybe T_X for brevity? Should we add leading "|" for ultimate brevity?
+	[?] Remove LinuxOrOsx tag?
 	[?] Rename Str_Empty_Const to something shorter?
 	[X] Replace usages of ZEROED for Str with Str_Empty
 	[X] Rename Str8 to Str
@@ -26,6 +26,8 @@
 	[!] Add an Assert macro?
 	[X] Move SDK path lookups to an optional file somewhere (Give them good error messages if the environment variable isn't set, and good comments describing that they require user setting the environment var)
 	[!] Make a "new_project.bat/sh" script?
+	[!] Add "ClOrLink" tag?
+	[!] Remove EXE_ macro usages in tag string formation
 	[X] If a builder is run without builder_hash.txt but DOESNT generate a new hash file then we can end up in a state where code changes can happen and the builder won't get rebuilt because it will think it's running right after a build
 	[!] Run `pkg-config` to get some kinds of flags automatically
 	[!] Make sure RecompileIfNeeded is hashing files inside "optional" folder
