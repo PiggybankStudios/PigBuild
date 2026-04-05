@@ -11,7 +11,7 @@ Description:
 	**  3. Lists can be easily joined together to make longer argument lists TODO: We might want to add support for deduplicating arguments when joining?
 	**  4. Since we are running a build script, we don't have to worry about freeing memory, so we just allocate all the strings we need and never worry about freeing them
 	**
-	** NOTE: See RunCliProgram which lives in pig_build_build_helpers.h which
+	** NOTE: See RunCliProgram which lives in pig_build_misc.h which
 	**       is used to actually call a program with arguments in a CliArgList
 */
 

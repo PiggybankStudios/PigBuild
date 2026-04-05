@@ -14,6 +14,7 @@ Description:
 #include "pig_build_str.h"
 #include "pig_build_cli_flags.h"
 #include "pig_build_arg_list.h"
+#include "pig_build_misc.h"
 
 #define FILENAME_ORCA_SDK_PATH  "orca_sdk_path.txt"
 

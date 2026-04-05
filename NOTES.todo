@@ -14,7 +14,7 @@
 	[X] Sort flags in pig_build_core_flags.h
 	[X] Vet all the places we do AllocStr-like stuff
 	[X] Move some files into an "optional" folder to avoid confusion
-	[!] Rename pig_build_build_helpers.h
+	[X] Rename pig_build_build_helpers.h
 	[!] TAG_X macros? Maybe T_X for brevity? Should we add leading "|" for ultimate brevity?
 	[?] Remove LinuxOrOsx tag?
 	[?] Rename Str_Empty_Const to something shorter?
@@ -34,6 +34,7 @@
 	[!] Only hash source code files like ".h", ".c", etc.
 	[!] RecompileIfNeeded should really take a StrArray of blob syntax strings to allow the build_script.c to really customize which files are hashed.
 	[!] Add buildConfig value restrictions (can't build Windows on OSX, etc.)
+	[?] Add a support for zip file manipulation in a new file "pig_build_zip.h"?
 	[?] Make a RecompileIfNeeded variant that takes a "|" delimated string rather than StrArray. Maybe SplitString helper function instead?
 	[?] Safe file replace operation? Like create a temp file, then copy and replace atomically an existing file. Then delete temp
 	[ ] Finish sorting the Android/Web/Orca/Playdate flags in pig_build_core_flags.h

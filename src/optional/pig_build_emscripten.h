@@ -13,7 +13,7 @@ Description:
 
 #include "pig_build_base.h"
 #include "pig_build_str.h"
-#include "pig_build_build_helpers.h"
+#include "pig_build_misc.h"
 
 //NOTE: See shell/init_emsdk.bat
 
