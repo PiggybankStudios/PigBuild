@@ -178,9 +178,9 @@ void FillPigCoreFlags(CliArgList* compilerFlags, CliArgList* linkerFlags,
 	AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|Linux|BUILD_WITH_SOKOL_GFX", CLANG_SYSTEM_LIBRARY, "GL");
 	AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|LinuxOrOsx|BUILD_WITH_BOX2D", CLANG_SYSTEM_LIBRARY, "box2d");
 	//OSX Frameworks
+	AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX", CLANG_FRAMEWORK, "CoreText"); //For functions like CTFontCollectionCreateMatchingFontDescriptors in os_font.h OsReadPlatformFont
 	AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_APP", CLANG_FRAMEWORK, "Cocoa");
 	AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_APP", CLANG_FRAMEWORK, "QuartzCore");
-	AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "CoreText");
 	AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "CoreFoundation");
 	// AddTaggedArgNt(linkerFlags, EXE_CLANG "|OSX|BUILD_WITH_SOKOL_APP", CLANG_FRAMEWORK, "AudioToolbox");
 	// AddTaggedArgNt(linkerFlags, EXE_CLANG "|PigCore|OSX|BUILD_WITH_SOKOL_GFX", CLANG_FRAMEWORK, "Foundation");

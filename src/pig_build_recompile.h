@@ -79,9 +79,7 @@ char GetHexChar(u8 hexValue, bool upperCase)
 }
 Str8 ConvertU64ToHexStr(u64 value, bool upperCase)
 {
-	Str8 result;
-	result.length = 2 + (sizeof(u64)*2);
-	result.chars = (char*)malloc(result.length+1);
+	Str8 result = AllocStr(2 + (sizeof(u64)*2), true);
 	result.chars[0] = '0';
 	result.chars[1] = 'x';
 	for (u8 bIndex = 0; bIndex < (sizeof(u64)*2); bIndex++)

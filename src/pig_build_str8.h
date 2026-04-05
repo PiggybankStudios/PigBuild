@@ -33,9 +33,47 @@ struct Str8
 //      Use the format specifier %.*s and then this macro in the var-args
 #define StrPrint(string)   (int)(string).length, (string).chars
 
+#define IsEmptyStr(string) ((string).length == 0)
+#define IsEmptyStrPntr(stringPntr) ((stringPntr) == nullptr || (stringPntr)->length == 0)
+
 // +--------------------------------------------------------------+
 // |                        Str8 Functions                        |
 // +--------------------------------------------------------------+
+void FreeStr(Str8* strPntr)
+{
+	assert(strPntr->length == 0 || strPntr->chars != nullptr);
+	if (strPntr->chars == nullptr) { memset(strPntr, 0x00, sizeof(Str8)); return; }
+	free(strPntr->chars);
+	memset(strPntr, 0x00, sizeof(Str8));
+}
+Str8 CopyStr(Str8 strToCopy, bool addNullTerm)
+{
+	Str8 result = ZEROED;
+	if (strToCopy.length == 0 && !addNullTerm) { return result; }
+	result.length = strToCopy.length;
+	result.chars = (char*)malloc(strToCopy.length + (addNullTerm ? 1 : 0));
+	assert(result.chars != nullptr);
+	if (strToCopy.length > 0) { memcpy(result.chars, strToCopy.chars, strToCopy.length); }
+	if (addNullTerm) { result.chars[result.length] = '\0'; }
+	return result;
+}
+Str8 CopyStrNt(const char* strToCopyNt, bool addNullTerm)
+{
+	return CopyStr(MakeStr8Nt(strToCopyNt), addNullTerm);
+}
+#define CopyStrLit(stringLiteral, addNullTerm) CopyStr(StrLit(stringLiteral), (addNullTerm))
+Str8 AllocStr(u64 length, bool addNullTerm)
+{
+	Str8 result = ZEROED;
+	if (length == 0 && !addNullTerm) { return result; }
+	result.length = length;
+	result.chars = (char*)malloc(length + (addNullTerm ? 1 : 0));
+	assert(result.chars != nullptr);
+	if (length > 0) { memset(result.chars, 0x00, length); }
+	if (addNullTerm) { result.chars[result.length] = '\0'; }
+	return result;
+}
+
 bool StrExactEquals(Str8 left, Str8 right)
 {
 	if (left.length != right.length) { return false; }
@@ -161,17 +199,6 @@ bool TryParseBoolArg(Str8 boolStr, bool* valueOut)
 	return false;
 }
 
-Str8 CopyStr8(Str8 strToCopy, bool addNullTerm)
-{
-	Str8 result = ZEROED;
-	if (strToCopy.length == 0) { return result; }
-	result.length = strToCopy.length;
-	result.pntr = malloc(result.length + (addNullTerm ? 1 : 0));
-	memcpy(result.chars, strToCopy.chars, strToCopy.length);
-	if (addNullTerm) { result.chars[result.length] = '\0'; }
-	return result;
-}
-
 Str8 EscapeString(Str8 unescapedString, bool addNullTerm)
 {
 	Str8 result = ZEROED;
@@ -208,11 +235,7 @@ Str8 EscapeString(Str8 unescapedString, bool addNullTerm)
 			}
 		}
 		
-		if (pass == 0)
-		{
-			result.length = byteIndex;
-			result.pntr = malloc(result.length + (addNullTerm ? 1 : 0));
-		}
+		if (pass == 0) { result = AllocStr(byteIndex, addNullTerm); }
 		else if (addNullTerm) { result.chars[result.length] = '\0'; }
 	}
 	return result;
@@ -220,22 +243,18 @@ Str8 EscapeString(Str8 unescapedString, bool addNullTerm)
 
 Str8 JoinStrings2(Str8 left, Str8 right, bool addNullTerm)
 {
-	Str8 result;
-	result.length = left.length + right.length;
-	result.pntr = malloc(result.length + (addNullTerm ? 1 : 0));
-	memcpy(&result.chars[0], &left.chars[0], left.length);
-	memcpy(&result.chars[left.length], &right.chars[0], right.length);
+	Str8 result = AllocStr(left.length + right.length, addNullTerm);
+	if (left.length > 0) { memcpy(&result.chars[0], &left.chars[0], left.length); }
+	if (right.length > 0) { memcpy(&result.chars[left.length], &right.chars[0], right.length); }
 	if (addNullTerm) { result.chars[result.length] = '\0'; }
 	return result;
 }
 Str8 JoinStrings3(Str8 left, Str8 middle, Str8 right, bool addNullTerm)
 {
-	Str8 result;
-	result.length = left.length + middle.length + right.length;
-	result.pntr = malloc(result.length + (addNullTerm ? 1 : 0));
-	memcpy(&result.chars[0], &left.chars[0], left.length);
-	memcpy(&result.chars[left.length], &middle.chars[0], middle.length);
-	memcpy(&result.chars[left.length + middle.length], &right.chars[0], right.length);
+	Str8 result = AllocStr(left.length + middle.length + right.length, addNullTerm);
+	if (left.length > 0) { memcpy(&result.chars[0], &left.chars[0], left.length); }
+	if (middle.length > 0) { memcpy(&result.chars[left.length], &middle.chars[0], middle.length); }
+	if (right.length > 0) { memcpy(&result.chars[left.length + middle.length], &right.chars[0], right.length); }
 	if (addNullTerm) { result.chars[result.length] = '\0'; }
 	return result;
 }
@@ -260,6 +279,28 @@ void FixPathSlashes(Str8 path, char slashChar)
 	StrReplaceChars(path, (slashChar == '/') ? '\\' : '/', slashChar);
 }
 
+bool HasTrailingSlash(Str8 path)
+{
+	return (path.length > 0 && IsSlash(path.chars[path.length-1]));
+}
+
+Str8 WithoutTrailingSlash(Str8 path)
+{
+	if (HasTrailingSlash(path)) { return StrSlice(path, 0, path.length-1); }
+	else { return path; }
+}
+Str8 WithTrailingSlash(Str8 path)
+{
+	if (HasTrailingSlash(path)) { return path; }
+	else { return JoinStrings2(path, StrLit("/"), true); }
+}
+
+Str8 JoinPaths(Str8 leftPath, Str8 rightPath, bool addNullTerm)
+{
+	if (leftPath.length == 0 || rightPath.length == 0 || HasTrailingSlash(leftPath) || IsSlash(rightPath.chars[0])) { return JoinStrings2(leftPath, rightPath, addNullTerm); }
+	else { return JoinStrings3(leftPath, StrLit("/"), rightPath, addNullTerm); }
+}
+
 Str8 StrReplace(Str8 haystack, Str8 target, Str8 replacement, bool addNullTerm)
 {
 	Str8 result = ZEROED;
@@ -273,7 +314,7 @@ Str8 StrReplace(Str8 haystack, Str8 target, Str8 replacement, bool addNullTerm)
 		}
 		else { result.length += 1; }
 	}
-	result.pntr = malloc(result.length + (addNullTerm ? 1 : 0));
+	result = AllocStr(result.length, addNullTerm);
 	u64 writeIndex = 0;
 	for (u64 cIndex = 0; cIndex < haystack.length; cIndex++)
 	{
@@ -292,6 +333,18 @@ Str8 StrReplace(Str8 haystack, Str8 target, Str8 replacement, bool addNullTerm)
 	}
 	if (addNullTerm) { result.chars[result.length] = '\0'; }
 	return result;
+}
+Str8 StrReplaceRange(Str8 targetStr, u64 startIndex, u64 endIndex, Str8 replacementStr, bool addNullTerm)
+{
+	assert(startIndex <= targetStr.length);
+	assert(endIndex <= targetStr.length);
+	Str8 leftPart = StrSlice(targetStr, 0, Min2(startIndex, endIndex));
+	Str8 rightPart = StrSliceFrom(targetStr, Max2(startIndex, endIndex));
+	return JoinStrings3(leftPart, replacementStr, rightPart, addNullTerm);
+}
+Str8 StrInsert(Str8 targetStr, u64 insertIndex, Str8 insertStr, bool addNullTerm)
+{
+	return StrReplaceRange(targetStr, insertIndex, insertIndex, insertStr, addNullTerm);
 }
 
 #endif //  _PIG_BUILD_STR_8_H

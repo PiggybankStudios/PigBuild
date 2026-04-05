@@ -146,4 +146,7 @@ typedef double r64;
 #define PluralEx(number, singularSuffix, multipleSuffix) (((number) == 1) ? (singularSuffix) : (multipleSuffix))
 #define Plural(number, multipleSuffix) (((number) == 1) ? "" : (multipleSuffix))
 
+#define Min2(number1, number2) (((number1) <= (number2)) ? (number1) : (number2))
+#define Max2(number1, number2) (((number1) >= (number2)) ? (number1) : (number2))
+
 #endif //  _PIG_BUILD_BASE_H

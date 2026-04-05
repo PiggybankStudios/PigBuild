@@ -102,16 +102,12 @@ Str8 FormatArg(const CliArg* arg, Str8 rootDirPath, char pathSepChar)
 		exit(4);
 	}
 	
-	Str8 result = CopyStr8(formatStr, false);
+	Str8 result = CopyStr(formatStr, false);
 	if (insertValIndex < formatStr.length)
 	{
-		Str8 cliLeftPart = StrSlice(formatStr, 0, insertValIndex);
-		Str8 cliRightPart = StrSliceFrom(formatStr, insertValIndex + valTargetStr.length);
-		Str8 joinedStr = JoinStrings3(cliLeftPart, valueStr, cliRightPart, true);
-		free(result.chars);
-		result = joinedStr;
+		result = StrReplaceRange(formatStr, insertValIndex, insertValIndex + valTargetStr.length, valueStr, true);
 	}
-	free(valueStr.chars);
+	FreeStr(&valueStr);
 	
 	return result;
 }
@@ -163,8 +159,8 @@ CliArg* AddTaggedArgStr(CliArgList* list, const char* includeExcludeTagsStr, con
 	if (list->numArgs >= CLI_MAX_ARGS) { WriteLine_E("Too many CLI arguments!"); exit(4); }
 	CliArg* newArg = &list->args[list->numArgs];
 	memset(newArg, 0x00, sizeof(CliArg));
-	newArg->format = CopyStr8(MakeStr8Nt(formatStrNt), false);
-	newArg->value = CopyStr8(valueStr, false);
+	newArg->format = CopyStrNt(formatStrNt, false);
+	newArg->value = CopyStr(valueStr, false);
 	SplitIncludeExcludeTagsListStr(MakeStr8Nt(includeExcludeTagsStr), &newArg->includeTags, &newArg->excludeTags);
 	// if (newArg->includeTags.length > 0 || newArg->excludeTags.length > 0)
 	// {
@@ -213,8 +209,8 @@ void AddArgList(CliArgList* dest, const CliArgList* source)
 		const CliArg* sourceArg = &source->args[aIndex];
 		CliArg* destArg = &dest->args[dest->numArgs];
 		memset(destArg, 0x00, sizeof(CliArg));
-		destArg->format = CopyStr8(sourceArg->format, false);
-		destArg->value = CopyStr8(sourceArg->value, false);
+		destArg->format = CopyStr(sourceArg->format, false);
+		destArg->value = CopyStr(sourceArg->value, false);
 		for (u64 iIndex = 0; iIndex < sourceArg->includeTags.length; iIndex++)
 		{
 			AddStr(&destArg->includeTags, sourceArg->includeTags.strings[iIndex]);
@@ -276,8 +272,8 @@ Str8 FilterAndJoinCliArgsList(Str8 prefix, const CliArgList* list, StrArray* tag
 	char pathSepChar = list->pathSepChar;
 	if (pathSepChar == '\0') { pathSepChar = PATH_SEP_CHAR; }
 	Str8 rootDirPath = ZEROED;
-	if (list->rootDirPath.length == 0) { rootDirPath = CopyStr8(StrLit(".."), false); }
-	else { rootDirPath = CopyStr8(list->rootDirPath, false); }
+	if (IsEmptyStr(list->rootDirPath)) { rootDirPath = CopyStrLit("..", false); }
+	else { rootDirPath = CopyStr(list->rootDirPath, false); }
 	FixPathSlashes(rootDirPath, pathSepChar);
 	
 	u64 numFormattedStrings = 0;
@@ -298,14 +294,7 @@ Str8 FilterAndJoinCliArgsList(Str8 prefix, const CliArgList* list, StrArray* tag
 	}
 	free(rootDirPath.chars);
 	
-	Str8 result = ZEROED;
-	result.length = totalLength;
-	if (result.length > 0 || addNullTerm)
-	{
-		result.chars = (char*)malloc(result.length + (addNullTerm ? 1 : 0));
-		assert(result.chars != nullptr);
-	}
-	
+	Str8 result = AllocStr(totalLength, addNullTerm);
 	u64 writeIndex = 0;
 	memcpy(&result.chars[writeIndex], &prefix.chars[0], prefix.length); writeIndex += prefix.length;
 	

@@ -41,7 +41,7 @@ Str8 GetFullPath(Str8 relativePath, char slashChar)
 	
 	#if BUILDING_ON_WINDOWS
 	{
-		Str8 relativePathNt = CopyStr8(relativePath, true);
+		Str8 relativePathNt = CopyStr(relativePath, true);
 		FixPathSlashes(relativePathNt, PATH_SEP_CHAR);
 		
 		// Returns required buffer size +1 when the nBufferLength is too small
@@ -53,8 +53,7 @@ Str8 GetFullPath(Str8 relativePath, char slashChar)
 		);
 		assert(getPathResult1 != 0);
 		
-		result.length = (u64)getPathResult1-1;
-		result.chars = (char*)malloc(result.length + 1);
+		result = AllocStr((u64)getPathResult1-1, true);
 		
 		// Returns the length of the string (not +1) when nBufferLength is large enough
 		DWORD getPathResult2 = GetFullPathNameA(
@@ -71,17 +70,14 @@ Str8 GetFullPath(Str8 relativePath, char slashChar)
 	}
 	#elif (BUILDING_ON_LINUX || BUILDING_ON_OSX)
 	{
-		Str8 relativePathNt = CopyStr8(relativePath, true);
+		Str8 relativePathNt = CopyStr(relativePath, true);
 		FixPathSlashes(relativePathNt, PATH_SEP_CHAR);
 		
 		char* temporaryBuffer = (char*)malloc(PATH_MAX);
 		char* realPathResult = realpath(relativePathNt.chars, temporaryBuffer);
 		assert(realPathResult != nullptr);
 		
-		result.length = (u64)strlen(realPathResult);
-		result.chars = (char*)malloc(result.length + 1);
-		memcpy(result.chars, realPathResult, result.length);
-		result.chars[result.length] = '\0';
+		result = CopyStr(MakeStr8Nt(realPathResult), true);
 		
 		FixPathSlashes(result, slashChar);
 		free(temporaryBuffer);
@@ -96,7 +92,7 @@ Str8 GetFullPath(Str8 relativePath, char slashChar)
 
 bool TryReadFile(Str8 filePath, Str8* contentsOut)
 {
-	Str8 filePathNt = CopyStr8(filePath, true);
+	Str8 filePathNt = CopyStr(filePath, true);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
 	
 	//NOTE: We open the file in binary mode because otherwise the result from jumping to SEEK_END to
@@ -114,9 +110,7 @@ bool TryReadFile(Str8 filePath, Str8* contentsOut)
 	long fileSize = ftell(fileHandle); assert(fileSize >= 0); assert(fileSize <= INT_MAX);
 	int seekResult2 = fseek(fileHandle, 0, SEEK_SET); assert(seekResult2 == 0);
 	
-	contentsOut->length = (u64)fileSize;
-	contentsOut->chars = (char*)malloc(fileSize+1);
-	assert(contentsOut->chars != nullptr);
+	*contentsOut = AllocStr((u64)fileSize, true);
 	
 	int readResult = fread(
 		contentsOut->chars,
@@ -150,7 +144,7 @@ Str8 ReadEntireFile(Str8 filePath)
 
 void CreateAndWriteFile(Str8 filePath, Str8 contents, bool convertNewLines)
 {
-	Str8 filePathNt = CopyStr8(filePath, true);
+	Str8 filePathNt = CopyStr(filePath, true);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
 	
 	#if BUILDING_ON_WINDOWS
@@ -208,7 +202,7 @@ void CreateAndWriteFile(Str8 filePath, Str8 contents, bool convertNewLines)
 
 void AppendToFile(Str8 filePath, Str8 contentsToAppend, bool convertNewLines)
 {
-	Str8 filePathNt = CopyStr8(filePath, true);
+	Str8 filePathNt = CopyStr(filePath, true);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
 	
 	#if BUILDING_ON_WINDOWS
@@ -292,7 +286,7 @@ void AppendPrintToFile(Str8 filePath, const char* formatString, ...)
 
 void RemoveFile(Str8 filePath)
 {
-	Str8 filePathNt = CopyStr8(filePath, true);
+	Str8 filePathNt = CopyStr(filePath, true);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
 	
 	#if BUILDING_ON_WINDOWS
@@ -311,7 +305,7 @@ void RemoveFile(Str8 filePath)
 
 void MyRemoveDirectory(Str8 folderPath, bool recursive)
 {
-	Str8 folderPathNt = CopyStr8(folderPath, true);
+	Str8 folderPathNt = CopyStr(folderPath, true);
 	FixPathSlashes(folderPathNt, PATH_SEP_CHAR);
 	
 	if (!recursive)
@@ -327,13 +321,7 @@ void MyRemoveDirectory(Str8 folderPath, bool recursive)
 	{
 		#if BUILDING_ON_WINDOWS
 		{
-			bool needsTrailingSlash = !(folderPathNt.length > 0 && folderPathNt.chars[folderPathNt.length-1] == PATH_SEP_CHAR);
-			Str8 searchStr = JoinStrings3(
-				folderPath,
-				needsTrailingSlash ? StrLit(PATH_SEP_CHAR_STR) : StrLit(""),
-				StrLit("*"),
-				true
-			);
+			Str8 searchStr = JoinPaths(folderPathNt, StrLit("*"), true);
 			
 			WIN32_FIND_DATAA findData = ZEROED;
 			HANDLE iterHandle = FindFirstFileA(searchStr.chars, &findData);
@@ -341,13 +329,9 @@ void MyRemoveDirectory(Str8 folderPath, bool recursive)
 			
 			do
 			{
-				if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0) { continue; }
-				Str8 fullPath = JoinStrings3(
-					folderPath,
-					needsTrailingSlash ? StrLit(PATH_SEP_CHAR_STR) : StrLit(""),
-					MakeStr8Nt(findData.cFileName),
-					false
-				);
+				Str8 fileNameStr = MakeStr8Nt(findData.cFileName);
+				if (StrExactEquals(fileNameStr, StrLit(".")) || StrExactEquals(fileNameStr, StrLit(".."))) { continue; }
+				Str8 fullPath = JoinPaths(folderPath, fileNameStr, false);
 				
 				if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 				{
@@ -386,13 +370,13 @@ void CopyFileToPath(Str8 filePath, Str8 newFilePath, bool copyPermissions)
 	#if BUILDING_ON_LINUX
 	if (copyPermissions)
 	{
-		Str8 filePathNt = CopyStr8(filePath, true);
+		Str8 filePathNt = CopyStr(filePath, true);
 		struct stat oldFileStats = ZEROED;
 		int statResult = stat(filePathNt.chars, &oldFileStats);
 		assert(statResult == 0);
 		free(filePathNt.chars);
 		
-		Str8 newFilePathNt = CopyStr8(newFilePath, true);
+		Str8 newFilePathNt = CopyStr(newFilePath, true);
 		int modResult = chmod(newFilePathNt.chars, oldFileStats.st_mode);
 		assert(modResult == 0);
 		free(newFilePathNt.chars);
@@ -401,28 +385,24 @@ void CopyFileToPath(Str8 filePath, Str8 newFilePath, bool copyPermissions)
 }
 void CopyFileToFolder(Str8 filePath, Str8 folderPath, bool copyPermissions)
 {
-	Str8 fileName = GetFileNamePart(filePath, true);
-	const char* joinStr = (folderPath.length == 0 || !IsSlash(folderPath.chars[folderPath.length-1])) ? "/" : "";
-	Str8 newPath = JoinStrings3(folderPath, MakeStr8Nt(joinStr), fileName, false);
+	Str8 newPath = JoinPaths(folderPath, GetFileNamePart(filePath, true), false);
 	CopyFileToPath(filePath, newPath, copyPermissions);
 	free(newPath.chars);
 }
 
 bool DoesFileExist(Str8 filePath)
 {
-	char* filePathNt = (char*)malloc(filePath.length+1);
-	memcpy(filePathNt, filePath.chars, filePath.length);
-	filePathNt[filePath.length] = '\0';
+	Str8 filePathNt = CopyStr(filePath, true);
 	#if BUILDING_ON_WINDOWS
 	{
-		BOOL fileExistsResult = PathFileExistsA(filePathNt);
-		free(filePathNt);
+		BOOL fileExistsResult = PathFileExistsA(filePathNt.chars);
+		free(filePathNt.chars);
 		return (fileExistsResult == TRUE);
 	}
 	#elif (BUILDING_ON_LINUX || BUILDING_ON_OSX)
 	{
-		int accessResult = access(filePathNt, F_OK);
-		free(filePathNt);
+		int accessResult = access(filePathNt.chars, F_OK);
+		free(filePathNt.chars);
 		return (accessResult == 0);
 	}
 	#else
@@ -447,8 +427,7 @@ FileIter StartFileIter(Str8 folderPath)
 	result.nextIndex = 0;
 	result.finished = false;
 	bool needsTrailingSlash = (folderPath.length == 0 || (folderPath.chars[folderPath.length-1] != '\\' && folderPath.chars[folderPath.length-1] != '/'));
-	result.folderPathNt.length = folderPath.length + (needsTrailingSlash ? 1 : 0);
-	result.folderPathNt.chars = (char*)malloc(result.folderPathNt.length + 1);
+	result.folderPathNt = AllocStr(folderPath.length + (needsTrailingSlash ? 1 : 0), true);
 	memcpy(result.folderPathNt.chars, folderPath.chars, folderPath.length);
 	if (needsTrailingSlash) { result.folderPathNt.chars[folderPath.length] = PATH_SEP_CHAR; }
 	result.folderPathNt.chars[result.folderPathNt.length] = '\0';

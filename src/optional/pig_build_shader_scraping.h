@@ -9,9 +9,9 @@ Date:   03\27\2026
 
 #include "pig_build_base.h"
 #include "pig_build_str8.h"
-#include "pig_build_not_regex.h"
 #include "pig_build_file.h"
 #include "pig_build_misc.h"
+#include "optional/pig_build_not_regex.h"
 
 bool IsShaderHeaderLine_Name(Str8 line, Str8* nameOut)
 {

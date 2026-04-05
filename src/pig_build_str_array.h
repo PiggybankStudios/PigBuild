@@ -45,7 +45,7 @@ Str8* AddStr(StrArray* array, Str8 newString)
 	
 	Str8* result = &array->strings[array->length];
 	array->length++;
-	*result = CopyStr8(newString, false);
+	*result = CopyStr(newString, false);
 	return result;
 }
 

@@ -118,12 +118,10 @@ void ParseAndApplyEnvironmentVariables(Str8 environmentVars)
 			
 			if (equalsIndex >= lineStart)
 			{
-				Str8 varName = StrSlice(line, 0, equalsIndex-lineStart);
-				Str8 varValue = StrSliceFrom(line, (equalsIndex-lineStart)+1);
+				Str8 varName = CopyStr(StrSlice(line, 0, equalsIndex-lineStart), true);
+				Str8 varValue = CopyStr(StrSliceFrom(line, (equalsIndex-lineStart)+1), true);
 				
 				// PrintLine("set %.*s=%.*s", StrPrint(varName), StrPrint(varValue));
-				varName = CopyStr8(varName, true);
-				varValue = CopyStr8(varValue, true);
 				#if BUILDING_ON_WINDOWS
 				_putenv_s(varName.chars, varValue.chars);
 				#else
@@ -149,7 +147,7 @@ void RunBatchFileAndApplyDumpedEnvironment(Str8 batchFilePath, Str8 environmentF
 {
 	CliArgList cmd = ZEROED;
 	AddArgStr(&cmd, CLI_QUOTED_ARG, environmentFilePath);
-	Str8 fixedBatchFilePath = CopyStr8(batchFilePath, false);
+	Str8 fixedBatchFilePath = CopyStr(batchFilePath, false);
 	FixPathSlashes(fixedBatchFilePath, PATH_SEP_CHAR);
 	
 	if (!DoesFileExist(environmentFilePath) || !skipRunningIfFileExists)
@@ -225,9 +223,7 @@ void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str8 outputFilePath
 		free(inputFileContents.chars);
 	}
 	
-	Str8 combinedContents = ZEROED;
-	combinedContents.length = totalLength;
-	combinedContents.pntr = malloc(combinedContents.length + 1);
+	Str8 combinedContents = AllocStr(totalLength, true);
 	
 	u64 writeIndex = 0;
 	for (u64 fIndex = 0; fIndex < allFilesContents.length; fIndex++)
@@ -264,9 +260,7 @@ Str8 GetEmscriptenSdkPath()
 		WriteLine_E("Please set the EMSCRIPTEN_SDK_PATH environment variable before trying to build for the web with USE_EMSCRIPTEN");
 		exit(7);
 	}
-	Str8 result = MakeStr8Nt(sdkEnvVariable);
-	if (IsSlash(result.chars[result.length-1])) { result.length--; } //no trailing slash
-	result = CopyStr8(result, true);
+	Str8 result = CopyStr(WithoutTrailingSlash(MakeStr8Nt(sdkEnvVariable)), true);
 	FixPathSlashes(result, PATH_SEP_CHAR);
 	return result;
 }
@@ -303,9 +297,7 @@ Str8 GetPlaydateSdkPath()
 		WriteLine_E("Please set the PLAYDATE_SDK_PATH environment variable before trying to build for the Playdate");
 		exit(7);
 	}
-	Str8 result = MakeStr8Nt(sdkEnvVariable);
-	if (IsSlash(result.chars[result.length-1])) { result.length--; }
-	result = CopyStr8(result, true);
+	Str8 result = CopyStr(WithoutTrailingSlash(MakeStr8Nt(sdkEnvVariable)), true);
 	FixPathSlashes(result, PATH_SEP_CHAR);
 	return result;
 }

@@ -285,7 +285,7 @@
 			"FileIter StartFileIter(Str8 folderPath)",
 			"LineParser NewLineParser(Str8 inputStr)",
 			"Str8 ConvertU64ToHexStr(u64 value, bool upperCase)",
-			"Str8 CopyStr8(Str8 strToCopy, bool addNullTerm)",
+			"Str8 CopyStr(Str8 strToCopy, bool addNullTerm)",
 			"Str8 EscapeString(Str8 unescapedString, bool addNullTerm)",
 			"Str8 ExtractStrDefine(Str8 buildConfigContents, Str8 defineName)",
 			"Str8 FormatArg(const CliArg* arg, Str8 rootDirPath, char pathSepChar)",

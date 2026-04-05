@@ -223,9 +223,7 @@ Str8 GetAndroidSdkPath()
 		WriteLine_E("Please set the ANDROID_SDK environment variable before trying to build for Android");
 		exit(7);
 	}
-	Str8 result = MakeStr8Nt(sdkEnvVariable);
-	if (IsSlash(result.chars[result.length-1])) { result.length--; }
-	result = CopyStr8(result, true);
+	Str8 result = CopyStr(WithoutTrailingSlash(MakeStr8Nt(sdkEnvVariable)), true);
 	FixPathSlashes(result, PATH_SEP_CHAR);
 	return result;
 }
