@@ -222,15 +222,6 @@ Description:
 
 
 // +--------------------------------------------------------------+
-// |                     Emscripten CLI Flags                     |
-// +--------------------------------------------------------------+
-#define EXE_EMSCRIPTEN_COMPILER "emcc"
-//NOTE: Emscripten's compiler accepts all the same flags that Clang does
-#define EMSCRIPTEN_S_FLAG "-s[VAL]" //TODO: Give this a better name!
-
-
-
-// +--------------------------------------------------------------+
 // |          Sokol Shader Cross-Compiler SHDC CLI Flags          |
 // +--------------------------------------------------------------+
 #if BUILDING_ON_WINDOWS
@@ -253,22 +244,5 @@ Description:
 #define SHDC_SHADER_LANGUAGES "--slang=[VAL]"
 #define SHDC_INPUT            "--input=\"[VAL]\""
 #define SHDC_OUTPUT           "--output=\"[VAL]\""
-
-
-
-// +--------------------------------------------------------------+
-// |               Playdate Packager PDC CLI Flags                |
-// +--------------------------------------------------------------+
-#define EXE_PDC "pdc"
-
-#define PDC_SDK_PATH      "-sdkpath \"[VAL]\"" //use the SDK at the given path instead of the default
-#define PDC_LIBPATH       "--libpath \"[VAL]\"" //add the given path to the list of folders to search when resolving imports
-#define PDC_STRIP         "--strip" //strip debug symbols
-#define PDC_NO_COMPRESS   "--no-compress" //don't compress output files
-#define PDC_MAIN          "--main" //compile lua script at <input> as if it were main.lua
-#define PDC_VERBOSE       "--verbose" //verbose mode, gives info about what the compiler is doing
-#define PDC_QUIET         "--quiet" //quiet mode, suppresses non-error output
-#define PDC_SKIP_UNKNOWN  "--skip-unknown" //skip unrecognized files instead of copying them to the pdx folder
-#define PDC_CHECK_FONTS   "--check-fonts" //perform additional validation on font data (may produce false warnings)
 
 #endif //  _PIG_BUILD_CLI_FLAGS_H

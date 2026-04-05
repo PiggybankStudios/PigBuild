@@ -31,6 +31,7 @@ Description:
 #include "optional/pig_build_shader_scraping.h"
 #include "optional/pig_build_emscripten.h"
 #include "optional/pig_build_playdate.h"
+#include "optional/pig_build_orca.h"
 #endif
 
 #endif //  _PIG_BUILD_H

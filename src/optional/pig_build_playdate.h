@@ -16,6 +16,18 @@ Description:
 #include "pig_build_cli_flags.h"
 #include "pig_build_arg_list.h"
 
+#define EXE_PDC "pdc"
+
+#define PDC_SDK_PATH      "-sdkpath \"[VAL]\"" //use the SDK at the given path instead of the default
+#define PDC_LIBPATH       "--libpath \"[VAL]\"" //add the given path to the list of folders to search when resolving imports
+#define PDC_STRIP         "--strip" //strip debug symbols
+#define PDC_NO_COMPRESS   "--no-compress" //don't compress output files
+#define PDC_MAIN          "--main" //compile lua script at <input> as if it were main.lua
+#define PDC_VERBOSE       "--verbose" //verbose mode, gives info about what the compiler is doing
+#define PDC_QUIET         "--quiet" //quiet mode, suppresses non-error output
+#define PDC_SKIP_UNKNOWN  "--skip-unknown" //skip unrecognized files instead of copying them to the pdx folder
+#define PDC_CHECK_FONTS   "--check-fonts" //perform additional validation on font data (may produce false warnings)
+
 // NOTE: For the time being we just require the user to set up an PLAYDATE_SDK_PATH environment variable to tell us where the Playdate SDK lives
 Str GetPlaydateSdkPath()
 {

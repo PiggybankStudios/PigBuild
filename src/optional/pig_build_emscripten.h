@@ -17,6 +17,10 @@ Description:
 
 //NOTE: See shell/init_emsdk.bat
 
+#define EXE_EMSCRIPTEN_COMPILER "emcc"
+//NOTE: Emscripten's compiler accepts all the same flags that Clang does
+#define EMSCRIPTEN_S_FLAG "-s[VAL]" //TODO: Give this a better name!
+
 #define EMSDK_ENVIRONMENT_TXT_PATH "emsdk_environment.txt"
 
 // NOTE: For the time being we just require the user to set up an EMSCRIPTEN_SDK_PATH environment variable to tell us where the Emscripten SDK lives

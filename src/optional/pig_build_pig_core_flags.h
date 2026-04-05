@@ -17,11 +17,13 @@ Description:
 #include "pig_build_str.h"
 #include "pig_build_cli_flags.h"
 #include "pig_build_arg_list.h"
+#include "pig_build_emscripten.h"
+#include "pig_build_playdate.h"
+#include "pig_build_orca.h"
 
 void FillPigCoreFlags(CliArgList* compilerFlags, CliArgList* linkerFlags,
 	Str pigCoreThirdPartyPath,
-	Str androidNdkDir, Str androidNdkToolchainDir,
-	Str orcaSdkPath)
+	Str androidNdkDir, Str androidNdkToolchainDir)
 {
 	// +--------------------------------------------------------------+
 	// |                        Compiler Flags                        |
@@ -322,21 +324,6 @@ void FillPigCoreFlags(CliArgList* compilerFlags, CliArgList* linkerFlags,
 		
 		AddTaggedArgNt(compilerFlags, EXE_EMSCRIPTEN_COMPILER "|Web",  EMSCRIPTEN_S_FLAG, "USE_SDL");
 		AddTaggedArgNt(compilerFlags, EXE_EMSCRIPTEN_COMPILER "|Web",  EMSCRIPTEN_S_FLAG, "ALLOW_MEMORY_GROWTH");
-	}
-	
-	// +==============================+
-	// |       clang_OrcaFlags        |
-	// +==============================+
-	{
-		AddTaggedArg(compilerFlags,    EXE_CLANG "|Orca", CLANG_NO_ENTRYPOINT);
-		AddTaggedArg(compilerFlags,    EXE_CLANG "|Orca", CLANG_EXPORT_DYNAMIC);
-		AddTaggedArgStr(compilerFlags, EXE_CLANG "|Orca", CLANG_STDLIB_FOLDER, JoinStrings2(orcaSdkPath, StrLit("/orca-libc"), false));
-		AddTaggedArgStr(compilerFlags, EXE_CLANG "|Orca", CLANG_INCLUDE_DIR, JoinStrings2(orcaSdkPath, StrLit("/src"), false));
-		AddTaggedArgStr(compilerFlags, EXE_CLANG "|Orca", CLANG_INCLUDE_DIR, JoinStrings2(orcaSdkPath, StrLit("/src/ext"), false));
-		AddTaggedArgStr(compilerFlags, EXE_CLANG "|Orca", CLANG_LIBRARY_DIR, JoinStrings2(orcaSdkPath, StrLit("/bin"), false));
-		AddTaggedArgNt(compilerFlags,  EXE_CLANG "|Orca", CLANG_DEFINE, "__ORCA__"); //#define __ORCA__ so that base_compiler_check.h can set TARGET_IS_ORCA
-		
-		AddTaggedArgNt(linkerFlags,    EXE_CLANG "|Orca", CLANG_SYSTEM_LIBRARY, "orca_wasm");
 	}
 }
 

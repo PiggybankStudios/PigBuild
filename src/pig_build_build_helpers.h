@@ -66,12 +66,6 @@ void RunCliProgramAndExitOnFailure(Str programPath, const char* tagListStr, cons
 	FreeStrArray(&tagArray);
 }
 
-bool WasMsvcDevBatchRun()
-{
-	const char* versionEnvVarValue = getenv("VSCMD_VER");
-    return (versionEnvVarValue != nullptr);
-}
-
 // We like to have a build_config.h that we pull information from to decide what kind of build we are doing.
 // These functions help us find a particular #define in a C/C++ header file and retrieve it's value
 Str ExtractStrDefine(Str buildConfigContents, Str defineName)
@@ -94,6 +88,67 @@ bool ExtractBoolDefine(Str buildConfigContents, Str defineName)
 		exit(4);
 	}
 	return result;
+}
+
+// This is mostly useful for WebAssembly builds where we need to do stitching of multiple Javascript files into one
+// TODO: We could use something like WebPack to minify and join but it doesn't seem worth it right now
+void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str outputFilePath)
+{
+	//TODO: We really should handle new-line differences between Windows and Linux/etc. a little smarter here
+	//      Just because we are building on Windows doesn't mean all these .js files are using Windows style line-endings
+	
+	StrArray allFilesContents = ZEROED;
+	u64 totalLength = 0;
+	for (u64 fIndex = 0; fIndex < pathArray->length; fIndex++)
+	{
+		Str inputPath = pathArray->strings[fIndex];
+		Str inputFileContents = Str_Empty_Const;
+		if (!TryReadFile(inputPath, &inputFileContents))
+		{
+			PrintLine_E("Couldn't find/open \"%.*s\"!", StrPrint(inputPath));
+			exit(8);
+		}
+		AddStr(&allFilesContents, inputFileContents);
+		if (totalLength > 0) { totalLength += BUILDING_ON_WINDOWS ? 2 : 1; } //+1-2 for the new-line between each file
+		totalLength += inputFileContents.length;
+		free(inputFileContents.chars);
+	}
+	
+	Str combinedContents = AllocStr(totalLength, true);
+	
+	u64 writeIndex = 0;
+	for (u64 fIndex = 0; fIndex < allFilesContents.length; fIndex++)
+	{
+		Str inputFileContents = allFilesContents.strings[fIndex];
+		if (writeIndex > 0)
+		{
+			#if BUILDING_ON_WINDOWS
+			combinedContents.chars[writeIndex+0] = '\r';
+			combinedContents.chars[writeIndex+1] = '\n';
+			writeIndex += 2;
+			#else
+			combinedContents.chars[writeIndex] = '\n';
+			writeIndex += 1;
+			#endif
+		}
+		memcpy(&combinedContents.chars[writeIndex], inputFileContents.chars, inputFileContents.length);
+		writeIndex += inputFileContents.length;
+	}
+	assert(writeIndex == combinedContents.length);
+	combinedContents.chars[combinedContents.length] = '\0';
+	
+	CreateAndWriteFile(outputFilePath, combinedContents, false);
+	
+	FreeStrArray(&allFilesContents);
+}
+
+// +--------------------------------------------------------------+
+// |                       Windows Helpers                        |
+// +--------------------------------------------------------------+
+bool WasMsvcDevBatchRun()
+{
+	const char* versionEnvVarValue = getenv("VSCMD_VER");
+    return (versionEnvVarValue != nullptr);
 }
 
 // In order to avoid running VsDevCmd.bat every single time we compile, we run it once and dump the modified environment variables to a .txt file
@@ -183,82 +238,6 @@ void InitializeMsvcIf(Str pigCoreFolder, bool* isMsvcInitialized)
 		RunBatchFileAndApplyDumpedEnvironment(batchPath, environmentPath, true);
 		*isMsvcInitialized = true;
 	}
-}
-
-// This is mostly useful for WebAssembly builds where we need to do stitching of multiple Javascript files into one
-// TODO: We could use something like WebPack to minify and join but it doesn't seem worth it right now
-void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str outputFilePath)
-{
-	//TODO: We really should handle new-line differences between Windows and Linux/etc. a little smarter here
-	//      Just because we are building on Windows doesn't mean all these .js files are using Windows style line-endings
-	
-	StrArray allFilesContents = ZEROED;
-	u64 totalLength = 0;
-	for (u64 fIndex = 0; fIndex < pathArray->length; fIndex++)
-	{
-		Str inputPath = pathArray->strings[fIndex];
-		Str inputFileContents = Str_Empty_Const;
-		if (!TryReadFile(inputPath, &inputFileContents))
-		{
-			PrintLine_E("Couldn't find/open \"%.*s\"!", StrPrint(inputPath));
-			exit(8);
-		}
-		AddStr(&allFilesContents, inputFileContents);
-		if (totalLength > 0) { totalLength += BUILDING_ON_WINDOWS ? 2 : 1; } //+1-2 for the new-line between each file
-		totalLength += inputFileContents.length;
-		free(inputFileContents.chars);
-	}
-	
-	Str combinedContents = AllocStr(totalLength, true);
-	
-	u64 writeIndex = 0;
-	for (u64 fIndex = 0; fIndex < allFilesContents.length; fIndex++)
-	{
-		Str inputFileContents = allFilesContents.strings[fIndex];
-		if (writeIndex > 0)
-		{
-			#if BUILDING_ON_WINDOWS
-			combinedContents.chars[writeIndex+0] = '\r';
-			combinedContents.chars[writeIndex+1] = '\n';
-			writeIndex += 2;
-			#else
-			combinedContents.chars[writeIndex] = '\n';
-			writeIndex += 1;
-			#endif
-		}
-		memcpy(&combinedContents.chars[writeIndex], inputFileContents.chars, inputFileContents.length);
-		writeIndex += inputFileContents.length;
-	}
-	assert(writeIndex == combinedContents.length);
-	combinedContents.chars[combinedContents.length] = '\0';
-	
-	CreateAndWriteFile(outputFilePath, combinedContents, false);
-	
-	FreeStrArray(&allFilesContents);
-}
-
-#define FILENAME_ORCA_SDK_PATH  "orca_sdk_path.txt"
-
-Str GetOrcaSdkPath()
-{
-	CliArgList cmd = ZEROED;
-	AddArg(&cmd, "sdk-path");
-	AddArgNt(&cmd, CLI_PIPE_OUTPUT_TO_FILE, FILENAME_ORCA_SDK_PATH);
-	int statusCode = RunCliProgram(StrLit("orca"), "", &cmd);
-	if (statusCode != 0)
-	{
-		PrintLine_E("Failed to run \"orca sdk-path\"! Status code: %d", statusCode);
-		WriteLine_E("Make sure Orca SDK is installed and is added to the PATH!");
-		exit(statusCode);
-	}
-	AssertFileExist(StrLit(FILENAME_ORCA_SDK_PATH), false);
-	Str result = Str_Empty_Const;
-	bool readSuccess = TryReadFile(StrLit(FILENAME_ORCA_SDK_PATH), &result);
-	assert(readSuccess == true);
-	assert(result.length > 0);
-	FixPathSlashes(result, PATH_SEP_CHAR);
-	if (result.chars[result.length-1] == PATH_SEP_CHAR) { result.length--; } //no trailing slash
-	return result;
 }
 
 #endif //  _PIG_BUILD_BUILD_HELPERS_H
