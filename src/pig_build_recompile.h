@@ -14,7 +14,7 @@ Description:
 #define _PIG_BUILD_RECOMPILE_H
 
 #include "pig_build_base.h"
-#include "pig_build_str8.h"
+#include "pig_build_str.h"
 #include "pig_build_file.h"
 
 // NOTE: If you want to change any of these #defines, make sure you change them in build.sh and build.bat
@@ -33,7 +33,7 @@ Description:
 #define MSVC_ENVIRONMENT_TXT_PATH "msvc_environment.txt"
 #define EMSDK_ENVIRONMENT_TXT_PATH "emsdk_environment.txt"
 
-bool TryParseHexU64(Str8 str, u64* valueOut)
+bool TryParseHexU64(Str str, u64* valueOut)
 {
 	u8 charIndex = 0;
 	u64 result = 0;
@@ -77,9 +77,9 @@ char GetHexChar(u8 hexValue, bool upperCase)
 	else if (hexValue < 16) { return (upperCase ? 'A' : 'a') + (hexValue - 10); }
 	else { return '?'; }
 }
-Str8 ConvertU64ToHexStr(u64 value, bool upperCase)
+Str ConvertU64ToHexStr(u64 value, bool upperCase)
 {
-	Str8 result = AllocStr(2 + (sizeof(u64)*2), true);
+	Str result = AllocStr(2 + (sizeof(u64)*2), true);
 	result.chars[0] = '0';
 	result.chars[1] = 'x';
 	for (u8 bIndex = 0; bIndex < (sizeof(u64)*2); bIndex++)
@@ -112,10 +112,10 @@ u64 FnvHash(const void* bufferPntr, u64 numBytes, u64 startingState)
 // change then your builder will be re-compiled (this function will call exit(REBUILD_EXIT_CODE);)
 void RecompileIfNeeded()
 {
-	Str8 buildScriptFilePath = StrLit_Const(BUILD_SCRIPT_SOURCE_PATH);
-	Str8 pigBuildSrcFolderPath = StrLit_Const(PIG_BUILD_FOLDER_PATH "/src");
+	Str buildScriptFilePath = StrLit_Const(BUILD_SCRIPT_SOURCE_PATH);
+	Str pigBuildSrcFolderPath = StrLit_Const(PIG_BUILD_FOLDER_PATH "/src");
 	
-	Str8 buildScriptContents = ZEROED;
+	Str buildScriptContents = ZEROED;
 	if (!TryReadFile(buildScriptFilePath, &buildScriptContents))
 	{
 		PrintLine("Failed to read script contents to check if it's changed. Looking at \"%.*s\"", StrPrint(buildScriptFilePath));
@@ -124,14 +124,14 @@ void RecompileIfNeeded()
 	u64 buildScriptHash = FnvHash(buildScriptContents.chars, buildScriptContents.length, FNV_HASH_BASE_U64);
 	free(buildScriptContents.chars);
 	FileIter fileIter = StartFileIter(pigBuildSrcFolderPath);
-	Str8 fileIterPath = ZEROED;
+	Str fileIterPath = ZEROED;
 	bool fileIterIsFolder = false;
 	while (StepFileIter(&fileIter, &fileIterPath, &fileIterIsFolder))
 	{
 		//TODO: We should probably only hash files that have extensions like ".c" or ".h" or ".cpp" or etc.
 		if (!fileIterIsFolder)
 		{
-			Str8 buildSystemFileContents = ZEROED;
+			Str buildSystemFileContents = ZEROED;
 			if (!TryReadFile(fileIterPath, &buildSystemFileContents))
 			{
 				PrintLine("Failed to read build system file contents to check if it's changed. Looking at \"%.*s\"", StrPrint(fileIterPath));
@@ -142,11 +142,11 @@ void RecompileIfNeeded()
 		}
 	}
 	
-	Str8 buildHashFilePath = StrLit_Const(BUILD_SCRIPT_HASH_PATH);
+	Str buildHashFilePath = StrLit_Const(BUILD_SCRIPT_HASH_PATH);
 	u64 savedHash = 0;
 	bool hashesMatch = false;
 	bool hashFileExisted = false;
-	Str8 buildHashContents = ZEROED;
+	Str buildHashContents = ZEROED;
 	if (TryReadFile(buildHashFilePath, &buildHashContents))
 	{
 		// PrintLine("Opened %u byte hash file: \"%.*s\"", buildHashContents.length, StrPrint(buildHashContents));
@@ -164,7 +164,7 @@ void RecompileIfNeeded()
 	
 	if (!hashFileExisted)
 	{
-		Str8 buildScriptHashString = ConvertU64ToHexStr(buildScriptHash, true);
+		Str buildScriptHashString = ConvertU64ToHexStr(buildScriptHash, true);
 		// PrintLine("Creating \"%.*s\" Calc=[%d]%.*s", StrPrint(buildHashFilePath), buildScriptHashString.length, StrPrint(buildScriptHashString));
 		CreateAndWriteFile(buildHashFilePath, buildScriptHashString, true);
 	}

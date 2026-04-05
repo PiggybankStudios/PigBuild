@@ -11,17 +11,17 @@ Description:
 #define _PIG_BUILD_BUILD_HELPERS_H
 
 #include "pig_build_base.h"
-#include "pig_build_str8.h"
+#include "pig_build_str.h"
 #include "pig_build_str_array.h"
 #include "pig_build_file.h"
 #include "pig_build_misc.h"
 #include "pig_build_recompile.h"
 #include "pig_build_arg_list.h"
 //
-int RunCliProgramTagArray(Str8 programPath, StrArray* tagsListPntr, const CliArgList* args)
+int RunCliProgramTagArray(Str programPath, StrArray* tagsListPntr, const CliArgList* args)
 {
 	// PrintLine("Joining/filtering %llu arguments against %llu tags for \"%.*s\"", args->numArgs, (tagsListPntr != nullptr) ? tagsListPntr->length : 0ULL, StrPrint(programPath));
-	Str8 joinedArgs = FilterAndJoinCliArgsList(programPath, args, tagsListPntr, true);
+	Str joinedArgs = FilterAndJoinCliArgsList(programPath, args, tagsListPntr, true);
 	#if PIG_BUILD_PRINT_SYS_CMDS
 	PrintLine(">> %s", joinedArgs.chars);
 	#endif
@@ -31,10 +31,10 @@ int RunCliProgramTagArray(Str8 programPath, StrArray* tagsListPntr, const CliArg
 	free(joinedArgs.chars);
 	return resultCode;
 }
-int RunCliProgram(Str8 programPath, const char* tagsListStr, const CliArgList* args)
+int RunCliProgram(Str programPath, const char* tagsListStr, const CliArgList* args)
 {
 	StrArray tagArray = ZEROED;
-	SplitTagsListStr(MakeStr8Nt(tagsListStr), &tagArray);
+	SplitTagsListStr(MakeStrNt(tagsListStr), &tagArray);
 	// if (tagArray.length > 0)
 	// {
 	// 	PrintLine("%.*s with %llu tag%s:", StrPrint(programPath), tagArray.length, Plural(tagArray.length, "s"));
@@ -44,12 +44,12 @@ int RunCliProgram(Str8 programPath, const char* tagsListStr, const CliArgList* a
 	FreeStrArray(&tagArray);
 	return result;
 }
-void RunCliProgramTagArrayAndExitOnFailure(Str8 programPath, StrArray* tagsListPntr, const CliArgList* args, Str8 errorMessage)
+void RunCliProgramTagArrayAndExitOnFailure(Str programPath, StrArray* tagsListPntr, const CliArgList* args, Str errorMessage)
 {
 	int statusCode = RunCliProgramTagArray(programPath, tagsListPntr, args);
 	if (statusCode != 0)
 	{
-		Str8 programNamePart = GetFileNamePart(programPath, true);
+		Str programNamePart = GetFileNamePart(programPath, true);
 		PrintLine_E("%.*s\n%.*s Status Code: %d",
 			StrPrint(errorMessage),
 			StrPrint(programNamePart),
@@ -58,10 +58,10 @@ void RunCliProgramTagArrayAndExitOnFailure(Str8 programPath, StrArray* tagsListP
 		exit(statusCode);
 	}
 }
-void RunCliProgramAndExitOnFailure(Str8 programPath, const char* tagListStr, const CliArgList* args, Str8 errorMessage)
+void RunCliProgramAndExitOnFailure(Str programPath, const char* tagListStr, const CliArgList* args, Str errorMessage)
 {
 	StrArray tagArray = ZEROED;
-	SplitTagsListStr(MakeStr8Nt(tagListStr), &tagArray);
+	SplitTagsListStr(MakeStrNt(tagListStr), &tagArray);
 	RunCliProgramTagArrayAndExitOnFailure(programPath, &tagArray, args, errorMessage);
 	FreeStrArray(&tagArray);
 }
@@ -79,9 +79,9 @@ bool WasEmsdkEnvBatchRun()
 
 // We like to have a build_config.h that we pull information from to decide what kind of build we are doing.
 // These functions help us find a particular #define in a C/C++ header file and retrieve it's value
-Str8 ExtractStrDefine(Str8 buildConfigContents, Str8 defineName)
+Str ExtractStrDefine(Str buildConfigContents, Str defineName)
 {
-	Str8 defineValueStr = ZEROED;
+	Str defineValueStr = ZEROED;
 	if (!TryExtractDefineFrom(buildConfigContents, defineName, &defineValueStr))
 	{
 		PrintLine_E("Couldn't find #define %.*s in build_config.h!", StrPrint(defineName));
@@ -89,9 +89,9 @@ Str8 ExtractStrDefine(Str8 buildConfigContents, Str8 defineName)
 	}
 	return defineValueStr;
 }
-bool ExtractBoolDefine(Str8 buildConfigContents, Str8 defineName)
+bool ExtractBoolDefine(Str buildConfigContents, Str defineName)
 {
-	Str8 defineValueStr = ExtractStrDefine(buildConfigContents, defineName);
+	Str defineValueStr = ExtractStrDefine(buildConfigContents, defineName);
 	bool result = false;
 	if (!TryParseBoolArg(defineValueStr, &result))
 	{
@@ -103,7 +103,7 @@ bool ExtractBoolDefine(Str8 buildConfigContents, Str8 defineName)
 
 // In order to avoid running VsDevCmd.bat every single time we compile, we run it once and dump the modified environment variables to a .txt file
 // Then on later runs we just open this .txt file and apply all the environment variable values before trying to run the compiler
-void ParseAndApplyEnvironmentVariables(Str8 environmentVars)
+void ParseAndApplyEnvironmentVariables(Str environmentVars)
 {
 	u64 lineIndex = 0;
 	u64 lineStart = 0;
@@ -114,18 +114,18 @@ void ParseAndApplyEnvironmentVariables(Str8 environmentVars)
 		char nextChar = (cIndex+1 < environmentVars.length) ? environmentVars.chars[cIndex+1] : '\0';
 		if (character == '\n' || (character == '\r' && nextChar == '\n'))
 		{
-			Str8 line = MakeStr8(cIndex - lineStart, &environmentVars.chars[lineStart]);
+			Str line = MakeStr(cIndex - lineStart, &environmentVars.chars[lineStart]);
 			
 			if (equalsIndex >= lineStart)
 			{
-				Str8 varName = CopyStr(StrSlice(line, 0, equalsIndex-lineStart), true);
-				Str8 varValue = CopyStr(StrSliceFrom(line, (equalsIndex-lineStart)+1), true);
+				Str varName = CopyStr(StrSlice(line, 0, equalsIndex-lineStart), true);
+				Str varValue = CopyStr(StrSliceFrom(line, (equalsIndex-lineStart)+1), true);
 				
 				// PrintLine("set %.*s=%.*s", StrPrint(varName), StrPrint(varValue));
 				#if BUILDING_ON_WINDOWS
 				_putenv_s(varName.chars, varValue.chars);
 				#else
-				Str8 varEqualsValueStr = JoinStrings3(varName, StrLit("="), varValue, true);
+				Str varEqualsValueStr = JoinStrings3(varName, StrLit("="), varValue, true);
 				putenv(varEqualsValueStr.chars);
 				#endif
 				free(varName.chars);
@@ -143,11 +143,11 @@ void ParseAndApplyEnvironmentVariables(Str8 environmentVars)
 		if (character == '=') { equalsIndex = cIndex; }
 	}
 }
-void RunBatchFileAndApplyDumpedEnvironment(Str8 batchFilePath, Str8 environmentFilePath, bool skipRunningIfFileExists)
+void RunBatchFileAndApplyDumpedEnvironment(Str batchFilePath, Str environmentFilePath, bool skipRunningIfFileExists)
 {
 	CliArgList cmd = ZEROED;
 	AddArgStr(&cmd, CLI_QUOTED_ARG, environmentFilePath);
-	Str8 fixedBatchFilePath = CopyStr(batchFilePath, false);
+	Str fixedBatchFilePath = CopyStr(batchFilePath, false);
 	FixPathSlashes(fixedBatchFilePath, PATH_SEP_CHAR);
 	
 	if (!DoesFileExist(environmentFilePath) || !skipRunningIfFileExists)
@@ -160,7 +160,7 @@ void RunBatchFileAndApplyDumpedEnvironment(Str8 batchFilePath, Str8 environmentF
 		}
 	}
 	
-	Str8 environmentFileContents = ZEROED;
+	Str environmentFileContents = ZEROED;
 	if (!TryReadFile(environmentFilePath, &environmentFileContents))
 	{
 		PrintLine_E("%.*s did not create \"%.*s\"! Or we can't open it for some reason", StrPrint(batchFilePath), StrPrint(environmentFilePath));
@@ -176,24 +176,24 @@ void RunBatchFileAndApplyDumpedEnvironment(Str8 batchFilePath, Str8 environmentF
 // We only need initialize MSVC once but we may not need to initialize at all.
 // So we pass a pointer to a bool that tracks if we have initialized and we pepper
 // these calls before any spot in the build_script.c that needs to use the MSVC compiler
-void InitializeMsvcIf(Str8 pigCoreFolder, bool* isMsvcInitialized)
+void InitializeMsvcIf(Str pigCoreFolder, bool* isMsvcInitialized)
 {
 	if (*isMsvcInitialized == false)
 	{
-		Str8 batchPath = JoinStrings2(pigCoreFolder, StrLit("/" PIG_BUILD_FOLDER_NAME "/shell/init_msvc.bat"), false);
-		Str8 environmentPath = StrLit_Const(MSVC_ENVIRONMENT_TXT_PATH);
+		Str batchPath = JoinStrings2(pigCoreFolder, StrLit("/" PIG_BUILD_FOLDER_NAME "/shell/init_msvc.bat"), false);
+		Str environmentPath = StrLit_Const(MSVC_ENVIRONMENT_TXT_PATH);
 		if (DoesFileExist(environmentPath)) { WriteLine("Loading MSVC Environment..."); }
 		else { WriteLine("Initializing MSVC Compiler..."); }
 		RunBatchFileAndApplyDumpedEnvironment(batchPath, environmentPath, true);
 		*isMsvcInitialized = true;
 	}
 }
-void InitializeEmsdkIf(Str8 pigCoreFolder, bool* isEmsdkInitialized)
+void InitializeEmsdkIf(Str pigCoreFolder, bool* isEmsdkInitialized)
 {
 	if (*isEmsdkInitialized == false)
 	{
 		PrintLine("Initializing Emscripten SDK...");
-		Str8 batchPath = JoinStrings2(pigCoreFolder, StrLit("/" PIG_BUILD_FOLDER_NAME "/shell/init_emsdk.bat"), false);
+		Str batchPath = JoinStrings2(pigCoreFolder, StrLit("/" PIG_BUILD_FOLDER_NAME "/shell/init_emsdk.bat"), false);
 		RunBatchFileAndApplyDumpedEnvironment(batchPath, StrLit(EMSDK_ENVIRONMENT_TXT_PATH), false);
 		*isEmsdkInitialized = true;
 	}
@@ -201,7 +201,7 @@ void InitializeEmsdkIf(Str8 pigCoreFolder, bool* isEmsdkInitialized)
 
 // This is mostly useful for WebAssembly builds where we need to do stitching of multiple Javascript files into one
 // TODO: We could use something like WebPack to minify and join but it doesn't seem worth it right now
-void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str8 outputFilePath)
+void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str outputFilePath)
 {
 	//TODO: We really should handle new-line differences between Windows and Linux/etc. a little smarter here
 	//      Just because we are building on Windows doesn't mean all these .js files are using Windows style line-endings
@@ -210,8 +210,8 @@ void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str8 outputFilePath
 	u64 totalLength = 0;
 	for (u64 fIndex = 0; fIndex < pathArray->length; fIndex++)
 	{
-		Str8 inputPath = pathArray->strings[fIndex];
-		Str8 inputFileContents = ZEROED;
+		Str inputPath = pathArray->strings[fIndex];
+		Str inputFileContents = ZEROED;
 		if (!TryReadFile(inputPath, &inputFileContents))
 		{
 			PrintLine_E("Couldn't find/open \"%.*s\"!", StrPrint(inputPath));
@@ -223,12 +223,12 @@ void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str8 outputFilePath
 		free(inputFileContents.chars);
 	}
 	
-	Str8 combinedContents = AllocStr(totalLength, true);
+	Str combinedContents = AllocStr(totalLength, true);
 	
 	u64 writeIndex = 0;
 	for (u64 fIndex = 0; fIndex < allFilesContents.length; fIndex++)
 	{
-		Str8 inputFileContents = allFilesContents.strings[fIndex];
+		Str inputFileContents = allFilesContents.strings[fIndex];
 		if (writeIndex > 0)
 		{
 			#if BUILDING_ON_WINDOWS
@@ -252,7 +252,7 @@ void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str8 outputFilePath
 }
 
 // For the time being we just require the user to set up an EMSCRIPTEN_SDK_PATH environment variable to tell us where the Emscripten SDK lives
-Str8 GetEmscriptenSdkPath()
+Str GetEmscriptenSdkPath()
 {
 	const char* sdkEnvVariable = getenv("EMSCRIPTEN_SDK_PATH");
 	if (sdkEnvVariable == nullptr)
@@ -260,14 +260,14 @@ Str8 GetEmscriptenSdkPath()
 		WriteLine_E("Please set the EMSCRIPTEN_SDK_PATH environment variable before trying to build for the web with USE_EMSCRIPTEN");
 		exit(7);
 	}
-	Str8 result = CopyStr(WithoutTrailingSlash(MakeStr8Nt(sdkEnvVariable)), true);
+	Str result = CopyStr(WithoutTrailingSlash(MakeStrNt(sdkEnvVariable)), true);
 	FixPathSlashes(result, PATH_SEP_CHAR);
 	return result;
 }
 
 #define FILENAME_ORCA_SDK_PATH  "orca_sdk_path.txt"
 
-Str8 GetOrcaSdkPath()
+Str GetOrcaSdkPath()
 {
 	CliArgList cmd = ZEROED;
 	AddArg(&cmd, "sdk-path");
@@ -280,7 +280,7 @@ Str8 GetOrcaSdkPath()
 		exit(statusCode);
 	}
 	AssertFileExist(StrLit(FILENAME_ORCA_SDK_PATH), false);
-	Str8 result = ZEROED;
+	Str result = ZEROED;
 	bool readSuccess = TryReadFile(StrLit(FILENAME_ORCA_SDK_PATH), &result);
 	assert(readSuccess == true);
 	assert(result.length > 0);
@@ -289,7 +289,7 @@ Str8 GetOrcaSdkPath()
 	return result;
 }
 
-Str8 GetPlaydateSdkPath()
+Str GetPlaydateSdkPath()
 {
 	const char* sdkEnvVariable = getenv("PLAYDATE_SDK_PATH");
 	if (sdkEnvVariable == nullptr)
@@ -297,7 +297,7 @@ Str8 GetPlaydateSdkPath()
 		WriteLine_E("Please set the PLAYDATE_SDK_PATH environment variable before trying to build for the Playdate");
 		exit(7);
 	}
-	Str8 result = CopyStr(WithoutTrailingSlash(MakeStr8Nt(sdkEnvVariable)), true);
+	Str result = CopyStr(WithoutTrailingSlash(MakeStrNt(sdkEnvVariable)), true);
 	FixPathSlashes(result, PATH_SEP_CHAR);
 	return result;
 }

@@ -19,7 +19,7 @@ Description:
 #define _PIG_BUILD_ARG_LIST_H
 
 #include "pig_build_base.h"
-#include "pig_build_str8.h"
+#include "pig_build_str.h"
 #include "pig_build_str_array.h"
 
 // +--------------------------------------------------------------+
@@ -51,8 +51,8 @@ Description:
 typedef struct CliArg CliArg;
 struct CliArg
 {
-	Str8 format;
-	Str8 value;
+	Str format;
+	Str value;
 	StrArray includeTags;
 	StrArray excludeTags;
 };
@@ -60,17 +60,17 @@ struct CliArg
 typedef struct CliArgList CliArgList;
 struct CliArgList
 {
-	Str8 rootDirPath;
+	Str rootDirPath;
 	char pathSepChar;
 	u64 numArgs;
 	CliArg* args;
 };
 
-Str8 FormatArg(const CliArg* arg, Str8 rootDirPath, char pathSepChar)
+Str FormatArg(const CliArg* arg, Str rootDirPath, char pathSepChar)
 {
-	Str8 valTargetStr = StrLit_Const(CLI_VAL_STR);
-	Str8 formatStr = arg->format;
-	Str8 valueStr = StrReplace(arg->value, StrLit(CLI_ROOT_DIR), rootDirPath, false);
+	Str valTargetStr = StrLit_Const(CLI_VAL_STR);
+	Str formatStr = arg->format;
+	Str valueStr = StrReplace(arg->value, StrLit(CLI_ROOT_DIR), rootDirPath, false);
 	FixPathSlashes(valueStr, pathSepChar);
 	
 	u64 insertValIndex = formatStr.length;
@@ -82,7 +82,7 @@ Str8 FormatArg(const CliArg* arg, Str8 rootDirPath, char pathSepChar)
 			if (cIndex > 0 && cIndex + valTargetStr.length < formatStr.length &&
 				formatStr.chars[cIndex-1] == '\"' && formatStr.chars[cIndex + valTargetStr.length] == '\"')
 			{
-				Str8 escapedString = EscapeString(valueStr, false);
+				Str escapedString = EscapeString(valueStr, false);
 				free(valueStr.chars);
 				valueStr = escapedString;
 			}
@@ -102,7 +102,7 @@ Str8 FormatArg(const CliArg* arg, Str8 rootDirPath, char pathSepChar)
 		exit(4);
 	}
 	
-	Str8 result = CopyStr(formatStr, false);
+	Str result = CopyStr(formatStr, false);
 	if (insertValIndex < formatStr.length)
 	{
 		result = StrReplaceRange(formatStr, insertValIndex, insertValIndex + valTargetStr.length, valueStr, true);
@@ -112,33 +112,33 @@ Str8 FormatArg(const CliArg* arg, Str8 rootDirPath, char pathSepChar)
 	return result;
 }
 
-void SplitTagsListStr(Str8 tagsListStr, StrArray* tagArrayPntr)
+void SplitTagsListStr(Str tagsListStr, StrArray* tagArrayPntr)
 {
 	u64 lastCommaIndex = 0;
 	for (u64 cIndex = 0; cIndex <= tagsListStr.length; cIndex++)
 	{
 		if (cIndex == tagsListStr.length || tagsListStr.chars[cIndex] == ',' || tagsListStr.chars[cIndex] == '&' || tagsListStr.chars[cIndex] == '|')
 		{
-			Str8 tagStr = StrSlice(tagsListStr, lastCommaIndex, cIndex);
+			Str tagStr = StrSlice(tagsListStr, lastCommaIndex, cIndex);
 			TrimWhitespace(tagStr);
 			if (tagStr.length > 0) { AddStr(tagArrayPntr, tagStr); }
 			lastCommaIndex = cIndex+1;
 		}
 	}
 }
-void SplitIncludeExcludeTagsListStr(Str8 tagsListStr, StrArray* includeArrayPntr, StrArray* excludeArrayPntr)
+void SplitIncludeExcludeTagsListStr(Str tagsListStr, StrArray* includeArrayPntr, StrArray* excludeArrayPntr)
 {
 	u64 lastCommaIndex = 0;
 	for (u64 cIndex = 0; cIndex <= tagsListStr.length; cIndex++)
 	{
 		if (cIndex == tagsListStr.length || tagsListStr.chars[cIndex] == ',' || tagsListStr.chars[cIndex] == '&' || tagsListStr.chars[cIndex] == '|')
 		{
-			Str8 tagStr = StrSlice(tagsListStr, lastCommaIndex, cIndex);
+			Str tagStr = StrSlice(tagsListStr, lastCommaIndex, cIndex);
 			TrimWhitespace(tagStr);
 			if (tagStr.length > 0)
 			{
-				Str8 equalsTrueStr = StrLit("==true");
-				Str8 equalsFalseStr = StrLit("==false");
+				Str equalsTrueStr = StrLit("==true");
+				Str equalsFalseStr = StrLit("==false");
 				if (tagStr.chars[cIndex] == '!') { AddStr(excludeArrayPntr, StrSliceFrom(tagStr, 1)); }
 				else if (StrExactEndsWith(tagStr, equalsFalseStr)) { AddStr(excludeArrayPntr, StrSlice(tagStr, 0, tagStr.length - equalsFalseStr.length)); }
 				else if (StrExactEndsWith(tagStr, equalsTrueStr)) { AddStr(includeArrayPntr, StrSlice(tagStr, 0, tagStr.length - equalsTrueStr.length)); }
@@ -149,7 +149,7 @@ void SplitIncludeExcludeTagsListStr(Str8 tagsListStr, StrArray* includeArrayPntr
 	}
 }
 
-CliArg* AddTaggedArgStr(CliArgList* list, const char* includeExcludeTagsStr, const char* formatStrNt, Str8 valueStr)
+CliArg* AddTaggedArgStr(CliArgList* list, const char* includeExcludeTagsStr, const char* formatStrNt, Str valueStr)
 {
 	if (list->args == nullptr)
 	{
@@ -161,7 +161,7 @@ CliArg* AddTaggedArgStr(CliArgList* list, const char* includeExcludeTagsStr, con
 	memset(newArg, 0x00, sizeof(CliArg));
 	newArg->format = CopyStrNt(formatStrNt, false);
 	newArg->value = CopyStr(valueStr, false);
-	SplitIncludeExcludeTagsListStr(MakeStr8Nt(includeExcludeTagsStr), &newArg->includeTags, &newArg->excludeTags);
+	SplitIncludeExcludeTagsListStr(MakeStrNt(includeExcludeTagsStr), &newArg->includeTags, &newArg->excludeTags);
 	// if (newArg->includeTags.length > 0 || newArg->excludeTags.length > 0)
 	// {
 	// 	PrintLine("\"%.*s\" has %llu include tag%s and %llu exclude tag%s:",
@@ -177,21 +177,21 @@ CliArg* AddTaggedArgStr(CliArgList* list, const char* includeExcludeTagsStr, con
 }
 CliArg* AddTaggedArgNt(CliArgList* list, const char* includeExcludeTagsStr, const char* formatStrNt, const char* valueStr)
 {
-	return AddTaggedArgStr(list, includeExcludeTagsStr, formatStrNt, MakeStr8Nt(valueStr));
+	return AddTaggedArgStr(list, includeExcludeTagsStr, formatStrNt, MakeStrNt(valueStr));
 }
 CliArg* AddTaggedArgInt(CliArgList* list, const char* includeExcludeTagsStr, const char* formatStrNt, i32 valueInt)
 {
 	char printBuffer[12];
 	int printResult = snprintf(&printBuffer[0], 12, "%d", valueInt);
 	printBuffer[printResult] = '\0';
-	return AddTaggedArgStr(list, includeExcludeTagsStr, formatStrNt, MakeStr8((u64)printResult, &printBuffer[0]));
+	return AddTaggedArgStr(list, includeExcludeTagsStr, formatStrNt, MakeStr((u64)printResult, &printBuffer[0]));
 }
 CliArg* AddTaggedArg(CliArgList* list, const char* includeExcludeTagsStr, const char* formatStrNt)
 {
-	return AddTaggedArgStr(list, includeExcludeTagsStr, formatStrNt, Str8_Empty);
+	return AddTaggedArgStr(list, includeExcludeTagsStr, formatStrNt, Str_Empty);
 }
 
-CliArg* AddArgStr(CliArgList* list, const char* formatStrNt, Str8 valueStr)       { return AddTaggedArgStr(list, "", formatStrNt, valueStr); }
+CliArg* AddArgStr(CliArgList* list, const char* formatStrNt, Str valueStr)       { return AddTaggedArgStr(list, "", formatStrNt, valueStr); }
 CliArg* AddArgNt(CliArgList* list, const char* formatStrNt, const char* valueStr) { return  AddTaggedArgNt(list, "", formatStrNt, valueStr); }
 CliArg* AddArgInt(CliArgList* list, const char* formatStrNt, i32 valueInt)        { return AddTaggedArgInt(list, "", formatStrNt, valueInt); }
 CliArg* AddArg(CliArgList* list, const char* formatStrNt)                         { return    AddTaggedArg(list, "", formatStrNt);           }
@@ -264,20 +264,20 @@ bool DoesArgMatchTags(const CliArg* arg, const StrArray* tagsListPntr)
 	return true;
 }
 
-Str8 FilterAndJoinCliArgsList(Str8 prefix, const CliArgList* list, StrArray* tagsListPntr, bool addNullTerm)
+Str FilterAndJoinCliArgsList(Str prefix, const CliArgList* list, StrArray* tagsListPntr, bool addNullTerm)
 {
 	StrArray localEmptyTagList = ZEROED;
 	if (tagsListPntr == nullptr) { tagsListPntr = &localEmptyTagList; }
 	
 	char pathSepChar = list->pathSepChar;
 	if (pathSepChar == '\0') { pathSepChar = PATH_SEP_CHAR; }
-	Str8 rootDirPath = ZEROED;
+	Str rootDirPath = ZEROED;
 	if (IsEmptyStr(list->rootDirPath)) { rootDirPath = CopyStrLit("..", false); }
 	else { rootDirPath = CopyStr(list->rootDirPath, false); }
 	FixPathSlashes(rootDirPath, pathSepChar);
 	
 	u64 numFormattedStrings = 0;
-	Str8* formattedStrings = (list->numArgs > 0) ? (Str8*)malloc(sizeof(Str8) * list->numArgs) : nullptr;
+	Str* formattedStrings = (list->numArgs > 0) ? (Str*)malloc(sizeof(Str) * list->numArgs) : nullptr;
 	u64 totalLength = prefix.length;
 	for (u64 aIndex = 0; aIndex < list->numArgs; aIndex++)
 	{
@@ -294,7 +294,7 @@ Str8 FilterAndJoinCliArgsList(Str8 prefix, const CliArgList* list, StrArray* tag
 	}
 	free(rootDirPath.chars);
 	
-	Str8 result = AllocStr(totalLength, addNullTerm);
+	Str result = AllocStr(totalLength, addNullTerm);
 	u64 writeIndex = 0;
 	memcpy(&result.chars[writeIndex], &prefix.chars[0], prefix.length); writeIndex += prefix.length;
 	

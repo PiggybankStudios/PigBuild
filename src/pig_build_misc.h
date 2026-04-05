@@ -8,7 +8,7 @@ Date:   06\16\2025
 #define _PIG_BUILD_MISC_H
 
 #include "pig_build_base.h"
-#include "pig_build_str8.h"
+#include "pig_build_str.h"
 
 // +--------------------------------------------------------------+
 // |                            Types                             |
@@ -19,14 +19,14 @@ struct LineParser
 	u64 byteIndex;
 	u64 lineBeginByteIndex;
 	u64 lineIndex; //This is not zero based! It's more like a line number you'd see in the gutter of a text editor! It also contains the total number of lines in the input after the iteration has finished
-	Str8 inputStr;
+	Str inputStr;
 	//TODO: Should we add support for Streams again?
 };
 
 // +--------------------------------------------------------------+
 // |                        Print Helpers                         |
 // +--------------------------------------------------------------+
-void TwoPassPrint(Str8* resultStr, u64* currentByteIndex, const char* formatString, ...)
+void TwoPassPrint(Str* resultStr, u64* currentByteIndex, const char* formatString, ...)
 {
 	u64 printSize = 0;
 	va_list args;
@@ -55,7 +55,7 @@ void TwoPassPrint(Str8* resultStr, u64* currentByteIndex, const char* formatStri
 // +--------------------------------------------------------------+
 // |                         Line Parser                          |
 // +--------------------------------------------------------------+
-LineParser NewLineParser(Str8 inputStr)
+LineParser NewLineParser(Str inputStr)
 {
 	LineParser result = ZEROED;
 	result.byteIndex = 0;
@@ -64,7 +64,7 @@ LineParser NewLineParser(Str8 inputStr)
 	return result;
 }
 
-bool LineParserGetLine(LineParser* parser, Str8* lineOut)
+bool LineParserGetLine(LineParser* parser, Str* lineOut)
 {
 	if (parser->byteIndex >= parser->inputStr.length) { return false; }
 	parser->lineIndex++;
@@ -95,7 +95,7 @@ bool LineParserGetLine(LineParser* parser, Str8* lineOut)
 		}
 	}
 	
-	Str8 line = MakeStr8(parser->byteIndex - startIndex, &parser->inputStr.chars[startIndex]);
+	Str line = MakeStr(parser->byteIndex - startIndex, &parser->inputStr.chars[startIndex]);
 	parser->byteIndex += endOfLineByteSize;
 	if (lineOut != nullptr) { *lineOut = line; }
 	return true;
@@ -104,23 +104,23 @@ bool LineParserGetLine(LineParser* parser, Str8* lineOut)
 // +--------------------------------------------------------------+
 // |                     Extract Define Logic                     |
 // +--------------------------------------------------------------+
-bool IsHeaderLineDefine(Str8 targetDefineName, Str8 line, Str8* valueStrOut)
+bool IsHeaderLineDefine(Str targetDefineName, Str line, Str* valueStrOut)
 {
 	line = TrimWhitespace(line);
 	u64 firstWhitespaceIndex = FindNextWhitespace(line, 0);
 	if (firstWhitespaceIndex < line.length)
 	{
-		Str8 firstToken = StrSlice(line, 0, firstWhitespaceIndex);
+		Str firstToken = StrSlice(line, 0, firstWhitespaceIndex);
 		if (StrExactEquals(firstToken, StrLit("#define")))
 		{
 			line = TrimWhitespace(StrSliceFrom(line, firstWhitespaceIndex+1));
 			u64 identifierEndIndex = FindNextNonIdentifierChar(line, 0);
 			if (identifierEndIndex < line.length)
 			{
-				Str8 nameStr = StrSlice(line, 0, identifierEndIndex);
+				Str nameStr = StrSlice(line, 0, identifierEndIndex);
 				if (StrExactEquals(nameStr, targetDefineName))
 				{
-					Str8 valueStr = TrimWhitespace(StrSliceFrom(line, identifierEndIndex+1));
+					Str valueStr = TrimWhitespace(StrSliceFrom(line, identifierEndIndex+1));
 					if (valueStrOut != nullptr) { *valueStrOut = valueStr; }
 					return true;
 				}
@@ -130,7 +130,7 @@ bool IsHeaderLineDefine(Str8 targetDefineName, Str8 line, Str8* valueStrOut)
 	return false;
 }
 
-bool TryExtractDefineFrom(Str8 headerFileContents, Str8 defineName, Str8* valueOut)
+bool TryExtractDefineFrom(Str headerFileContents, Str defineName, Str* valueOut)
 {
 	u64 lineStartIndex = 0;
 	for (u64 byteIndex = 0; byteIndex < headerFileContents.length; byteIndex++)
@@ -145,9 +145,9 @@ bool TryExtractDefineFrom(Str8 headerFileContents, Str8 defineName, Str8* valueO
 				(character == '\r' && nextCharacter == '\n') ||
 				(character == '\n' && nextCharacter == '\r');
 			
-			Str8 lineStr = MakeStr8(byteIndex - lineStartIndex, &headerFileContents.chars[lineStartIndex]);
+			Str lineStr = MakeStr(byteIndex - lineStartIndex, &headerFileContents.chars[lineStartIndex]);
 			
-			Str8 defineValue = ZEROED;
+			Str defineValue = ZEROED;
 			if (IsHeaderLineDefine(defineName, lineStr, &defineValue))
 			{
 				if (valueOut != nullptr) { *valueOut = defineValue; }
@@ -215,7 +215,7 @@ const char* GetAndroidTargetArchitechtureToolchainFolderStr(AndroidTargetArchite
 	}
 }
 
-Str8 GetAndroidSdkPath()
+Str GetAndroidSdkPath()
 {
 	const char* sdkEnvVariable = getenv("ANDROID_SDK");
 	if (sdkEnvVariable == nullptr)
@@ -223,7 +223,7 @@ Str8 GetAndroidSdkPath()
 		WriteLine_E("Please set the ANDROID_SDK environment variable before trying to build for Android");
 		exit(7);
 	}
-	Str8 result = CopyStr(WithoutTrailingSlash(MakeStr8Nt(sdkEnvVariable)), true);
+	Str result = CopyStr(WithoutTrailingSlash(MakeStrNt(sdkEnvVariable)), true);
 	FixPathSlashes(result, PATH_SEP_CHAR);
 	return result;
 }

@@ -19,7 +19,7 @@ Description:
 #define _PIG_BUILD_NOT_REGEX_H
 
 #include "pig_build_base.h"
-#include "pig_build_str8.h"
+#include "pig_build_str.h"
 
 //NOTE: The macros and functions below act sort of like regular expressions.
 //      For example, CONSUME_WHITESPACE is similar to \s* in RE syntax.
@@ -42,7 +42,7 @@ Description:
 
 #define CONSUME_NT_STR(linePntr, expectedStrNt) do  \
 {                                                   \
-	Str8 expectedStr = StrLit_Const(expectedStrNt); \
+	Str expectedStr = StrLit_Const(expectedStrNt);  \
 	CONSUME_STR((linePntr), expectedStr);           \
 } while(0)
 

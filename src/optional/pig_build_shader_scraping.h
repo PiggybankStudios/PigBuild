@@ -8,12 +8,12 @@ Date:   03\27\2026
 #define _PIG_BUILD_SHADER_SCRAPING_H
 
 #include "pig_build_base.h"
-#include "pig_build_str8.h"
+#include "pig_build_str.h"
 #include "pig_build_file.h"
 #include "pig_build_misc.h"
 #include "optional/pig_build_not_regex.h"
 
-bool IsShaderHeaderLine_Name(Str8 line, Str8* nameOut)
+bool IsShaderHeaderLine_Name(Str line, Str* nameOut)
 {
 	//Matches something like:
 	//	Shader program: 'main2d':
@@ -21,7 +21,7 @@ bool IsShaderHeaderLine_Name(Str8 line, Str8* nameOut)
 	CONSUME_NT_STR(&line, "Shader program:");
 	CONSUME_WHITESPACE(&line);
 	CONSUME_NT_STR(&line, "\'");
-	Str8 nameStr = line;
+	Str nameStr = line;
 	CONSUME_UNTIL_NOT_CHARS(&line, StrLit(IDENTIFIER_CHARS));
 	if (line.chars == nameStr.chars) { return false; }
 	nameStr.length = (u64)(line.chars - nameStr.chars);
@@ -32,7 +32,7 @@ bool IsShaderHeaderLine_Name(Str8 line, Str8* nameOut)
 	return true;
 }
 
-bool IsShaderHeaderLine_Attribute(Str8 shaderName, Str8 line, Str8* nameOut)
+bool IsShaderHeaderLine_Attribute(Str shaderName, Str line, Str* nameOut)
 {
 	//Matches something like:
 	//	#define ATTR_main2d_position (0)
@@ -40,7 +40,7 @@ bool IsShaderHeaderLine_Attribute(Str8 shaderName, Str8 line, Str8* nameOut)
 	CONSUME_NT_STR(&line, "#define ATTR_");
 	CONSUME_STR(&line, shaderName);
 	CONSUME_NT_STR(&line, "_");
-	Str8 nameStr = line;
+	Str nameStr = line;
 	CONSUME_UNTIL_NOT_CHARS(&line, StrLit(IDENTIFIER_CHARS));
 	if (line.chars == nameStr.chars) { return false; }
 	nameStr.length = (u64)(line.chars - nameStr.chars);
@@ -54,7 +54,7 @@ bool IsShaderHeaderLine_Attribute(Str8 shaderName, Str8 line, Str8* nameOut)
 	return true;
 }
 
-bool IsShaderHeaderLine_View(Str8 shaderName, Str8 line, Str8* nameOut)
+bool IsShaderHeaderLine_View(Str shaderName, Str line, Str* nameOut)
 {
 	//Matches something like:
 	//	#define IMG_main2d_texture0 (0)
@@ -62,7 +62,7 @@ bool IsShaderHeaderLine_View(Str8 shaderName, Str8 line, Str8* nameOut)
 	CONSUME_NT_STR(&line, "#define VIEW_");
 	CONSUME_STR(&line, shaderName);
 	CONSUME_NT_STR(&line, "_");
-	Str8 nameStr = line;
+	Str nameStr = line;
 	CONSUME_UNTIL_NOT_CHARS(&line, StrLit(IDENTIFIER_CHARS));
 	if (line.chars == nameStr.chars) { return false; }
 	nameStr.length = (u64)(line.chars - nameStr.chars);
@@ -76,7 +76,7 @@ bool IsShaderHeaderLine_View(Str8 shaderName, Str8 line, Str8* nameOut)
 	return true;
 }
 
-bool IsShaderHeaderLine_Sampler(Str8 shaderName, Str8 line, Str8* nameOut)
+bool IsShaderHeaderLine_Sampler(Str shaderName, Str line, Str* nameOut)
 {
 	//Matches something like:
 	//	#define SMP_main2d_sampler0 (0)
@@ -84,7 +84,7 @@ bool IsShaderHeaderLine_Sampler(Str8 shaderName, Str8 line, Str8* nameOut)
 	CONSUME_NT_STR(&line, "#define SMP_");
 	CONSUME_STR(&line, shaderName);
 	CONSUME_NT_STR(&line, "_");
-	Str8 nameStr = line;
+	Str nameStr = line;
 	CONSUME_UNTIL_NOT_CHARS(&line, StrLit(IDENTIFIER_CHARS));
 	if (line.chars == nameStr.chars) { return false; }
 	nameStr.length = (u64)(line.chars - nameStr.chars);
@@ -98,7 +98,7 @@ bool IsShaderHeaderLine_Sampler(Str8 shaderName, Str8 line, Str8* nameOut)
 	return true;
 }
 
-bool IsShaderHeaderLine_UniformStruct(Str8 shaderName, Str8 line, Str8* nameOut)
+bool IsShaderHeaderLine_UniformStruct(Str shaderName, Str line, Str* nameOut)
 {
 	//Matches something like:
 	//	SOKOL_SHDC_ALIGN(16) typedef struct main2d_VertParams_t {
@@ -113,7 +113,7 @@ bool IsShaderHeaderLine_UniformStruct(Str8 shaderName, Str8 line, Str8* nameOut)
 	CONSUME_WHITESPACE(&line);
 	CONSUME_STR(&line, shaderName);
 	CONSUME_NT_STR(&line, "_");
-	Str8 nameStr = line;
+	Str nameStr = line;
 	CONSUME_UNTIL(&line, StrLit("_t"));
 	if (line.chars == nameStr.chars) { return false; }
 	nameStr.length = (u64)(line.chars - nameStr.chars);
@@ -125,7 +125,7 @@ bool IsShaderHeaderLine_UniformStruct(Str8 shaderName, Str8 line, Str8* nameOut)
 	if (nameOut != nullptr) { *nameOut = nameStr; }
 	return true;
 }
-bool IsShaderHeaderLine_UniformStructEnd(Str8 shaderName, Str8 uniformBlockName, Str8 line)
+bool IsShaderHeaderLine_UniformStructEnd(Str shaderName, Str uniformBlockName, Str line)
 {
 	//Matches something like:
 	//	} main2d_VertParams_t;
@@ -140,17 +140,17 @@ bool IsShaderHeaderLine_UniformStructEnd(Str8 shaderName, Str8 uniformBlockName,
 	if (line.length > 0) { return false; }
 	return true;
 }
-bool IsShaderHeaderLine_UniformMember(Str8 line, Str8* typeOut, Str8* nameOut)
+bool IsShaderHeaderLine_UniformMember(Str line, Str* typeOut, Str* nameOut)
 {
 	//Matches something like:
 	//	mat4 world;
 	CONSUME_WHITESPACE(&line);
-	Str8 typeStr = line;
+	Str typeStr = line;
 	CONSUME_UNTIL_CHARS(&line, StrLit(" \t"));
 	if (line.chars == typeStr.chars) { return false; }
 	typeStr.length = (u64)(line.chars - typeStr.chars);
 	CONSUME_WHITESPACE(&line);
-	Str8 nameStr = line;
+	Str nameStr = line;
 	CONSUME_UNTIL_NOT_CHARS(&line, StrLit(IDENTIFIER_CHARS));
 	if (line.chars == nameStr.chars) { return false; }
 	nameStr.length = (u64)(line.chars - nameStr.chars);
@@ -162,11 +162,11 @@ bool IsShaderHeaderLine_UniformMember(Str8 line, Str8* typeOut, Str8* nameOut)
 	return true;
 }
 
-void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
+void ScrapeShaderHeaderFileAndAddExtraInfo(Str headerPath, Str shaderPath)
 {
-	Str8 headerFileContents = ReadEntireFile(headerPath);
+	Str headerFileContents = ReadEntireFile(headerPath);
 	
-	Str8 shaderName = ZEROED;
+	Str shaderName = ZEROED;
 	StrArray shaderAttributes = ZEROED;
 	StrArray shaderViews = ZEROED;
 	StrArray shaderSamplers = ZEROED;
@@ -175,8 +175,8 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 	StrArray shaderUniformsBlockNames = ZEROED;
 	
 	bool insideUniformBlock = false;
-	Str8 uniformBlockName = ZEROED;
-	Str8 line = ZEROED;
+	Str uniformBlockName = ZEROED;
+	Str line = ZEROED;
 	LineParser lineParser = NewLineParser(headerFileContents);
 	while (LineParserGetLine(&lineParser, &line))
 	{
@@ -190,8 +190,8 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 		}
 		else if (insideUniformBlock)
 		{
-			Str8 uniformType = ZEROED;
-			Str8 uniformName = ZEROED;
+			Str uniformType = ZEROED;
+			Str uniformName = ZEROED;
 			if (IsShaderHeaderLine_UniformStructEnd(shaderName, uniformBlockName, line))
 			{
 				insideUniformBlock = false;
@@ -205,7 +205,7 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 		}
 		else
 		{
-			Str8 name = ZEROED;
+			Str name = ZEROED;
 			if (IsShaderHeaderLine_Attribute(shaderName, line, &name))
 			{
 				// PrintLine("Found attribute \"%.*s\"", StrPrint(name));
@@ -232,8 +232,8 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 	
 	assert(shaderName.length > 0);
 	
-	Str8 shaderFullPath = GetFullPath(shaderPath, '/');
-	Str8 escapedFullShaderPath = EscapeString(shaderFullPath, false);
+	Str shaderFullPath = GetFullPath(shaderPath, '/');
+	Str escapedFullShaderPath = EscapeString(shaderFullPath, false);
 	AppendToFile(headerPath, StrLit(
 		"\n\n//NOTE: These lines were added by pig_build.exe\n"
 		"//NOTE: Because an empty array is invalid in C, we always add at least one dummy entry to these definition #defines while the corresponding COUNT #define will remain 0\n"
@@ -261,7 +261,7 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 		free(escapedFullShaderPath.chars);
 		for (u64 attributeIndex = 0; attributeIndex < shaderAttributes.length; attributeIndex++)
 		{
-			Str8 attributeName = shaderAttributes.strings[attributeIndex];
+			Str attributeName = shaderAttributes.strings[attributeIndex];
 			AppendPrintToFile(headerPath,
 				"\t{ .name=\"%.*s\", .index=ATTR_%.*s_%.*s }, \\\n",
 				StrPrint(attributeName),
@@ -284,7 +284,7 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 		);
 		for (u64 viewIndex = 0; viewIndex < shaderViews.length; viewIndex++)
 		{
-			Str8 viewName = shaderViews.strings[viewIndex];
+			Str viewName = shaderViews.strings[viewIndex];
 			AppendPrintToFile(headerPath,
 				"\t{ .name=\"%.*s_%.*s\", .index=VIEW_%.*s_%.*s }, \\\n",
 				StrPrint(shaderName),
@@ -308,7 +308,7 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 		);
 		for (u64 samplerIndex = 0; samplerIndex < shaderSamplers.length; samplerIndex++)
 		{
-			Str8 samplerName = shaderSamplers.strings[samplerIndex];
+			Str samplerName = shaderSamplers.strings[samplerIndex];
 			AppendPrintToFile(headerPath,
 				"\t{ .name=\"%.*s_%.*s\", .index=SMP_%.*s_%.*s }, \\\n",
 				StrPrint(shaderName),
@@ -332,8 +332,8 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str8 headerPath, Str8 shaderPath)
 		);
 		for (u64 uniformIndex = 0; uniformIndex < shaderUniforms.length; uniformIndex++)
 		{
-			Str8 uniformName = shaderUniforms.strings[uniformIndex];
-			Str8 uniformBlockName = shaderUniformsBlockNames.strings[uniformIndex];
+			Str uniformName = shaderUniforms.strings[uniformIndex];
+			Str uniformBlockName = shaderUniformsBlockNames.strings[uniformIndex];
 			AppendPrintToFile(headerPath,
 				"\t{ .name=\"%.*s\", "
 				".blockIndex=UB_%.*s_%.*s, "
@@ -356,7 +356,7 @@ typedef struct FindShadersContext FindShadersContext;
 struct FindShadersContext
 {
 	u64 ignoreListLength;
-	Str8* ignoreList;
+	Str* ignoreList;
 	StrArray shaderPaths;
 	StrArray headerPaths;
 	StrArray sourcePaths;
@@ -367,7 +367,7 @@ struct FindShadersContext
 // +==============================+
 // |   FindShaderFilesCallback    |
 // +==============================+
-// bool FindShaderFilesCallback(Str8 path, bool isFolder, void* contextPntr)
+// bool FindShaderFilesCallback(Str path, bool isFolder, void* contextPntr)
 RECURSIVE_DIR_WALK_CALLBACK_DEF(FindShaderFilesCallback)
 {
 	FindShadersContext* context = (FindShadersContext*)contextPntr;
@@ -381,8 +381,8 @@ RECURSIVE_DIR_WALK_CALLBACK_DEF(FindShaderFilesCallback)
 	
 	if (!isFolder && StrExactEndsWith(path, StrLit(".glsl")))
 	{
-		Str8 shaderName = GetFileNamePart(path, false);
-		Str8 rootPath = StrReplace(path, StrLit(".."), StrLit("[ROOT]"), false);
+		Str shaderName = GetFileNamePart(path, false);
+		Str rootPath = StrReplace(path, StrLit(".."), StrLit("[ROOT]"), false);
 		FixPathSlashes(rootPath, '/');
 		AddStr(&context->shaderPaths, rootPath);
 		AddStr(&context->headerPaths, JoinStrings2(rootPath, StrLit(".h"), true));

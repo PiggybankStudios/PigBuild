@@ -11,7 +11,7 @@ Description:
 #define _PIG_BUILD_H
 
 #include "pig_build_base.h"
-#include "pig_build_str8.h"
+#include "pig_build_str.h"
 #include "pig_build_str_array.h"
 #include "pig_build_file.h"
 #include "pig_build_misc.h"

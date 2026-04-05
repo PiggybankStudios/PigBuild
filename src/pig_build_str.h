@@ -1,35 +1,35 @@
 /*
-File:   pig_build_str8.h
+File:   pig_build_str.h
 Author: Taylor Robbins
 Date:   03\21\2026
 */
 
-#ifndef _PIG_BUILD_STR_8_H
-#define _PIG_BUILD_STR_8_H
+#ifndef _PIG_BUILD_STR_H
+#define _PIG_BUILD_STR_H
 
 #include "pig_build_base.h"
 
-typedef struct Str8 Str8;
-struct Str8
+typedef struct Str Str;
+struct Str
 {
 	u64 length;
 	union { char* chars; u8* bytes; void* pntr; };
 };
 
 // +--------------------------------------------------------------+
-// |                         Str8 Macros                          |
+// |                         Str Macros                          |
 // +--------------------------------------------------------------+
-#define MakeStr8_Const(lengthValue, pntrValue) { .length=(lengthValue), .pntr=(void*)(pntrValue) }
-#define MakeStr8(length, pntr) (Str8)MakeStr8_Const((length), (pntr))
-#define Str8_Empty_Const MakeStr8_Const(0, nullptr)
-#define Str8_Empty       MakeStr8(0, nullptr)
+#define MakeStr_Const(lengthValue, pntrValue) { .length=(lengthValue), .pntr=(void*)(pntrValue) }
+#define MakeStr(length, pntr) (Str)MakeStr_Const((length), (pntr))
+#define Str_Empty_Const MakeStr_Const(0, nullptr)
+#define Str_Empty       MakeStr(0, nullptr)
 
 #define StrLitLength(stringLiteral) ((sizeof(stringLiteral) / sizeof((stringLiteral)[0])) - sizeof((stringLiteral)[0]))
-#define StrLit_Const(stringLiteral) MakeStr8_Const(StrLitLength(CheckStrLit(stringLiteral)), (stringLiteral))
-#define StrLit(stringLiteral)       MakeStr8(StrLitLength(CheckStrLit(stringLiteral)), (stringLiteral))
-#define MakeStr8Nt(nullTermPntr)    MakeStr8((u64)strlen(nullTermPntr), (nullTermPntr))
+#define StrLit_Const(stringLiteral) MakeStr_Const(StrLitLength(CheckStrLit(stringLiteral)), (stringLiteral))
+#define StrLit(stringLiteral)       MakeStr(StrLitLength(CheckStrLit(stringLiteral)), (stringLiteral))
+#define MakeStrNt(nullTermPntr)    MakeStr((u64)strlen(nullTermPntr), (nullTermPntr))
 
-//NOTE: This is meant to be used when formatting Str8 using any printf like functions
+//NOTE: This is meant to be used when formatting Str using any printf like functions
 //      Use the format specifier %.*s and then this macro in the var-args
 #define StrPrint(string)   (int)(string).length, (string).chars
 
@@ -37,18 +37,18 @@ struct Str8
 #define IsEmptyStrPntr(stringPntr) ((stringPntr) == nullptr || (stringPntr)->length == 0)
 
 // +--------------------------------------------------------------+
-// |                        Str8 Functions                        |
+// |                        Str Functions                        |
 // +--------------------------------------------------------------+
-void FreeStr(Str8* strPntr)
+void FreeStr(Str* strPntr)
 {
 	assert(strPntr->length == 0 || strPntr->chars != nullptr);
-	if (strPntr->chars == nullptr) { memset(strPntr, 0x00, sizeof(Str8)); return; }
+	if (strPntr->chars == nullptr) { memset(strPntr, 0x00, sizeof(Str)); return; }
 	free(strPntr->chars);
-	memset(strPntr, 0x00, sizeof(Str8));
+	memset(strPntr, 0x00, sizeof(Str));
 }
-Str8 CopyStr(Str8 strToCopy, bool addNullTerm)
+Str CopyStr(Str strToCopy, bool addNullTerm)
 {
-	Str8 result = ZEROED;
+	Str result = ZEROED;
 	if (strToCopy.length == 0 && !addNullTerm) { return result; }
 	result.length = strToCopy.length;
 	result.chars = (char*)malloc(strToCopy.length + (addNullTerm ? 1 : 0));
@@ -57,14 +57,14 @@ Str8 CopyStr(Str8 strToCopy, bool addNullTerm)
 	if (addNullTerm) { result.chars[result.length] = '\0'; }
 	return result;
 }
-Str8 CopyStrNt(const char* strToCopyNt, bool addNullTerm)
+Str CopyStrNt(const char* strToCopyNt, bool addNullTerm)
 {
-	return CopyStr(MakeStr8Nt(strToCopyNt), addNullTerm);
+	return CopyStr(MakeStrNt(strToCopyNt), addNullTerm);
 }
 #define CopyStrLit(stringLiteral, addNullTerm) CopyStr(StrLit(stringLiteral), (addNullTerm))
-Str8 AllocStr(u64 length, bool addNullTerm)
+Str AllocStr(u64 length, bool addNullTerm)
 {
-	Str8 result = ZEROED;
+	Str result = ZEROED;
 	if (length == 0 && !addNullTerm) { return result; }
 	result.length = length;
 	result.chars = (char*)malloc(length + (addNullTerm ? 1 : 0));
@@ -74,7 +74,7 @@ Str8 AllocStr(u64 length, bool addNullTerm)
 	return result;
 }
 
-bool StrExactEquals(Str8 left, Str8 right)
+bool StrExactEquals(Str left, Str right)
 {
 	if (left.length != right.length) { return false; }
 	if (left.length == 0) { return true; }
@@ -82,18 +82,18 @@ bool StrExactEquals(Str8 left, Str8 right)
 	assert(right.chars != nullptr);
 	return (memcmp(left.chars, right.chars, left.length) == 0);
 }
-Str8 StrSlice(Str8 target, u64 startIndex, u64 endIndex)
+Str StrSlice(Str target, u64 startIndex, u64 endIndex)
 {
 	assert(startIndex <= target.length);
 	assert(endIndex <= target.length);
 	assert(startIndex <= endIndex);
-	return MakeStr8(endIndex - startIndex, target.chars + startIndex);
+	return MakeStr(endIndex - startIndex, target.chars + startIndex);
 }
-Str8 StrSliceFrom(Str8 target, u64 startIndex)
+Str StrSliceFrom(Str target, u64 startIndex)
 {
 	return StrSlice(target, startIndex, target.length);
 }
-bool StrExactContains(Str8 haystack, Str8 needle)
+bool StrExactContains(Str haystack, Str needle)
 {
 	assert(needle.length > 0);
 	if (haystack.length < needle.length) { return false; }
@@ -103,19 +103,19 @@ bool StrExactContains(Str8 haystack, Str8 needle)
 	}
 	return false;
 }
-bool StrExactStartsWith(Str8 target, Str8 prefix)
+bool StrExactStartsWith(Str target, Str prefix)
 {
 	assert(prefix.length > 0);
 	if (target.length < prefix.length) { return false; }
 	return StrExactEquals(StrSlice(target, 0, prefix.length), prefix);
 }
-bool StrExactEndsWith(Str8 target, Str8 suffix)
+bool StrExactEndsWith(Str target, Str suffix)
 {
 	assert(suffix.length > 0);
 	if (target.length < suffix.length) { return false; }
 	return StrExactEquals(StrSlice(target, target.length - suffix.length, target.length), suffix);
 }
-Str8 GetDirectoryPart(Str8 fullPath, bool includeTrailingSlash)
+Str GetDirectoryPart(Str fullPath, bool includeTrailingSlash)
 {
 	u64 lastSlashIndex = fullPath.length;
 	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
@@ -126,7 +126,7 @@ Str8 GetDirectoryPart(Str8 fullPath, bool includeTrailingSlash)
 	if (lastSlashIndex < fullPath.length) { return StrSlice(fullPath, 0, lastSlashIndex + (includeTrailingSlash ? 1 : 0)); }
 	else { return fullPath; }
 }
-Str8 GetFileNamePart(Str8 fullPath, bool includeExtension)
+Str GetFileNamePart(Str fullPath, bool includeExtension)
 {
 	u64 lastSlashIndex = fullPath.length;
 	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
@@ -137,7 +137,7 @@ Str8 GetFileNamePart(Str8 fullPath, bool includeExtension)
 	if (lastSlashIndex < fullPath.length) { return StrSliceFrom(fullPath, lastSlashIndex+1); }
 	else { return fullPath; }
 }
-Str8 GetFileExtPart(Str8 fullPath)
+Str GetFileExtPart(Str fullPath)
 {
 	u64 periodIndex = fullPath.length;
 	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
@@ -163,15 +163,15 @@ bool IsCharIdentifier(char character, bool isFirstChar)
 	if (!isFirstChar && character >= '0' && character <= '9') { return true; }
 	return false;
 }
-Str8 TrimWhitespace(Str8 target)
+Str TrimWhitespace(Str target)
 {
 	assert(target.length == 0 || target.chars != nullptr);
-	Str8 result = target;
+	Str result = target;
 	while (result.length > 0 && IsCharWhitespace(result.chars[0])) { result.chars++; result.length--; }
 	while (result.length > 0 && IsCharWhitespace(result.chars[result.length-1])) { result.length--; }
 	return result;
 }
-u64 FindNextWhitespace(Str8 targetStr, u64 startIndex)
+u64 FindNextWhitespace(Str targetStr, u64 startIndex)
 {
 	assert(startIndex <= targetStr.length);
 	for (u64 bIndex = startIndex; bIndex < targetStr.length; bIndex++)
@@ -180,7 +180,7 @@ u64 FindNextWhitespace(Str8 targetStr, u64 startIndex)
 	}
 	return targetStr.length;
 }
-u64 FindNextNonIdentifierChar(Str8 targetStr, u64 startIndex)
+u64 FindNextNonIdentifierChar(Str targetStr, u64 startIndex)
 {
 	assert(startIndex <= targetStr.length);
 	for (u64 bIndex = startIndex; bIndex < targetStr.length; bIndex++)
@@ -190,7 +190,7 @@ u64 FindNextNonIdentifierChar(Str8 targetStr, u64 startIndex)
 	return targetStr.length;
 }
 
-bool TryParseBoolArg(Str8 boolStr, bool* valueOut)
+bool TryParseBoolArg(Str boolStr, bool* valueOut)
 {
 	if (StrExactEquals(boolStr, StrLit("1"))) { *valueOut = true; return true; }
 	if (StrExactEquals(boolStr, StrLit("0"))) { *valueOut = false; return true; }
@@ -199,9 +199,9 @@ bool TryParseBoolArg(Str8 boolStr, bool* valueOut)
 	return false;
 }
 
-Str8 EscapeString(Str8 unescapedString, bool addNullTerm)
+Str EscapeString(Str unescapedString, bool addNullTerm)
 {
-	Str8 result = ZEROED;
+	Str result = ZEROED;
 	for (int pass = 0; pass < 2; pass++)
 	{
 		u64 byteIndex = 0;
@@ -241,17 +241,17 @@ Str8 EscapeString(Str8 unescapedString, bool addNullTerm)
 	return result;
 }
 
-Str8 JoinStrings2(Str8 left, Str8 right, bool addNullTerm)
+Str JoinStrings2(Str left, Str right, bool addNullTerm)
 {
-	Str8 result = AllocStr(left.length + right.length, addNullTerm);
+	Str result = AllocStr(left.length + right.length, addNullTerm);
 	if (left.length > 0) { memcpy(&result.chars[0], &left.chars[0], left.length); }
 	if (right.length > 0) { memcpy(&result.chars[left.length], &right.chars[0], right.length); }
 	if (addNullTerm) { result.chars[result.length] = '\0'; }
 	return result;
 }
-Str8 JoinStrings3(Str8 left, Str8 middle, Str8 right, bool addNullTerm)
+Str JoinStrings3(Str left, Str middle, Str right, bool addNullTerm)
 {
-	Str8 result = AllocStr(left.length + middle.length + right.length, addNullTerm);
+	Str result = AllocStr(left.length + middle.length + right.length, addNullTerm);
 	if (left.length > 0) { memcpy(&result.chars[0], &left.chars[0], left.length); }
 	if (middle.length > 0) { memcpy(&result.chars[left.length], &middle.chars[0], middle.length); }
 	if (right.length > 0) { memcpy(&result.chars[left.length + middle.length], &right.chars[0], right.length); }
@@ -260,7 +260,7 @@ Str8 JoinStrings3(Str8 left, Str8 middle, Str8 right, bool addNullTerm)
 }
 
 //Returns the number of target characters that were replaced
-u64 StrReplaceChars(Str8 haystack, char targetChar, char replaceChar)
+u64 StrReplaceChars(Str haystack, char targetChar, char replaceChar)
 {
 	u64 numReplacements = 0;
 	for (u64 cIndex = 0; cIndex < haystack.length; cIndex++)
@@ -274,36 +274,36 @@ u64 StrReplaceChars(Str8 haystack, char targetChar, char replaceChar)
 	return numReplacements;
 }
 
-void FixPathSlashes(Str8 path, char slashChar)
+void FixPathSlashes(Str path, char slashChar)
 {
 	StrReplaceChars(path, (slashChar == '/') ? '\\' : '/', slashChar);
 }
 
-bool HasTrailingSlash(Str8 path)
+bool HasTrailingSlash(Str path)
 {
 	return (path.length > 0 && IsSlash(path.chars[path.length-1]));
 }
 
-Str8 WithoutTrailingSlash(Str8 path)
+Str WithoutTrailingSlash(Str path)
 {
 	if (HasTrailingSlash(path)) { return StrSlice(path, 0, path.length-1); }
 	else { return path; }
 }
-Str8 WithTrailingSlash(Str8 path)
+Str WithTrailingSlash(Str path)
 {
 	if (HasTrailingSlash(path)) { return path; }
 	else { return JoinStrings2(path, StrLit("/"), true); }
 }
 
-Str8 JoinPaths(Str8 leftPath, Str8 rightPath, bool addNullTerm)
+Str JoinPaths(Str leftPath, Str rightPath, bool addNullTerm)
 {
 	if (leftPath.length == 0 || rightPath.length == 0 || HasTrailingSlash(leftPath) || IsSlash(rightPath.chars[0])) { return JoinStrings2(leftPath, rightPath, addNullTerm); }
 	else { return JoinStrings3(leftPath, StrLit("/"), rightPath, addNullTerm); }
 }
 
-Str8 StrReplace(Str8 haystack, Str8 target, Str8 replacement, bool addNullTerm)
+Str StrReplace(Str haystack, Str target, Str replacement, bool addNullTerm)
 {
-	Str8 result = ZEROED;
+	Str result = ZEROED;
 	for (u64 cIndex = 0; cIndex < haystack.length; cIndex++)
 	{
 		if (cIndex + target.length <= haystack.length &&
@@ -334,17 +334,17 @@ Str8 StrReplace(Str8 haystack, Str8 target, Str8 replacement, bool addNullTerm)
 	if (addNullTerm) { result.chars[result.length] = '\0'; }
 	return result;
 }
-Str8 StrReplaceRange(Str8 targetStr, u64 startIndex, u64 endIndex, Str8 replacementStr, bool addNullTerm)
+Str StrReplaceRange(Str targetStr, u64 startIndex, u64 endIndex, Str replacementStr, bool addNullTerm)
 {
 	assert(startIndex <= targetStr.length);
 	assert(endIndex <= targetStr.length);
-	Str8 leftPart = StrSlice(targetStr, 0, Min2(startIndex, endIndex));
-	Str8 rightPart = StrSliceFrom(targetStr, Max2(startIndex, endIndex));
+	Str leftPart = StrSlice(targetStr, 0, Min2(startIndex, endIndex));
+	Str rightPart = StrSliceFrom(targetStr, Max2(startIndex, endIndex));
 	return JoinStrings3(leftPart, replacementStr, rightPart, addNullTerm);
 }
-Str8 StrInsert(Str8 targetStr, u64 insertIndex, Str8 insertStr, bool addNullTerm)
+Str StrInsert(Str targetStr, u64 insertIndex, Str insertStr, bool addNullTerm)
 {
 	return StrReplaceRange(targetStr, insertIndex, insertIndex, insertStr, addNullTerm);
 }
 
-#endif //  _PIG_BUILD_STR_8_H
+#endif //  _PIG_BUILD_STR_H

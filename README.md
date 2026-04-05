@@ -31,7 +31,7 @@ The code in this repo used to live in [PigCore](https://github.com/PiggybankStud
 
 	* `#include "pig_build_base.h"` - **NOTE:** This file is required to be included and included first if you want to use any of the other files. This also includes a few standard library headers that are used in other pig_build files
 	
-	* `#include "pig_build_str8.h"`
+	* `#include "pig_build_str.h"`
 	
 	* `#include "pig_build_str_array.h"`
 	

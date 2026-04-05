@@ -14,15 +14,15 @@ Description:
 #define _PIG_BUILD_PIG_CORE_FLAGS_H
 
 #include "pig_build_base.h"
-#include "pig_build_str8.h"
+#include "pig_build_str.h"
 #include "pig_build_cli_flags.h"
 #include "pig_build_arg_list.h"
 
 void FillPigCoreFlags(CliArgList* compilerFlags, CliArgList* linkerFlags,
-	Str8 pigCoreThirdPartyPath,
-	Str8 androidNdkDir, Str8 androidNdkToolchainDir,
-	Str8 orcaSdkPath,
-	Str8 playdateSdkDir, Str8 playdateSdkDir_C_API)
+	Str pigCoreThirdPartyPath,
+	Str androidNdkDir, Str androidNdkToolchainDir,
+	Str orcaSdkPath,
+	Str playdateSdkDir, Str playdateSdkDir_C_API)
 {
 	// +--------------------------------------------------------------+
 	// |                        Compiler Flags                        |
@@ -122,10 +122,10 @@ void FillPigCoreFlags(CliArgList* compilerFlags, CliArgList* linkerFlags,
 	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_INCLUDE_DIR, "/usr/include/dbus-1.0");
 	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/dbus-1.0/include"); //This was the path on Lubuntu
 	AddTaggedArgNt(compilerFlags, EXE_CLANG "|LinuxOrOsx", CLANG_INCLUDE_DIR, "/usr/lib64/dbus-1.0/include"); //This is the path on Fedora Workstation
-	Str8 freetypeDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/freetype/include"), false);
+	Str freetypeDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/freetype/include"), false);
 	AddTaggedArgStr(compilerFlags, EXE_MSVC_CL "|BUILD_WITH_FREETYPE", CL_INCLUDE_DIR, freetypeDir);
 	AddTaggedArgStr(compilerFlags, EXE_CLANG "|BUILD_WITH_FREETYPE", CLANG_INCLUDE_DIR, freetypeDir);
-	Str8 plutosvgDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/plutosvg"), false);
+	Str plutosvgDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/plutosvg"), false);
 	AddTaggedArgStr(compilerFlags, EXE_MSVC_CL "|BUILD_WITH_FREETYPE", CL_INCLUDE_DIR, plutosvgDir);
 	AddTaggedArgStr(compilerFlags, EXE_CLANG "|BUILD_WITH_FREETYPE", CLANG_INCLUDE_DIR, plutosvgDir);
 	//TODO: Really we should do `pkg-config --cflags gtk4`

@@ -8,18 +8,18 @@ Date:   03\21\2026
 #define _PIG_BUILD_FILE_H
 
 #include "pig_build_base.h"
-#include "pig_build_str8.h"
+#include "pig_build_str.h"
 
 typedef struct FileIter FileIter;
 struct FileIter
 {
 	bool finished;
-	Str8 folderPathNt;
+	Str folderPathNt;
 	u64 index;
 	u64 nextIndex;
 	
 	#if BUILDING_ON_WINDOWS
-	Str8 folderPathWithWildcard;
+	Str folderPathWithWildcard;
 	WIN32_FIND_DATAA findData;
 	HANDLE handle;
 	#elif BUILDING_ON_LINUX || BUILDING_ON_OSX
@@ -27,7 +27,7 @@ struct FileIter
 	#endif
 };
 
-#define RECURSIVE_DIR_WALK_CALLBACK_DEF(functionName) bool functionName(Str8 path, bool isFolder, void* contextPntr)
+#define RECURSIVE_DIR_WALK_CALLBACK_DEF(functionName) bool functionName(Str path, bool isFolder, void* contextPntr)
 typedef RECURSIVE_DIR_WALK_CALLBACK_DEF(RecursiveDirWalkCallback_f);
 
 // +--------------------------------------------------------------+
@@ -35,13 +35,13 @@ typedef RECURSIVE_DIR_WALK_CALLBACK_DEF(RecursiveDirWalkCallback_f);
 // +--------------------------------------------------------------+
 // Result is always null-terminated
 // TODO: On linux this will not work properly for paths to folders that don't exist yet
-Str8 GetFullPath(Str8 relativePath, char slashChar)
+Str GetFullPath(Str relativePath, char slashChar)
 {
-	Str8 result = ZEROED;
+	Str result = ZEROED;
 	
 	#if BUILDING_ON_WINDOWS
 	{
-		Str8 relativePathNt = CopyStr(relativePath, true);
+		Str relativePathNt = CopyStr(relativePath, true);
 		FixPathSlashes(relativePathNt, PATH_SEP_CHAR);
 		
 		// Returns required buffer size +1 when the nBufferLength is too small
@@ -70,14 +70,14 @@ Str8 GetFullPath(Str8 relativePath, char slashChar)
 	}
 	#elif (BUILDING_ON_LINUX || BUILDING_ON_OSX)
 	{
-		Str8 relativePathNt = CopyStr(relativePath, true);
+		Str relativePathNt = CopyStr(relativePath, true);
 		FixPathSlashes(relativePathNt, PATH_SEP_CHAR);
 		
 		char* temporaryBuffer = (char*)malloc(PATH_MAX);
 		char* realPathResult = realpath(relativePathNt.chars, temporaryBuffer);
 		assert(realPathResult != nullptr);
 		
-		result = CopyStr(MakeStr8Nt(realPathResult), true);
+		result = CopyStr(MakeStrNt(realPathResult), true);
 		
 		FixPathSlashes(result, slashChar);
 		free(temporaryBuffer);
@@ -90,9 +90,9 @@ Str8 GetFullPath(Str8 relativePath, char slashChar)
 	return result;
 }
 
-bool TryReadFile(Str8 filePath, Str8* contentsOut)
+bool TryReadFile(Str filePath, Str* contentsOut)
 {
-	Str8 filePathNt = CopyStr(filePath, true);
+	Str filePathNt = CopyStr(filePath, true);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
 	
 	//NOTE: We open the file in binary mode because otherwise the result from jumping to SEEK_END to
@@ -134,17 +134,17 @@ bool TryReadFile(Str8 filePath, Str8* contentsOut)
 	return true;
 }
 //NOTE: We can't name this "ReadFile" because it conflicts with a Windows function
-Str8 ReadEntireFile(Str8 filePath)
+Str ReadEntireFile(Str filePath)
 {
-	Str8 result = ZEROED;
+	Str result = ZEROED;
 	bool readSuccess = TryReadFile(filePath, &result);
 	if (!readSuccess) { exit(3); }
 	return result;
 }
 
-void CreateAndWriteFile(Str8 filePath, Str8 contents, bool convertNewLines)
+void CreateAndWriteFile(Str filePath, Str contents, bool convertNewLines)
 {
-	Str8 filePathNt = CopyStr(filePath, true);
+	Str filePathNt = CopyStr(filePath, true);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
 	
 	#if BUILDING_ON_WINDOWS
@@ -200,9 +200,9 @@ void CreateAndWriteFile(Str8 filePath, Str8 contents, bool convertNewLines)
 	free(filePathNt.chars);
 }
 
-void AppendToFile(Str8 filePath, Str8 contentsToAppend, bool convertNewLines)
+void AppendToFile(Str filePath, Str contentsToAppend, bool convertNewLines)
 {
-	Str8 filePathNt = CopyStr(filePath, true);
+	Str filePathNt = CopyStr(filePath, true);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
 	
 	#if BUILDING_ON_WINDOWS
@@ -270,7 +270,7 @@ void AppendToFile(Str8 filePath, Str8 contentsToAppend, bool convertNewLines)
 	
 	free(filePathNt.chars);
 }
-void AppendPrintToFile(Str8 filePath, const char* formatString, ...)
+void AppendPrintToFile(Str filePath, const char* formatString, ...)
 {
 	char printBuffer[512];
 	
@@ -280,13 +280,13 @@ void AppendPrintToFile(Str8 filePath, const char* formatString, ...)
 	va_end(args);
 	assert(printResult >= 0);
 	assert(printResult < ArrayCount(printBuffer));
-	Str8 printedStr = MakeStr8((u64)printResult, &printBuffer[0]);
+	Str printedStr = MakeStr((u64)printResult, &printBuffer[0]);
 	AppendToFile(filePath, printedStr, true);
 }
 
-void RemoveFile(Str8 filePath)
+void RemoveFile(Str filePath)
 {
-	Str8 filePathNt = CopyStr(filePath, true);
+	Str filePathNt = CopyStr(filePath, true);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
 	
 	#if BUILDING_ON_WINDOWS
@@ -303,9 +303,9 @@ void RemoveFile(Str8 filePath)
 	#endif
 }
 
-void MyRemoveDirectory(Str8 folderPath, bool recursive)
+void MyRemoveDirectory(Str folderPath, bool recursive)
 {
-	Str8 folderPathNt = CopyStr(folderPath, true);
+	Str folderPathNt = CopyStr(folderPath, true);
 	FixPathSlashes(folderPathNt, PATH_SEP_CHAR);
 	
 	if (!recursive)
@@ -321,7 +321,7 @@ void MyRemoveDirectory(Str8 folderPath, bool recursive)
 	{
 		#if BUILDING_ON_WINDOWS
 		{
-			Str8 searchStr = JoinPaths(folderPathNt, StrLit("*"), true);
+			Str searchStr = JoinPaths(folderPathNt, StrLit("*"), true);
 			
 			WIN32_FIND_DATAA findData = ZEROED;
 			HANDLE iterHandle = FindFirstFileA(searchStr.chars, &findData);
@@ -329,9 +329,9 @@ void MyRemoveDirectory(Str8 folderPath, bool recursive)
 			
 			do
 			{
-				Str8 fileNameStr = MakeStr8Nt(findData.cFileName);
+				Str fileNameStr = MakeStrNt(findData.cFileName);
 				if (StrExactEquals(fileNameStr, StrLit(".")) || StrExactEquals(fileNameStr, StrLit(".."))) { continue; }
-				Str8 fullPath = JoinPaths(folderPath, fileNameStr, false);
+				Str fullPath = JoinPaths(folderPath, fileNameStr, false);
 				
 				if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 				{
@@ -360,9 +360,9 @@ void MyRemoveDirectory(Str8 folderPath, bool recursive)
 	}
 }
 
-void CopyFileToPath(Str8 filePath, Str8 newFilePath, bool copyPermissions)
+void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
 {
-	Str8 fileContents = ZEROED;
+	Str fileContents = ZEROED;
 	bool readSuccess = TryReadFile(filePath, &fileContents);
 	assert(readSuccess);
 	CreateAndWriteFile(newFilePath, fileContents, false);
@@ -370,29 +370,29 @@ void CopyFileToPath(Str8 filePath, Str8 newFilePath, bool copyPermissions)
 	#if BUILDING_ON_LINUX
 	if (copyPermissions)
 	{
-		Str8 filePathNt = CopyStr(filePath, true);
+		Str filePathNt = CopyStr(filePath, true);
 		struct stat oldFileStats = ZEROED;
 		int statResult = stat(filePathNt.chars, &oldFileStats);
 		assert(statResult == 0);
 		free(filePathNt.chars);
 		
-		Str8 newFilePathNt = CopyStr(newFilePath, true);
+		Str newFilePathNt = CopyStr(newFilePath, true);
 		int modResult = chmod(newFilePathNt.chars, oldFileStats.st_mode);
 		assert(modResult == 0);
 		free(newFilePathNt.chars);
 	}
 	#endif
 }
-void CopyFileToFolder(Str8 filePath, Str8 folderPath, bool copyPermissions)
+void CopyFileToFolder(Str filePath, Str folderPath, bool copyPermissions)
 {
-	Str8 newPath = JoinPaths(folderPath, GetFileNamePart(filePath, true), false);
+	Str newPath = JoinPaths(folderPath, GetFileNamePart(filePath, true), false);
 	CopyFileToPath(filePath, newPath, copyPermissions);
 	free(newPath.chars);
 }
 
-bool DoesFileExist(Str8 filePath)
+bool DoesFileExist(Str filePath)
 {
-	Str8 filePathNt = CopyStr(filePath, true);
+	Str filePathNt = CopyStr(filePath, true);
 	#if BUILDING_ON_WINDOWS
 	{
 		BOOL fileExistsResult = PathFileExistsA(filePathNt.chars);
@@ -411,7 +411,7 @@ bool DoesFileExist(Str8 filePath)
 	#endif
 }
 
-void AssertFileExist(Str8 filePath, bool wasCreatedByBuild)
+void AssertFileExist(Str filePath, bool wasCreatedByBuild)
 {
 	if (!DoesFileExist(filePath))
 	{
@@ -420,7 +420,7 @@ void AssertFileExist(Str8 filePath, bool wasCreatedByBuild)
 	}
 }
 
-FileIter StartFileIter(Str8 folderPath)
+FileIter StartFileIter(Str folderPath)
 {
 	FileIter result = ZEROED;
 	result.index = UINT64_MAX;
@@ -451,7 +451,7 @@ FileIter StartFileIter(Str8 folderPath)
 }
 
 // Ex version gives isFolderOut
-bool StepFileIter(FileIter* fileIter, Str8* pathOut, bool* isFolderOut)
+bool StepFileIter(FileIter* fileIter, Str* pathOut, bool* isFolderOut)
 {
 	if (fileIter->finished) { return false; }
 	
@@ -484,7 +484,7 @@ bool StepFileIter(FileIter* fileIter, Str8* pathOut, bool* isFolderOut)
 				}
 			}
 			
-			Str8 fileName = MakeStr8Nt(fileIter->findData.cFileName);
+			Str fileName = MakeStrNt(fileIter->findData.cFileName);
 			
 			//ignore current and parent folder entries
 			if (StrExactEquals(fileName, StrLit(".")) || StrExactEquals(fileName, StrLit("..")))
@@ -528,10 +528,10 @@ bool StepFileIter(FileIter* fileIter, Str8* pathOut, bool* isFolderOut)
 				return false;
 			}
 			
-			Str8 fileName = MakeStr8Nt(entry->d_name);
+			Str fileName = MakeStrNt(entry->d_name);
 			if (StrExactEquals(fileName, StrLit(".")) || StrExactEquals(fileName, StrLit(".."))) { continue; } //ignore current and parent folder entries
 			
-			Str8 fullPath = JoinStrings2(fileIter->folderPathNt, fileName, true);
+			Str fullPath = JoinStrings2(fileIter->folderPathNt, fileName, true);
 			if (isFolderOut != nullptr)
 			{
 				struct stat statStruct = ZEROED;
@@ -567,10 +567,10 @@ bool StepFileIter(FileIter* fileIter, Str8* pathOut, bool* isFolderOut)
 	return false;
 }
 
-void RecursiveDirWalk(Str8 rootDir, RecursiveDirWalkCallback_f* callback, void* contextPntr)
+void RecursiveDirWalk(Str rootDir, RecursiveDirWalkCallback_f* callback, void* contextPntr)
 {
 	FileIter iter = StartFileIter(rootDir);
-	Str8 path = ZEROED;
+	Str path = ZEROED;
 	bool isFolder = false;
 	while (StepFileIter(&iter, &path, &isFolder))
 	{
