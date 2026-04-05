@@ -92,17 +92,17 @@ void TwoPassPrint(Str* resultStr, u64* currentByteIndex, const char* formatStrin
 	va_start(args, formatString);
 	int measureResult = vsnprintf(nullptr, 0, formatString, args);
 	va_end(args);
-	assert(measureResult >= 0);
+	Assert(measureResult >= 0);
 	
 	printSize = (u64)measureResult;
 	if (resultStr->chars != nullptr)
 	{
-		assert(*currentByteIndex <= resultStr->length);
+		Assert(*currentByteIndex <= resultStr->length);
 		u64 spaceLeft = resultStr->length - *currentByteIndex;
-		assert(printSize <= spaceLeft);
+		Assert(printSize <= spaceLeft);
 		va_start(args, formatString);
 		int printResult = vsnprintf(&resultStr->chars[*currentByteIndex], measureResult+1, formatString, args);
-		assert(printResult == measureResult);
+		Assert(printResult == measureResult);
 		resultStr->chars[*currentByteIndex + printSize] = '\0';
 		va_end(args);
 	}
@@ -287,7 +287,7 @@ void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str outputFilePath)
 		memcpy(&combinedContents.chars[writeIndex], inputFileContents.chars, inputFileContents.length);
 		writeIndex += inputFileContents.length;
 	}
-	assert(writeIndex == combinedContents.length);
+	Assert(writeIndex == combinedContents.length);
 	combinedContents.chars[combinedContents.length] = '\0';
 	
 	CreateAndWriteFile(outputFilePath, combinedContents, false);

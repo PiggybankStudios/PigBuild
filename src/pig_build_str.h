@@ -41,7 +41,7 @@ struct Str
 // +--------------------------------------------------------------+
 void FreeStr(Str* strPntr)
 {
-	assert(strPntr->length == 0 || strPntr->chars != nullptr);
+	Assert(strPntr->length == 0 || strPntr->chars != nullptr);
 	if (strPntr->chars == nullptr) { memset(strPntr, 0x00, sizeof(Str)); return; }
 	free(strPntr->chars);
 	memset(strPntr, 0x00, sizeof(Str));
@@ -52,7 +52,7 @@ Str CopyStr(Str strToCopy, bool addNullTerm)
 	if (strToCopy.length == 0 && !addNullTerm) { return result; }
 	result.length = strToCopy.length;
 	result.chars = (char*)malloc(strToCopy.length + (addNullTerm ? 1 : 0));
-	assert(result.chars != nullptr);
+	NotNull(result.chars);
 	if (strToCopy.length > 0) { memcpy(result.chars, strToCopy.chars, strToCopy.length); }
 	if (addNullTerm) { result.chars[result.length] = '\0'; }
 	return result;
@@ -68,7 +68,7 @@ Str AllocStr(u64 length, bool addNullTerm)
 	if (length == 0 && !addNullTerm) { return result; }
 	result.length = length;
 	result.chars = (char*)malloc(length + (addNullTerm ? 1 : 0));
-	assert(result.chars != nullptr);
+	NotNull(result.chars);
 	if (length > 0) { memset(result.chars, 0x00, length); }
 	if (addNullTerm) { result.chars[result.length] = '\0'; }
 	return result;
@@ -78,15 +78,15 @@ bool StrExactEquals(Str left, Str right)
 {
 	if (left.length != right.length) { return false; }
 	if (left.length == 0) { return true; }
-	assert(left.chars != nullptr);
-	assert(right.chars != nullptr);
+	NotNull(left.chars);
+	NotNull(right.chars);
 	return (memcmp(left.chars, right.chars, left.length) == 0);
 }
 Str StrSlice(Str target, u64 startIndex, u64 endIndex)
 {
-	assert(startIndex <= target.length);
-	assert(endIndex <= target.length);
-	assert(startIndex <= endIndex);
+	Assert(startIndex <= target.length);
+	Assert(endIndex <= target.length);
+	Assert(startIndex <= endIndex);
 	return MakeStr(endIndex - startIndex, target.chars + startIndex);
 }
 Str StrSliceFrom(Str target, u64 startIndex)
@@ -95,7 +95,7 @@ Str StrSliceFrom(Str target, u64 startIndex)
 }
 bool StrExactContains(Str haystack, Str needle)
 {
-	assert(needle.length > 0);
+	Assert(needle.length > 0);
 	if (haystack.length < needle.length) { return false; }
 	for (u64 bIndex = 0; bIndex <= haystack.length - needle.length; bIndex++)
 	{
@@ -105,13 +105,13 @@ bool StrExactContains(Str haystack, Str needle)
 }
 bool StrExactStartsWith(Str target, Str prefix)
 {
-	assert(prefix.length > 0);
+	Assert(prefix.length > 0);
 	if (target.length < prefix.length) { return false; }
 	return StrExactEquals(StrSlice(target, 0, prefix.length), prefix);
 }
 bool StrExactEndsWith(Str target, Str suffix)
 {
-	assert(suffix.length > 0);
+	Assert(suffix.length > 0);
 	if (target.length < suffix.length) { return false; }
 	return StrExactEquals(StrSlice(target, target.length - suffix.length, target.length), suffix);
 }
@@ -165,7 +165,7 @@ bool IsCharIdentifier(char character, bool isFirstChar)
 }
 Str TrimWhitespace(Str target)
 {
-	assert(target.length == 0 || target.chars != nullptr);
+	Assert(target.length == 0 || target.chars != nullptr);
 	Str result = target;
 	while (result.length > 0 && IsCharWhitespace(result.chars[0])) { result.chars++; result.length--; }
 	while (result.length > 0 && IsCharWhitespace(result.chars[result.length-1])) { result.length--; }
@@ -173,7 +173,7 @@ Str TrimWhitespace(Str target)
 }
 u64 FindNextWhitespace(Str targetStr, u64 startIndex)
 {
-	assert(startIndex <= targetStr.length);
+	Assert(startIndex <= targetStr.length);
 	for (u64 bIndex = startIndex; bIndex < targetStr.length; bIndex++)
 	{
 		if (IsCharWhitespace(targetStr.chars[bIndex])) { return bIndex; }
@@ -182,7 +182,7 @@ u64 FindNextWhitespace(Str targetStr, u64 startIndex)
 }
 u64 FindNextNonIdentifierChar(Str targetStr, u64 startIndex)
 {
-	assert(startIndex <= targetStr.length);
+	Assert(startIndex <= targetStr.length);
 	for (u64 bIndex = startIndex; bIndex < targetStr.length; bIndex++)
 	{
 		if (!IsCharIdentifier(targetStr.chars[bIndex], (bIndex == startIndex))) { return bIndex; }
@@ -336,8 +336,8 @@ Str StrReplace(Str haystack, Str target, Str replacement, bool addNullTerm)
 }
 Str StrReplaceRange(Str targetStr, u64 startIndex, u64 endIndex, Str replacementStr, bool addNullTerm)
 {
-	assert(startIndex <= targetStr.length);
-	assert(endIndex <= targetStr.length);
+	Assert(startIndex <= targetStr.length);
+	Assert(endIndex <= targetStr.length);
 	Str leftPart = StrSlice(targetStr, 0, Min2(startIndex, endIndex));
 	Str rightPart = StrSliceFrom(targetStr, Max2(startIndex, endIndex));
 	return JoinStrings3(leftPart, replacementStr, rightPart, addNullTerm);

@@ -149,4 +149,9 @@ typedef double r64;
 #define Min2(number1, number2) (((number1) <= (number2)) ? (number1) : (number2))
 #define Max2(number1, number2) (((number1) >= (number2)) ? (number1) : (number2))
 
+#define AssertMsg(condition, message)        assert((condition) && (message))
+#define Assert(condition)                    assert(condition)
+#define AssertFmt(condition, formatStr, ...) if (!(condition)) { PrintLine_E("Assertion Failed! Message:\n" formatStr, ##__VA_ARGS__); AssertMsg((condition), (formatStr)); }
+#define NotNull(pntr)                        Assert((pntr) != nullptr)
+
 #endif //  _PIG_BUILD_BASE_H

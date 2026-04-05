@@ -155,7 +155,7 @@ CliArg* AddTaggedArgStr(CliArgList* list, const char* includeExcludeTagsStr, con
 	if (list->args == nullptr)
 	{
 		list->args = (CliArg*)malloc(sizeof(CliArg) * CLI_MAX_ARGS);
-		assert(list->args != nullptr);
+		NotNull(list->args);
 	}
 	if (list->numArgs >= CLI_MAX_ARGS) { WriteLine_E("Too many CLI arguments!"); exit(4); }
 	CliArg* newArg = &list->args[list->numArgs];
@@ -202,7 +202,7 @@ void AddArgList(CliArgList* dest, const CliArgList* source)
 	if (dest->args == nullptr)
 	{
 		dest->args = (CliArg*)malloc(sizeof(CliArg) * CLI_MAX_ARGS);
-		assert(dest->args != nullptr);
+		NotNull(dest->args);
 	}
 	if (dest->numArgs + source->numArgs > CLI_MAX_ARGS) { WriteLine_E("Too many CLI arguments!"); exit(4); }
 	for (u64 aIndex = 0; aIndex < source->numArgs; aIndex++)
@@ -309,7 +309,7 @@ Str FilterAndJoinCliArgsList(Str prefix, const CliArgList* list, StrArray* tagsL
 		memcpy(&result.chars[writeIndex], formattedStrings[aIndex].chars, formattedStrings[aIndex].length);
 		writeIndex += formattedStrings[aIndex].length;
 	}
-	assert(writeIndex == result.length);
+	Assert(writeIndex == result.length);
 	
 	if (addNullTerm) { result.chars[writeIndex] = '\0'; }
 	// PrintLine("Filtered %llu arguments to %llu", list->numArgs, numFormattedStrings);

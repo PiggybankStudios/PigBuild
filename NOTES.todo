@@ -23,11 +23,12 @@
 	[!] Should we get rid of most of the addNullTerm strings and just do a CopyStrWithNullterm? Or just always add null-term?
 	[!] Throw a clear error if the compiler is not found on Windows
 	[X] Add an AllocStr function?
-	[!] Add an Assert macro?
+	[X] Add an Assert macro?
+	[!] Make AssertFileExists into an actual assertion
 	[X] Move SDK path lookups to an optional file somewhere (Give them good error messages if the environment variable isn't set, and good comments describing that they require user setting the environment var)
 	[!] Make a "new_project.bat/sh" script?
 	[!] Add "ClOrLink" tag?
-	[!] Remove EXE_ macro usages in tag string formation
+	[X] Remove EXE_ macro usages in tag string formation
 	[X] If a builder is run without builder_hash.txt but DOESNT generate a new hash file then we can end up in a state where code changes can happen and the builder won't get rebuilt because it will think it's running right after a build
 	[!] Run `pkg-config` to get some kinds of flags automatically
 	[!] Make sure RecompileIfNeeded is hashing files inside "optional" folder

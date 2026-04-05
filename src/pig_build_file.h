@@ -51,7 +51,7 @@ Str GetFullPath(Str relativePath, char slashChar)
 			nullptr, //lpBuffer
 			nullptr //lpFilePart
 		);
-		assert(getPathResult1 != 0);
+		Assert(getPathResult1 != 0);
 		
 		result = AllocStr((u64)getPathResult1-1, true);
 		
@@ -62,8 +62,8 @@ Str GetFullPath(Str relativePath, char slashChar)
 			result.chars, //lpBuffer
 			nullptr //lpFilePart
 		);
-		assert(getPathResult2+1 == getPathResult1);
-		assert(result.chars[result.length] == '\0');
+		Assert(getPathResult2+1 == getPathResult1);
+		Assert(result.chars[result.length] == '\0');
 		
 		FixPathSlashes(result, slashChar);
 		free(relativePathNt.chars);
@@ -75,7 +75,7 @@ Str GetFullPath(Str relativePath, char slashChar)
 		
 		char* temporaryBuffer = (char*)malloc(PATH_MAX);
 		char* realPathResult = realpath(relativePathNt.chars, temporaryBuffer);
-		assert(realPathResult != nullptr);
+		NotNull(realPathResult);
 		
 		result = CopyStr(MakeStrNt(realPathResult), true);
 		
@@ -84,7 +84,7 @@ Str GetFullPath(Str relativePath, char slashChar)
 		free(relativePathNt.chars);
 	}
 	#else
-	assert(false && "GetFullPath does not support the current platform yet!");
+	AssertMsg(false, "GetFullPath does not support the current platform yet!");
 	#endif
 		
 	return result;
@@ -106,9 +106,9 @@ bool TryReadFile(Str filePath, Str* contentsOut)
 		return false;
 	}
 	
-	int seekResult1 = fseek(fileHandle, 0, SEEK_END); assert(seekResult1 == 0);
-	long fileSize = ftell(fileHandle); assert(fileSize >= 0); assert(fileSize <= INT_MAX);
-	int seekResult2 = fseek(fileHandle, 0, SEEK_SET); assert(seekResult2 == 0);
+	int seekResult1 = fseek(fileHandle, 0, SEEK_END); Assert(seekResult1 == 0);
+	long fileSize = ftell(fileHandle); Assert(fileSize >= 0); Assert(fileSize <= INT_MAX);
+	int seekResult2 = fseek(fileHandle, 0, SEEK_SET); Assert(seekResult2 == 0);
 	
 	*contentsOut = AllocStr((u64)fileSize, true);
 	
@@ -159,7 +159,7 @@ void CreateAndWriteFile(Str filePath, Str contents, bool convertNewLines)
 			FILE_ATTRIBUTE_NORMAL, //Default file attributes
 			0                      //No Template File
 		);
-		assert(fileHandle != INVALID_HANDLE_VALUE);
+		Assert(fileHandle != INVALID_HANDLE_VALUE);
 		if (contents.length > 0)
 		{
 			DWORD bytesWritten = 0;
@@ -170,8 +170,8 @@ void CreateAndWriteFile(Str filePath, Str contents, bool convertNewLines)
 				&bytesWritten, //lpNumberOfBytesWritten
 				0 //lpOverlapped
 			);
-			assert(writeResult == TRUE);
-			assert((u64)bytesWritten == contents.length);
+			Assert(writeResult == TRUE);
+			Assert((u64)bytesWritten == contents.length);
 		}
 		CloseHandle(fileHandle);
 		if (convertNewLines) { free(contents.chars); }
@@ -179,7 +179,7 @@ void CreateAndWriteFile(Str filePath, Str contents, bool convertNewLines)
 	#elif (BUILDING_ON_LINUX || BUILDING_ON_OSX)
 	{
 		FILE* fileHandle = fopen(filePathNt.chars, "w");
-		assert(fileHandle != nullptr);
+		NotNull(fileHandle);
 		if (contents.length > 0)
 		{
 			size_t writeResult = fwrite(
@@ -188,13 +188,13 @@ void CreateAndWriteFile(Str filePath, Str contents, bool convertNewLines)
 				contents.length, //count
 				fileHandle //stream
 			);
-			assert(writeResult >= 0);
-			assert((u64)writeResult == contents.length);
+			Assert(writeResult >= 0);
+			Assert((u64)writeResult == contents.length);
 		}
 		fclose(fileHandle);
 	}
 	#else
-	assert(false && "CreateAndWriteFile does not support the current platform yet!");
+	AssertMsg(false, "CreateAndWriteFile does not support the current platform yet!");
 	#endif
 	
 	free(filePathNt.chars);
@@ -220,8 +220,7 @@ void AppendToFile(Str filePath, Str contentsToAppend, bool convertNewLines)
 		if (fileHandle == INVALID_HANDLE_VALUE)
 		{
 			DWORD errorCode = GetLastError();
-			PrintLine_E("CreateFileA error: %d", errorCode);
-			assert(fileHandle != INVALID_HANDLE_VALUE);
+			AssertFmt(fileHandle != INVALID_HANDLE_VALUE, "CreateFileA error: %d", errorCode);
 		}
 		
 		DWORD moveResult = SetFilePointer(
@@ -230,7 +229,7 @@ void AppendToFile(Str filePath, Str contentsToAppend, bool convertNewLines)
 			NULL, //lDistanceToMoveHigh
 			FILE_END
 		);
-		assert(moveResult != INVALID_SET_FILE_POINTER);
+		Assert(moveResult != INVALID_SET_FILE_POINTER);
 		if (contentsToAppend.length > 0)
 		{
 			DWORD bytesWritten = 0;
@@ -241,8 +240,8 @@ void AppendToFile(Str filePath, Str contentsToAppend, bool convertNewLines)
 				&bytesWritten, //lpNumberOfBytesWritten
 				0 //lpOverlapped
 			);
-			assert(writeResult == TRUE);
-			assert((u64)bytesWritten == contentsToAppend.length);
+			Assert(writeResult == TRUE);
+			Assert((u64)bytesWritten == contentsToAppend.length);
 		}
 		CloseHandle(fileHandle);
 		if (convertNewLines) { free(contentsToAppend.chars); }
@@ -250,7 +249,7 @@ void AppendToFile(Str filePath, Str contentsToAppend, bool convertNewLines)
 	#elif (BUILDING_ON_LINUX || BUILDING_ON_OSX)
 	{
 		FILE* fileHandle = fopen(filePathNt.chars, "a");
-		assert(fileHandle != nullptr);
+		NotNull(fileHandle);
 		if (contentsToAppend.length > 0)
 		{
 			size_t writeResult = fwrite(
@@ -259,13 +258,13 @@ void AppendToFile(Str filePath, Str contentsToAppend, bool convertNewLines)
 				contentsToAppend.length, //count
 				fileHandle //stream
 			);
-			assert(writeResult >= 0);
-			assert((u64)writeResult == contentsToAppend.length);
+			Assert(writeResult >= 0);
+			Assert((u64)writeResult == contentsToAppend.length);
 		}
 		fclose(fileHandle);
 	}
 	#else
-	assert(false && "AppendToFile does not support the current platform yet!");
+	AssertMsg(false, "AppendToFile does not support the current platform yet!");
 	#endif
 	
 	free(filePathNt.chars);
@@ -278,8 +277,8 @@ void AppendPrintToFile(Str filePath, const char* formatString, ...)
 	va_start(args, formatString);
 	int printResult = vsnprintf(&printBuffer[0], ArrayCount(printBuffer), formatString, args);
 	va_end(args);
-	assert(printResult >= 0);
-	assert(printResult < ArrayCount(printBuffer));
+	Assert(printResult >= 0);
+	Assert(printResult < ArrayCount(printBuffer));
 	Str printedStr = MakeStr((u64)printResult, &printBuffer[0]);
 	AppendToFile(filePath, printedStr, true);
 }
@@ -295,11 +294,11 @@ void RemoveFile(Str filePath)
 		if (deleteResult == 0)
 		{
 			DWORD errorCode = GetLastError();
-			assert(errorCode == ERROR_FILE_NOT_FOUND);
+			AssertFmt(errorCode == ERROR_FILE_NOT_FOUND, "DeleteFileA Error: %d", errorCode);
 		}
 	}
 	#else
-	assert(false && "RemoveFile does not support the current platform yet!");
+	AssertMsg(false, "RemoveFile does not support the current platform yet!");
 	#endif
 }
 
@@ -313,8 +312,7 @@ void MyRemoveDirectory(Str folderPath, bool recursive)
 		int rmResult = rmdir("apk_temp");
 		if (rmResult != 0)
 		{
-			PrintLine_E("rmdir(\"%s\") failed: errno=%d", folderPathNt.chars, errno);
-			assert(rmResult == 0);
+			AssertFmt(rmResult == 0, "rmdir(\"%s\") failed: errno=%d", folderPathNt.chars, errno);
 		}
 	}
 	else
@@ -350,12 +348,11 @@ void MyRemoveDirectory(Str folderPath, bool recursive)
 			if (removeResult == 0)
 			{
 				DWORD errorCode = GetLastError();
-				PrintLine_E("Failed to remove \"%s\". Error: %d", folderPathNt.chars, errorCode);
-				assert(removeResult != 0);
+				AssertFmt(removeResult != 0, "Failed to remove \"%s\". Error: %d", folderPathNt.chars, errorCode);
 			}
 		}
 		#else
-		assert(false && "RemoveDirectory does not support the current platform yet!");
+		AssertMsg(false, "RemoveDirectory does not support the current platform yet!");
 		#endif
 	}
 }
@@ -364,7 +361,7 @@ void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
 {
 	Str fileContents = Str_Empty_Const;
 	bool readSuccess = TryReadFile(filePath, &fileContents);
-	assert(readSuccess);
+	Assert(readSuccess);
 	CreateAndWriteFile(newFilePath, fileContents, false);
 	free(fileContents.chars);
 	#if BUILDING_ON_LINUX
@@ -373,12 +370,12 @@ void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
 		Str filePathNt = CopyStr(filePath, true);
 		struct stat oldFileStats = ZEROED;
 		int statResult = stat(filePathNt.chars, &oldFileStats);
-		assert(statResult == 0);
+		Assert(statResult == 0);
 		free(filePathNt.chars);
 		
 		Str newFilePathNt = CopyStr(newFilePath, true);
 		int modResult = chmod(newFilePathNt.chars, oldFileStats.st_mode);
-		assert(modResult == 0);
+		Assert(modResult == 0);
 		free(newFilePathNt.chars);
 	}
 	#endif
@@ -406,7 +403,7 @@ bool DoesFileExist(Str filePath)
 		return (accessResult == 0);
 	}
 	#else
-	assert(false && "pig_build_file.h's DoesFileExist does not support the current platform yet!");
+	AssertMsg(false, "pig_build_file.h's DoesFileExist does not support the current platform yet!");
 	return false;
 	#endif
 }
@@ -443,7 +440,7 @@ FileIter StartFileIter(Str folderPath)
 		//nothing to do
 	}
 	#else
-	assert(false && "StartFileIter does not support the current platform yet!");
+	AssertMsg(false, "StartFileIter does not support the current platform yet!");
 	result.finished = true;
 	#endif
 	
@@ -560,7 +557,7 @@ bool StepFileIter(FileIter* fileIter, Str* pathOut, bool* isFolderOut)
 		}
 	}
 	#else
-	assert(false && "StepFileIter does not support the current platform yet!");
+	AssertMsg(false, "StepFileIter does not support the current platform yet!");
 	fileIter->finished = true;
 	#endif
 	
