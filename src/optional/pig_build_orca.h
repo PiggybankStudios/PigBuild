@@ -18,6 +18,8 @@ Description:
 
 #define FILENAME_ORCA_SDK_PATH  "orca_sdk_path.txt"
 
+#define T_ORCA "|Orca"
+
 Str GetOrcaSdkPath()
 {
 	CliArgList cmd = ZEROED;
@@ -42,14 +44,14 @@ Str GetOrcaSdkPath()
 
 void FillOrcaFlags(CliArgList* compilerFlags, CliArgList* linkerFlags, Str orcaSdkPath)
 {
-	AddTaggedArg(compilerFlags,    EXE_CLANG "|Orca", CLANG_NO_ENTRYPOINT);
-	AddTaggedArg(compilerFlags,    EXE_CLANG "|Orca", CLANG_EXPORT_DYNAMIC);
-	AddTaggedArgStr(compilerFlags, EXE_CLANG "|Orca", CLANG_STDLIB_FOLDER, JoinStrings2(orcaSdkPath, StrLit("/orca-libc"), false));
-	AddTaggedArgStr(compilerFlags, EXE_CLANG "|Orca", CLANG_INCLUDE_DIR, JoinStrings2(orcaSdkPath, StrLit("/src"), false));
-	AddTaggedArgStr(compilerFlags, EXE_CLANG "|Orca", CLANG_INCLUDE_DIR, JoinStrings2(orcaSdkPath, StrLit("/src/ext"), false));
-	AddTaggedArgStr(compilerFlags, EXE_CLANG "|Orca", CLANG_LIBRARY_DIR, JoinStrings2(orcaSdkPath, StrLit("/bin"), false));
-	AddTaggedArgNt(compilerFlags,  EXE_CLANG "|Orca", CLANG_DEFINE, "__ORCA__"); //#define __ORCA__ so that base_compiler_check.h can set TARGET_IS_ORCA
-	AddTaggedArgNt(linkerFlags,    EXE_CLANG "|Orca", CLANG_SYSTEM_LIBRARY, "orca_wasm");
+	AddTaggedArg(compilerFlags,    T_CLANG T_ORCA, CLANG_NO_ENTRYPOINT);
+	AddTaggedArg(compilerFlags,    T_CLANG T_ORCA, CLANG_EXPORT_DYNAMIC);
+	AddTaggedArgStr(compilerFlags, T_CLANG T_ORCA, CLANG_STDLIB_FOLDER, JoinStrings2(orcaSdkPath, StrLit("/orca-libc"), false));
+	AddTaggedArgStr(compilerFlags, T_CLANG T_ORCA, CLANG_INCLUDE_DIR, JoinStrings2(orcaSdkPath, StrLit("/src"), false));
+	AddTaggedArgStr(compilerFlags, T_CLANG T_ORCA, CLANG_INCLUDE_DIR, JoinStrings2(orcaSdkPath, StrLit("/src/ext"), false));
+	AddTaggedArgStr(compilerFlags, T_CLANG T_ORCA, CLANG_LIBRARY_DIR, JoinStrings2(orcaSdkPath, StrLit("/bin"), false));
+	AddTaggedArgNt(compilerFlags,  T_CLANG T_ORCA, CLANG_DEFINE, "__ORCA__"); //#define __ORCA__ so that base_compiler_check.h can set TARGET_IS_ORCA
+	AddTaggedArgNt(linkerFlags,    T_CLANG T_ORCA, CLANG_SYSTEM_LIBRARY, "orca_wasm");
 }
 
 #endif //  _PIG_BUILD_ORCA_H

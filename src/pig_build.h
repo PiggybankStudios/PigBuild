@@ -17,6 +17,7 @@ Description:
 #include "pig_build_misc.h"
 #include "pig_build_recompile.h"
 #include "pig_build_cli_flags.h"
+#include "pig_build_tags.h"
 #include "pig_build_arg_list.h"
 
 // These are optional headers, mostly for PigCore-based projects or other PiggybankStudios repositories.

@@ -20,6 +20,7 @@ Description:
 
 #include "pig_build_base.h"
 #include "pig_build_str.h"
+#include "pig_build_tags.h"
 #include "pig_build_str_array.h"
 
 // +--------------------------------------------------------------+

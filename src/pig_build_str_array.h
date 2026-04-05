@@ -49,6 +49,14 @@ Str* AddStr(StrArray* array, Str newString)
 	return result;
 }
 
+//Since tag macros all contain leading '|' character, we need to slice it off when adding it to a StrArray
+Str* AddTag(StrArray* array, const char* newStringWithLeadingSepChar)
+{
+	Str tagStr = MakeStrNt(newStringWithLeadingSepChar);
+	if (tagStr.length >= 1 && tagStr.chars[0] == '|') { tagStr = StrSliceFrom(tagStr, 1); }
+	return AddStr(array, tagStr);
+}
+
 Str* InsertStr(StrArray* array, Str newString, u64 insertIndex)
 {
 	Str strAtEnd = *AddStr(array, newString);

@@ -179,7 +179,6 @@ Description:
 // |                        GCC CLI Flags                         |
 // +--------------------------------------------------------------+
 #define EXE_GCC     "gcc"
-#define EXE_ARM_GCC "arm-none-eabi-gcc" //we use this when compiling for the Playdate device
 
 #define GCC_COMPILE                  "-c"
 #define GCC_PRECOMPILE_ONLY          "-E"

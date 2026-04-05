@@ -23,6 +23,8 @@ Description:
 
 #define EMSDK_ENVIRONMENT_TXT_PATH "emsdk_environment.txt"
 
+#define T_EMCC "|emcc"
+
 // NOTE: For the time being we just require the user to set up an EMSCRIPTEN_SDK_PATH environment variable to tell us where the Emscripten SDK lives
 Str GetEmscriptenSdkPath()
 {
