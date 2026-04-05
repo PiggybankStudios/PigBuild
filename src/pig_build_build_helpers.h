@@ -17,7 +17,7 @@ Description:
 #include "pig_build_misc.h"
 #include "pig_build_recompile.h"
 #include "pig_build_arg_list.h"
-//
+
 int RunCliProgramTagArray(Str programPath, StrArray* tagsListPntr, const CliArgList* args)
 {
 	// PrintLine("Joining/filtering %llu arguments against %llu tags for \"%.*s\"", args->numArgs, (tagsListPntr != nullptr) ? tagsListPntr->length : 0ULL, StrPrint(programPath));
@@ -70,11 +70,6 @@ bool WasMsvcDevBatchRun()
 {
 	const char* versionEnvVarValue = getenv("VSCMD_VER");
     return (versionEnvVarValue != nullptr);
-}
-bool WasEmsdkEnvBatchRun()
-{
-	const char* sdkEnvVarValue = getenv("EMSDK");
-    return (sdkEnvVarValue != nullptr);
 }
 
 // We like to have a build_config.h that we pull information from to decide what kind of build we are doing.
@@ -143,6 +138,7 @@ void ParseAndApplyEnvironmentVariables(Str environmentVars)
 		if (character == '=') { equalsIndex = cIndex; }
 	}
 }
+// We expect the script at batchFilePath to do `set > "%~1"` at the end to dump all environment variables into environmentFilePath
 void RunBatchFileAndApplyDumpedEnvironment(Str batchFilePath, Str environmentFilePath, bool skipRunningIfFileExists)
 {
 	CliArgList cmd = ZEROED;
@@ -152,7 +148,7 @@ void RunBatchFileAndApplyDumpedEnvironment(Str batchFilePath, Str environmentFil
 	
 	if (!DoesFileExist(environmentFilePath) || !skipRunningIfFileExists)
 	{
-		int statusCode = RunCliProgram(fixedBatchFilePath, "", &cmd); //this batch file runs emsdk_env.bat and then dumps it's environment variables to environment.txt. We can then open and parse that file and change our environment to match what emsdk_env.bat changed
+		int statusCode = RunCliProgram(fixedBatchFilePath, "", &cmd);
 		if (statusCode != 0)
 		{
 			PrintLine_E("%.*s failed! Status Code: %d", StrPrint(fixedBatchFilePath), statusCode);
@@ -186,16 +182,6 @@ void InitializeMsvcIf(Str pigCoreFolder, bool* isMsvcInitialized)
 		else { WriteLine("Initializing MSVC Compiler..."); }
 		RunBatchFileAndApplyDumpedEnvironment(batchPath, environmentPath, true);
 		*isMsvcInitialized = true;
-	}
-}
-void InitializeEmsdkIf(Str pigCoreFolder, bool* isEmsdkInitialized)
-{
-	if (*isEmsdkInitialized == false)
-	{
-		PrintLine("Initializing Emscripten SDK...");
-		Str batchPath = JoinStrings2(pigCoreFolder, StrLit("/" PIG_BUILD_FOLDER_NAME "/shell/init_emsdk.bat"), false);
-		RunBatchFileAndApplyDumpedEnvironment(batchPath, StrLit(EMSDK_ENVIRONMENT_TXT_PATH), false);
-		*isEmsdkInitialized = true;
 	}
 }
 
@@ -251,20 +237,6 @@ void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str outputFilePath)
 	FreeStrArray(&allFilesContents);
 }
 
-// For the time being we just require the user to set up an EMSCRIPTEN_SDK_PATH environment variable to tell us where the Emscripten SDK lives
-Str GetEmscriptenSdkPath()
-{
-	const char* sdkEnvVariable = getenv("EMSCRIPTEN_SDK_PATH");
-	if (sdkEnvVariable == nullptr)
-	{
-		WriteLine_E("Please set the EMSCRIPTEN_SDK_PATH environment variable before trying to build for the web with USE_EMSCRIPTEN");
-		exit(7);
-	}
-	Str result = CopyStr(WithoutTrailingSlash(MakeStrNt(sdkEnvVariable)), true);
-	FixPathSlashes(result, PATH_SEP_CHAR);
-	return result;
-}
-
 #define FILENAME_ORCA_SDK_PATH  "orca_sdk_path.txt"
 
 Str GetOrcaSdkPath()
@@ -286,19 +258,6 @@ Str GetOrcaSdkPath()
 	assert(result.length > 0);
 	FixPathSlashes(result, PATH_SEP_CHAR);
 	if (result.chars[result.length-1] == PATH_SEP_CHAR) { result.length--; } //no trailing slash
-	return result;
-}
-
-Str GetPlaydateSdkPath()
-{
-	const char* sdkEnvVariable = getenv("PLAYDATE_SDK_PATH");
-	if (sdkEnvVariable == nullptr)
-	{
-		WriteLine_E("Please set the PLAYDATE_SDK_PATH environment variable before trying to build for the Playdate");
-		exit(7);
-	}
-	Str result = CopyStr(WithoutTrailingSlash(MakeStrNt(sdkEnvVariable)), true);
-	FixPathSlashes(result, PATH_SEP_CHAR);
 	return result;
 }
 

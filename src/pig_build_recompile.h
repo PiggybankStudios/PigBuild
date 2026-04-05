@@ -31,7 +31,6 @@ Description:
 #define PIG_BUILD_FOLDER_NAME "pig_build"
 #define PIG_BUILD_FOLDER_PATH "../" PIG_BUILD_FOLDER_NAME
 #define MSVC_ENVIRONMENT_TXT_PATH "msvc_environment.txt"
-#define EMSDK_ENVIRONMENT_TXT_PATH "emsdk_environment.txt"
 
 bool TryParseHexU64(Str str, u64* valueOut)
 {
@@ -110,11 +109,26 @@ u64 FnvHash(const void* bufferPntr, u64 numBytes, u64 startingState)
 // Call this function at the top of your build_scropt.c main function.
 // If the source code for build_script.c changes OR if any of the helper files in the build_script/ folder
 // change then your builder will be re-compiled (this function will call exit(REBUILD_EXIT_CODE);)
-void RecompileIfNeeded()
+void RecompileIfNeeded(StrArray* buildScriptSourceFolders)
 {
-	Str buildScriptFilePath = StrLit_Const(BUILD_SCRIPT_SOURCE_PATH);
-	Str pigBuildSrcFolderPath = StrLit_Const(PIG_BUILD_FOLDER_PATH "/src");
+	// For convenience we are going to add pig_build/src and it's subfolders automatically if the build_script didn't mention them
+	bool sourceFoldersContainPigBuildSrc = false;
+	bool sourceFoldersContainPigBuildSrcOptional = false;
+	for (u64 fIndex = 0; fIndex < buildScriptSourceFolders->length; fIndex++)
+	{
+		if (StrExactEquals(buildScriptSourceFolders->strings[fIndex], StrLit(PIG_BUILD_FOLDER_PATH "/src")))
+		{
+			sourceFoldersContainPigBuildSrc = true;
+		}
+		if (StrExactEquals(buildScriptSourceFolders->strings[fIndex], StrLit(PIG_BUILD_FOLDER_PATH "/src/optional")))
+		{
+			sourceFoldersContainPigBuildSrcOptional = true;
+		}
+	}
+	if (!sourceFoldersContainPigBuildSrc) { AddStr(buildScriptSourceFolders, StrLit(PIG_BUILD_FOLDER_PATH "/src")); }
+	if (!sourceFoldersContainPigBuildSrcOptional) { AddStr(buildScriptSourceFolders, StrLit(PIG_BUILD_FOLDER_PATH "/src/optional")); }
 	
+	Str buildScriptFilePath = StrLit_Const(BUILD_SCRIPT_SOURCE_PATH);
 	Str buildScriptContents = Str_Empty_Const;
 	if (!TryReadFile(buildScriptFilePath, &buildScriptContents))
 	{
@@ -123,22 +137,25 @@ void RecompileIfNeeded()
 	}
 	u64 buildScriptHash = FnvHash(buildScriptContents.chars, buildScriptContents.length, FNV_HASH_BASE_U64);
 	free(buildScriptContents.chars);
-	FileIter fileIter = StartFileIter(pigBuildSrcFolderPath);
-	Str fileIterPath = Str_Empty_Const;
-	bool fileIterIsFolder = false;
-	while (StepFileIter(&fileIter, &fileIterPath, &fileIterIsFolder))
+	for (u64 fIndex = 0; fIndex < buildScriptSourceFolders->length; fIndex++)
 	{
-		//TODO: We should probably only hash files that have extensions like ".c" or ".h" or ".cpp" or etc.
-		if (!fileIterIsFolder)
+		FileIter fileIter = StartFileIter(buildScriptSourceFolders->strings[fIndex]);
+		Str fileIterPath = Str_Empty_Const;
+		bool fileIterIsFolder = false;
+		while (StepFileIter(&fileIter, &fileIterPath, &fileIterIsFolder))
 		{
-			Str buildSystemFileContents = Str_Empty_Const;
-			if (!TryReadFile(fileIterPath, &buildSystemFileContents))
+			//TODO: We should probably only hash files that have extensions like ".c" or ".h" or ".cpp" or etc.
+			if (!fileIterIsFolder)
 			{
-				PrintLine("Failed to read build system file contents to check if it's changed. Looking at \"%.*s\"", StrPrint(fileIterPath));
-				exit(REBUILD_EXIT_CODE);
+				Str buildSystemFileContents = Str_Empty_Const;
+				if (!TryReadFile(fileIterPath, &buildSystemFileContents))
+				{
+					PrintLine("Failed to read build system file contents to check if it's changed. Looking at \"%.*s\"", StrPrint(fileIterPath));
+					exit(REBUILD_EXIT_CODE);
+				}
+				buildScriptHash = FnvHash(buildSystemFileContents.chars, buildSystemFileContents.length, buildScriptHash);
+				free(buildSystemFileContents.chars);
 			}
-			buildScriptHash = FnvHash(buildSystemFileContents.chars, buildSystemFileContents.length, buildScriptHash);
-			free(buildSystemFileContents.chars);
 		}
 	}
 	
