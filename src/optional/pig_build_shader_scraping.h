@@ -166,7 +166,7 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str headerPath, Str shaderPath)
 {
 	Str headerFileContents = ReadEntireFile(headerPath);
 	
-	Str shaderName = ZEROED;
+	Str shaderName = Str_Empty_Const;
 	StrArray shaderAttributes = ZEROED;
 	StrArray shaderViews = ZEROED;
 	StrArray shaderSamplers = ZEROED;
@@ -175,8 +175,8 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str headerPath, Str shaderPath)
 	StrArray shaderUniformsBlockNames = ZEROED;
 	
 	bool insideUniformBlock = false;
-	Str uniformBlockName = ZEROED;
-	Str line = ZEROED;
+	Str uniformBlockName = Str_Empty_Const;
+	Str line = Str_Empty_Const;
 	LineParser lineParser = NewLineParser(headerFileContents);
 	while (LineParserGetLine(&lineParser, &line))
 	{
@@ -190,8 +190,8 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str headerPath, Str shaderPath)
 		}
 		else if (insideUniformBlock)
 		{
-			Str uniformType = ZEROED;
-			Str uniformName = ZEROED;
+			Str uniformType = Str_Empty_Const;
+			Str uniformName = Str_Empty_Const;
 			if (IsShaderHeaderLine_UniformStructEnd(shaderName, uniformBlockName, line))
 			{
 				insideUniformBlock = false;
@@ -205,7 +205,7 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str headerPath, Str shaderPath)
 		}
 		else
 		{
-			Str name = ZEROED;
+			Str name = Str_Empty_Const;
 			if (IsShaderHeaderLine_Attribute(shaderName, line, &name))
 			{
 				// PrintLine("Found attribute \"%.*s\"", StrPrint(name));

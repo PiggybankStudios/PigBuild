@@ -271,7 +271,7 @@ Str FilterAndJoinCliArgsList(Str prefix, const CliArgList* list, StrArray* tagsL
 	
 	char pathSepChar = list->pathSepChar;
 	if (pathSepChar == '\0') { pathSepChar = PATH_SEP_CHAR; }
-	Str rootDirPath = ZEROED;
+	Str rootDirPath = Str_Empty_Const;
 	if (IsEmptyStr(list->rootDirPath)) { rootDirPath = CopyStrLit("..", false); }
 	else { rootDirPath = CopyStr(list->rootDirPath, false); }
 	FixPathSlashes(rootDirPath, pathSepChar);

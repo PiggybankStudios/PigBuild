@@ -37,7 +37,7 @@ typedef RECURSIVE_DIR_WALK_CALLBACK_DEF(RecursiveDirWalkCallback_f);
 // TODO: On linux this will not work properly for paths to folders that don't exist yet
 Str GetFullPath(Str relativePath, char slashChar)
 {
-	Str result = ZEROED;
+	Str result = Str_Empty_Const;
 	
 	#if BUILDING_ON_WINDOWS
 	{
@@ -136,7 +136,7 @@ bool TryReadFile(Str filePath, Str* contentsOut)
 //NOTE: We can't name this "ReadFile" because it conflicts with a Windows function
 Str ReadEntireFile(Str filePath)
 {
-	Str result = ZEROED;
+	Str result = Str_Empty_Const;
 	bool readSuccess = TryReadFile(filePath, &result);
 	if (!readSuccess) { exit(3); }
 	return result;
@@ -362,7 +362,7 @@ void MyRemoveDirectory(Str folderPath, bool recursive)
 
 void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
 {
-	Str fileContents = ZEROED;
+	Str fileContents = Str_Empty_Const;
 	bool readSuccess = TryReadFile(filePath, &fileContents);
 	assert(readSuccess);
 	CreateAndWriteFile(newFilePath, fileContents, false);
@@ -570,7 +570,7 @@ bool StepFileIter(FileIter* fileIter, Str* pathOut, bool* isFolderOut)
 void RecursiveDirWalk(Str rootDir, RecursiveDirWalkCallback_f* callback, void* contextPntr)
 {
 	FileIter iter = StartFileIter(rootDir);
-	Str path = ZEROED;
+	Str path = Str_Empty_Const;
 	bool isFolder = false;
 	while (StepFileIter(&iter, &path, &isFolder))
 	{

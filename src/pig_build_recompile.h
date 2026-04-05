@@ -115,7 +115,7 @@ void RecompileIfNeeded()
 	Str buildScriptFilePath = StrLit_Const(BUILD_SCRIPT_SOURCE_PATH);
 	Str pigBuildSrcFolderPath = StrLit_Const(PIG_BUILD_FOLDER_PATH "/src");
 	
-	Str buildScriptContents = ZEROED;
+	Str buildScriptContents = Str_Empty_Const;
 	if (!TryReadFile(buildScriptFilePath, &buildScriptContents))
 	{
 		PrintLine("Failed to read script contents to check if it's changed. Looking at \"%.*s\"", StrPrint(buildScriptFilePath));
@@ -124,14 +124,14 @@ void RecompileIfNeeded()
 	u64 buildScriptHash = FnvHash(buildScriptContents.chars, buildScriptContents.length, FNV_HASH_BASE_U64);
 	free(buildScriptContents.chars);
 	FileIter fileIter = StartFileIter(pigBuildSrcFolderPath);
-	Str fileIterPath = ZEROED;
+	Str fileIterPath = Str_Empty_Const;
 	bool fileIterIsFolder = false;
 	while (StepFileIter(&fileIter, &fileIterPath, &fileIterIsFolder))
 	{
 		//TODO: We should probably only hash files that have extensions like ".c" or ".h" or ".cpp" or etc.
 		if (!fileIterIsFolder)
 		{
-			Str buildSystemFileContents = ZEROED;
+			Str buildSystemFileContents = Str_Empty_Const;
 			if (!TryReadFile(fileIterPath, &buildSystemFileContents))
 			{
 				PrintLine("Failed to read build system file contents to check if it's changed. Looking at \"%.*s\"", StrPrint(fileIterPath));
@@ -146,7 +146,7 @@ void RecompileIfNeeded()
 	u64 savedHash = 0;
 	bool hashesMatch = false;
 	bool hashFileExisted = false;
-	Str buildHashContents = ZEROED;
+	Str buildHashContents = Str_Empty_Const;
 	if (TryReadFile(buildHashFilePath, &buildHashContents))
 	{
 		// PrintLine("Opened %u byte hash file: \"%.*s\"", buildHashContents.length, StrPrint(buildHashContents));

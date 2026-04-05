@@ -17,7 +17,7 @@
 	[!] Rename pig_build_build_helpers.h
 	[!] TAG_X macros?
 	[!] Remove LinuxOrOsx tag
-	[!] Replace usages of ZEROED for Str with Str_Empty
+	[X] Replace usages of ZEROED for Str with Str_Empty
 	[X] Rename Str8 to Str
 	[!] Should we get rid of most of the addNullTerm strings and just do a CopyStrWithNullterm? Or just always add null-term?
 	[!] Throw a clear error if the compiler is not found on Windows

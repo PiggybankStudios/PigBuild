@@ -48,7 +48,7 @@ void FreeStr(Str* strPntr)
 }
 Str CopyStr(Str strToCopy, bool addNullTerm)
 {
-	Str result = ZEROED;
+	Str result = Str_Empty_Const;
 	if (strToCopy.length == 0 && !addNullTerm) { return result; }
 	result.length = strToCopy.length;
 	result.chars = (char*)malloc(strToCopy.length + (addNullTerm ? 1 : 0));
@@ -64,7 +64,7 @@ Str CopyStrNt(const char* strToCopyNt, bool addNullTerm)
 #define CopyStrLit(stringLiteral, addNullTerm) CopyStr(StrLit(stringLiteral), (addNullTerm))
 Str AllocStr(u64 length, bool addNullTerm)
 {
-	Str result = ZEROED;
+	Str result = Str_Empty_Const;
 	if (length == 0 && !addNullTerm) { return result; }
 	result.length = length;
 	result.chars = (char*)malloc(length + (addNullTerm ? 1 : 0));
@@ -201,7 +201,7 @@ bool TryParseBoolArg(Str boolStr, bool* valueOut)
 
 Str EscapeString(Str unescapedString, bool addNullTerm)
 {
-	Str result = ZEROED;
+	Str result = Str_Empty_Const;
 	for (int pass = 0; pass < 2; pass++)
 	{
 		u64 byteIndex = 0;
@@ -303,7 +303,7 @@ Str JoinPaths(Str leftPath, Str rightPath, bool addNullTerm)
 
 Str StrReplace(Str haystack, Str target, Str replacement, bool addNullTerm)
 {
-	Str result = ZEROED;
+	Str result = Str_Empty_Const;
 	for (u64 cIndex = 0; cIndex < haystack.length; cIndex++)
 	{
 		if (cIndex + target.length <= haystack.length &&

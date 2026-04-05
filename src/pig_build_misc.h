@@ -147,7 +147,7 @@ bool TryExtractDefineFrom(Str headerFileContents, Str defineName, Str* valueOut)
 			
 			Str lineStr = MakeStr(byteIndex - lineStartIndex, &headerFileContents.chars[lineStartIndex]);
 			
-			Str defineValue = ZEROED;
+			Str defineValue = Str_Empty_Const;
 			if (IsHeaderLineDefine(defineName, lineStr, &defineValue))
 			{
 				if (valueOut != nullptr) { *valueOut = defineValue; }

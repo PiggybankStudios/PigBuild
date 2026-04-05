@@ -81,7 +81,7 @@ bool WasEmsdkEnvBatchRun()
 // These functions help us find a particular #define in a C/C++ header file and retrieve it's value
 Str ExtractStrDefine(Str buildConfigContents, Str defineName)
 {
-	Str defineValueStr = ZEROED;
+	Str defineValueStr = Str_Empty_Const;
 	if (!TryExtractDefineFrom(buildConfigContents, defineName, &defineValueStr))
 	{
 		PrintLine_E("Couldn't find #define %.*s in build_config.h!", StrPrint(defineName));
@@ -160,7 +160,7 @@ void RunBatchFileAndApplyDumpedEnvironment(Str batchFilePath, Str environmentFil
 		}
 	}
 	
-	Str environmentFileContents = ZEROED;
+	Str environmentFileContents = Str_Empty_Const;
 	if (!TryReadFile(environmentFilePath, &environmentFileContents))
 	{
 		PrintLine_E("%.*s did not create \"%.*s\"! Or we can't open it for some reason", StrPrint(batchFilePath), StrPrint(environmentFilePath));
@@ -211,7 +211,7 @@ void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str outputFilePath)
 	for (u64 fIndex = 0; fIndex < pathArray->length; fIndex++)
 	{
 		Str inputPath = pathArray->strings[fIndex];
-		Str inputFileContents = ZEROED;
+		Str inputFileContents = Str_Empty_Const;
 		if (!TryReadFile(inputPath, &inputFileContents))
 		{
 			PrintLine_E("Couldn't find/open \"%.*s\"!", StrPrint(inputPath));
@@ -280,7 +280,7 @@ Str GetOrcaSdkPath()
 		exit(statusCode);
 	}
 	AssertFileExist(StrLit(FILENAME_ORCA_SDK_PATH), false);
-	Str result = ZEROED;
+	Str result = Str_Empty_Const;
 	bool readSuccess = TryReadFile(StrLit(FILENAME_ORCA_SDK_PATH), &result);
 	assert(readSuccess == true);
 	assert(result.length > 0);
