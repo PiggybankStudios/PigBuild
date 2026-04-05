@@ -24,12 +24,15 @@
 	[!] Throw a clear error if the compiler is not found on Windows
 	[X] Add an AllocStr function?
 	[!] Add an Assert macro?
-	[!] Move SDK path lookups to an optional file somewhere (Give them good error messages if the environment variable isn't set, and good comments describing that they require user setting the environment var)
+	[X] Move SDK path lookups to an optional file somewhere (Give them good error messages if the environment variable isn't set, and good comments describing that they require user setting the environment var)
 	[!] Make a "new_project.bat/sh" script?
 	[X] If a builder is run without builder_hash.txt but DOESNT generate a new hash file then we can end up in a state where code changes can happen and the builder won't get rebuilt because it will think it's running right after a build
 	[!] Run `pkg-config` to get some kinds of flags automatically
 	[!] Make sure RecompileIfNeeded is hashing files inside "optional" folder
 	[!] Only hash source code files like ".h", ".c", etc.
+	[!] RecompileIfNeeded should really take a StrArray of blob syntax strings to allow the build_script.c to really customize which files are hashed.
+	[!] Add buildConfig value restrictions (can't build Windows on OSX, etc.)
+	[?] Make a RecompileIfNeeded variant that takes a "|" delimated string rather than StrArray. Maybe SplitString helper function instead?
 	[?] Safe file replace operation? Like create a temp file, then copy and replace atomically an existing file. Then delete temp
 	[ ] Finish sorting the Android/Web/Orca/Playdate flags in pig_build_core_flags.h
 	[?] Should we allow the user to choose the name of the build script file and it's binary name?

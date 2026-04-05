@@ -5,6 +5,7 @@ Date:   04\05\2026
 Description:
 	** Contains some logic that we only need if we are compiling
 	** for the Panic Playdate handheld gaming console. See https://play.date/
+	** NOTE: For now, the user must set PLAYDATE_SDK_PATH for this to work
 */
 
 #ifndef _PIG_BUILD_PLAYDATE_H
@@ -15,6 +16,7 @@ Description:
 #include "pig_build_cli_flags.h"
 #include "pig_build_arg_list.h"
 
+// NOTE: For the time being we just require the user to set up an PLAYDATE_SDK_PATH environment variable to tell us where the Playdate SDK lives
 Str GetPlaydateSdkPath()
 {
 	const char* sdkEnvVariable = getenv("PLAYDATE_SDK_PATH");
