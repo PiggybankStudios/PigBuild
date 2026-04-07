@@ -52,4 +52,10 @@ Description:
 #define T_DEBUG_BUILD     "|DEBUG_BUILD==true"
 #define T_RELEASE_BUILD   "|DEBUG_BUILD==false"
 
+// Types of binaries
+#define T_OBJECT          "|Object" //.o or .obj
+#define T_LIBRARY         "|Library" //.dll, .so, or .dylib
+#define T_PROGRAM         "|Program" //.exe or extensionless
+#define T_SHADER          "|Shader" //Usually this is compiling a shdc output to .o/.obj
+
 #endif //  _PIG_BUILD_TAGS_H

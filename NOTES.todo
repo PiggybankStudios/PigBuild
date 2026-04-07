@@ -18,6 +18,8 @@
 	[X] TAG_X macros? Maybe T_X for brevity? Should we add leading "|" for ultimate brevity?
 	[?] Remove T_UNIX tag?
 	[?] Rename Str_Empty_Const to something shorter?
+	[!] Update the README.md
+	[!] Variadic args function for joining tag strings?
 	[X] Replace usages of ZEROED for Str with Str_Empty
 	[X] Rename Str8 to Str
 	[!] Should we get rid of most of the addNullTerm strings and just do a CopyStrWithNullterm? Or just always add null-term?

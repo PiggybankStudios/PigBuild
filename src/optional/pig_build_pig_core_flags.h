@@ -26,6 +26,7 @@ Description:
 // Build Targets Tags
 #define T_PIG_CORE        "|PigCore"
 #define T_PIGGEN          "|Piggen"
+#define T_PIG_CORE_TESTS  "|PigCoreTests"
 #define T_TRACY           "|Tracy"
 #define T_DEAR_IMGUI      "|Imgui"
 #define T_PHYSX           "|PhysX"
