@@ -3,6 +3,13 @@
 	[
 		{
 			"path": ".",
+			"file_exclude_patterns": [
+				"examples/*/build.bat",
+			],
+			"folder_exclude_patterns": [
+				"examples/*/build",
+				"examples/*/pig_build",
+			],
 		}
 	],
 	"settings":

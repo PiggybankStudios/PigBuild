@@ -347,6 +347,7 @@ void ParseAndApplyEnvironmentVariables(Str environmentVars)
 	}
 }
 // We expect the script at batchFilePath to do `set > "%~1"` at the end to dump all environment variables into environmentFilePath
+//TODO: This should be renamed, it only runs the batch file if the environment file doesn't exist!
 void RunBatchFileAndApplyDumpedEnvironment(Str batchFilePath, Str environmentFilePath, bool skipRunningIfFileExists)
 {
 	CliArgList cmd = EMPTY;
@@ -380,14 +381,14 @@ void RunBatchFileAndApplyDumpedEnvironment(Str batchFilePath, Str environmentFil
 // We only need initialize MSVC once but we may not need to initialize at all.
 // So we pass a pointer to a bool that tracks if we have initialized and we pepper
 // these calls before any spot in the build_script.c that needs to use the MSVC compiler
-void InitializeMsvcIf(Str pigCoreFolder, bool* isMsvcInitialized)
+void InitializeMsvcIf(Str pigBuildFolder, bool* isMsvcInitialized)
 {
 	if (*isMsvcInitialized == false)
 	{
-		Str batchPath = JoinStrings2(pigCoreFolder, StrLit("/" PIG_BUILD_FOLDER_NAME "/shell/init_msvc.bat"), false);
+		Str batchPath = JoinPaths(pigBuildFolder, StrLit("shell/init_msvc.bat"), false);
 		Str environmentPath = StrLit_Const(MSVC_ENVIRONMENT_TXT_PATH);
 		if (DoesFileExist(environmentPath)) { WriteLine("Loading MSVC Environment..."); }
-		else { WriteLine("Initializing MSVC Compiler..."); }
+		// else { WriteLine("Initializing MSVC Compiler..."); } //NOTE: This is already printed inside init_msvc.bat
 		RunBatchFileAndApplyDumpedEnvironment(batchPath, environmentPath, true);
 		*isMsvcInitialized = true;
 	}
