@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 	system("clang main.c -o my_program");
 	
 	// Or use CliArgList
-	CliArgList args = ZEROED;
+	CliArgList args = EMPTY;
 	AddArg(&args, CL_NO_LOGO);
 	AddArgNt(&args, CLI_QUOTED_ARG, "src/main.c");
 	AddArgNt(&args, CL_BINARY_FILE, "my_program.exe");

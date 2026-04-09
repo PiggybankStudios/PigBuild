@@ -267,7 +267,7 @@ bool DoesArgMatchTags(const CliArg* arg, const StrArray* tagsListPntr)
 
 Str FilterAndJoinCliArgsList(Str prefix, const CliArgList* list, StrArray* tagsListPntr, bool addNullTerm)
 {
-	StrArray localEmptyTagList = ZEROED;
+	StrArray localEmptyTagList = EMPTY;
 	if (tagsListPntr == nullptr) { tagsListPntr = &localEmptyTagList; }
 	
 	char pathSepChar = list->pathSepChar;

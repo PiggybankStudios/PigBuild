@@ -35,7 +35,7 @@ int RunCliProgramTagArray(Str programPath, StrArray* tagsListPntr, const CliArgL
 }
 int RunCliProgram(Str programPath, const char* tagsListStr, const CliArgList* args)
 {
-	StrArray tagArray = ZEROED;
+	StrArray tagArray = EMPTY;
 	SplitTagsListStr(MakeStrNt(tagsListStr), &tagArray);
 	// if (tagArray.length > 0)
 	// {
@@ -62,7 +62,7 @@ void RunCliProgramTagArrayAndExitOnFailure(Str programPath, StrArray* tagsListPn
 }
 void RunCliProgramAndExitOnFailure(Str programPath, const char* tagListStr, const CliArgList* args, Str errorMessage)
 {
-	StrArray tagArray = ZEROED;
+	StrArray tagArray = EMPTY;
 	SplitTagsListStr(MakeStrNt(tagListStr), &tagArray);
 	RunCliProgramTagArrayAndExitOnFailure(programPath, &tagArray, args, errorMessage);
 	FreeStrArray(&tagArray);
@@ -115,7 +115,7 @@ void TwoPassPrint(Str* resultStr, u64* currentByteIndex, const char* formatStrin
 // +--------------------------------------------------------------+
 LineParser NewLineParser(Str inputStr)
 {
-	LineParser result = ZEROED;
+	LineParser result = EMPTY;
 	result.byteIndex = 0;
 	result.lineIndex = 0;
 	result.inputStr = inputStr;
@@ -250,7 +250,7 @@ void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str outputFilePath)
 	//TODO: We really should handle new-line differences between Windows and Linux/etc. a little smarter here
 	//      Just because we are building on Windows doesn't mean all these .js files are using Windows style line-endings
 	
-	StrArray allFilesContents = ZEROED;
+	StrArray allFilesContents = EMPTY;
 	u64 totalLength = 0;
 	for (u64 fIndex = 0; fIndex < pathArray->length; fIndex++)
 	{
@@ -349,7 +349,7 @@ void ParseAndApplyEnvironmentVariables(Str environmentVars)
 // We expect the script at batchFilePath to do `set > "%~1"` at the end to dump all environment variables into environmentFilePath
 void RunBatchFileAndApplyDumpedEnvironment(Str batchFilePath, Str environmentFilePath, bool skipRunningIfFileExists)
 {
-	CliArgList cmd = ZEROED;
+	CliArgList cmd = EMPTY;
 	AddArgStr(&cmd, CLI_QUOTED_ARG, environmentFilePath);
 	Str fixedBatchFilePath = CopyStr(batchFilePath, false);
 	FixPathSlashes(fixedBatchFilePath, PATH_SEP_CHAR);

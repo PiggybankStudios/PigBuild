@@ -167,12 +167,12 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str headerPath, Str shaderPath)
 	Str headerFileContents = ReadEntireFile(headerPath);
 	
 	Str shaderName = Str_Empty_Const;
-	StrArray shaderAttributes = ZEROED;
-	StrArray shaderViews = ZEROED;
-	StrArray shaderSamplers = ZEROED;
-	StrArray shaderUniformBlocks = ZEROED;
-	StrArray shaderUniforms = ZEROED;
-	StrArray shaderUniformsBlockNames = ZEROED;
+	StrArray shaderAttributes = EMPTY;
+	StrArray shaderViews = EMPTY;
+	StrArray shaderSamplers = EMPTY;
+	StrArray shaderUniformBlocks = EMPTY;
+	StrArray shaderUniforms = EMPTY;
+	StrArray shaderUniformsBlockNames = EMPTY;
 	
 	bool insideUniformBlock = false;
 	Str uniformBlockName = Str_Empty_Const;

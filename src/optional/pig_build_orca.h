@@ -22,7 +22,7 @@ Description:
 
 Str GetOrcaSdkPath()
 {
-	CliArgList cmd = ZEROED;
+	CliArgList cmd = EMPTY;
 	AddArg(&cmd, "sdk-path");
 	AddArgNt(&cmd, CLI_PIPE_OUTPUT_TO_FILE, FILENAME_ORCA_SDK_PATH);
 	int statusCode = RunCliProgram(StrLit("orca"), "", &cmd);

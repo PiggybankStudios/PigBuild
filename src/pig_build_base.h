@@ -84,9 +84,9 @@ Date:   03\21\2026
 // +--------------------------------------------------------------+
 #if LANGUAGE_IS_C
 #define nullptr ((void*)0)
-#define ZEROED {0}
+#define EMPTY  {0}
 #else
-#define ZEROED {}
+#define EMPTY  {}
 #endif
 
 #if BUILDING_ON_WINDOWS

@@ -321,7 +321,7 @@ void MyRemoveDirectory(Str folderPath, bool recursive)
 		{
 			Str searchStr = JoinPaths(folderPathNt, StrLit("*"), true);
 			
-			WIN32_FIND_DATAA findData = ZEROED;
+			WIN32_FIND_DATAA findData = EMPTY;
 			HANDLE iterHandle = FindFirstFileA(searchStr.chars, &findData);
 			if (iterHandle == INVALID_HANDLE_VALUE) { return; }
 			
@@ -368,7 +368,7 @@ void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
 	if (copyPermissions)
 	{
 		Str filePathNt = CopyStr(filePath, true);
-		struct stat oldFileStats = ZEROED;
+		struct stat oldFileStats = EMPTY;
 		int statResult = stat(filePathNt.chars, &oldFileStats);
 		Assert(statResult == 0);
 		free(filePathNt.chars);
@@ -419,7 +419,7 @@ void AssertFileExist(Str filePath, bool wasCreatedByBuild)
 
 FileIter StartFileIter(Str folderPath)
 {
-	FileIter result = ZEROED;
+	FileIter result = EMPTY;
 	result.index = UINT64_MAX;
 	result.nextIndex = 0;
 	result.finished = false;
@@ -531,7 +531,7 @@ bool StepFileIter(FileIter* fileIter, Str* pathOut, bool* isFolderOut)
 			Str fullPath = JoinStrings2(fileIter->folderPathNt, fileName, true);
 			if (isFolderOut != nullptr)
 			{
-				struct stat statStruct = ZEROED;
+				struct stat statStruct = EMPTY;
 				int statResult = stat(fullPath.chars, &statStruct);
 				if (statResult == 0)
 				{
