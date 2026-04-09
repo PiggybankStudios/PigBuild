@@ -43,4 +43,29 @@ set /A vsdevcmd_elapsed_hundredths_part=vsdevcmd_elapsed_hundredths%%100
 if %vsdevcmd_elapsed_hundredths_part% lss 10 set vsdevcmd_elapsed_hundredths_part=0%vsdevcmd_elapsed_hundredths_part%
 echo VsDevCmd.bat took %vsdevcmd_elapsed_seconds_part%.%vsdevcmd_elapsed_hundredths_part% seconds
 
+REM The environment variables we care about are probably some subset of the following:
+REM   DevEnvDir, ExtensionSdkDir, EXTERNAL_INCLUDE, FSHARPINSTALLDIR, INCLUDE, LIB, LIBPATH, NETFXSDKDir
+REM   Framework40Version, FrameworkDir, FrameworkDir64, FrameworkVersion, FrameworkVersion64, UCRTVersion, UniversalCRTSdkDir
+REM   VCIDEInstallDir, VCINSTALLDIR, VCToolsInstallDir, VCToolsRedistDir, VCToolsVersion, VisualStudioVersion
+REM   VS170COMNTOOLS, VSCMD_ARG_app_plat, VSCMD_ARG_HOST_ARCH, VSCMD_ARG_TGT_ARCH, VSCMD_VER, VSINSTALLDIR, VSSDK150INSTALL, VSSDKINSTALL
+REM   WindowsLibPath, WindowsSdkBinPath, WindowsSdkDir, WindowsSDKLibVersion, WindowsSdkVerBinPath, WindowsSDKVersion, WindowsSDK_ExecutablePath_x64, WindowsSDK_ExecutablePath_x86
+REM   __DOTNET_ADD_64BIT, __DOTNET_PREFERRED_BITNESS, __VSCMD_PREINIT_PATH
+REM Also a bunch of things added to PATH:
+REM   C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\bin\HostX64\x64;
+REM   C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\VC\VCPackages;
+REM   C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\TestWindow;
+REM   C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\TeamFoundation\Team Explorer;
+REM   C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\bin\Roslyn;
+REM   C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools\x64\;
+REM   C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\FSharp\Tools;
+REM   C:\Program Files\Microsoft Visual Studio\2022\Community\Team Tools\DiagnosticsHub\Collector;
+REM   C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\\x64;
+REM   C:\Program Files (x86)\Windows Kits\10\bin\\x64;
+REM   C:\Program Files\Microsoft Visual Studio\2022\Community\\MSBuild\Current\Bin\amd64;
+REM   C:\Windows\Microsoft.NET\Framework64\v4.0.30319;
+REM   C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\;
+REM   C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\;
+REM   C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin;
+REM   C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja;
+REM   C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\VC\Linux\bin\ConnectionManagerExe
 set > "%~1"
