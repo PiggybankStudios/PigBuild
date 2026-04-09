@@ -13,25 +13,31 @@ typedef struct Str Str;
 struct Str
 {
 	u64 length;
-	union { char* chars; u8* bytes; void* pntr; };
+	union { void* pntr; char* chars; u8* bytes; };
 };
 
 // +--------------------------------------------------------------+
-// |                         Str Macros                          |
+// |                         Str Macros                           |
 // +--------------------------------------------------------------+
+// _Const variants should be used when declaring and initializing a Str variable on the same line. For example:
+//   Str name = Str_Empty_Const;
+// The non _Const versions should be used when assigning a Str after declaration or constructing a Str anywhere that isn't getting directly assigned to a newly declared Str variable
+//   Str name;
+//   name = Str_Empty;
+// Depending on which version of C/C++ you are compiling with and on which compiler this distinction may be more or less enforced
+#if LANGUAGE_IS_C
 #define MakeStr_Const(lengthValue, pntrValue) { .length=(lengthValue), .pntr=(void*)(pntrValue) }
-#if LANGUAGE_IS_CPP
-#define MakeStr(length, pntr) Str MakeStr_Const((length), (pntr))
 #else
-#define MakeStr(length, pntr) (Str)MakeStr_Const((length), (pntr))
+#define MakeStr_Const(lengthValue, pntrValue) { (lengthValue), (void*)(pntrValue) }
 #endif
+#define MakeStr(length, pntr) INIT(Str)MakeStr_Const((length), (pntr))
 #define Str_Empty_Const MakeStr_Const(0, nullptr)
 #define Str_Empty       MakeStr(0, nullptr)
 
 #define StrLitLength(stringLiteral) ((sizeof(stringLiteral) / sizeof((stringLiteral)[0])) - sizeof((stringLiteral)[0]))
 #define StrLit_Const(stringLiteral) MakeStr_Const(StrLitLength(CheckStrLit(stringLiteral)), (stringLiteral))
 #define StrLit(stringLiteral)       MakeStr(StrLitLength(CheckStrLit(stringLiteral)), (stringLiteral))
-#define MakeStrNt(nullTermPntr)    MakeStr((u64)strlen(nullTermPntr), (nullTermPntr))
+#define MakeStrNt(nullTermPntr)     MakeStr((u64)strlen(nullTermPntr), (nullTermPntr))
 
 //NOTE: This is meant to be used when formatting Str using any printf like functions
 //      Use the format specifier %.*s and then this macro in the var-args

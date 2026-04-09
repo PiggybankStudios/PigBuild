@@ -91,6 +91,15 @@ Date:   03\21\2026
 #define EMPTY  {}
 #endif
 
+// This macro is surrounds the type with parenthesis when compiling in C, but no parenthesis when compiling in C++
+// This is useful for making C/C++ agnostic curly bracket initializers. For example:
+// myStr = INIT(Str){ 4, "test" };
+#if LANGUAGE_IS_C
+#define INIT(type) (type)
+#else
+#define INIT(type) type
+#endif
+
 #if BUILDING_ON_WINDOWS
 #define PATH_SEP_CHAR '\\'
 #define PATH_SEP_CHAR_STR "\\"
@@ -103,6 +112,13 @@ Date:   03\21\2026
 #define FOLDER_PERMISSIONS 0
 #else
 #define FOLDER_PERMISSIONS S_IRWXU|S_IRWXG|S_IRWXO
+#endif
+
+//TODO: Really this should be something like COMPILER_IS_MSVC not BUILDING_ON_WINDOWS
+#if BUILDING_ON_WINDOWS
+#define rmdir(dirname) _rmdir(dirname)
+#define chdir(dirname) _chdir(dirname)
+#define mkdir(dirname, permissions) _mkdir(dirname) //permissions are ignored
 #endif
 
 // +--------------------------------------------------------------+
@@ -155,12 +171,5 @@ typedef double r64;
 #define Assert(condition)                    assert(condition)
 #define AssertFmt(condition, formatStr, ...) if (!(condition)) { PrintLine_E("Assertion Failed! Message:\n" formatStr, ##__VA_ARGS__); AssertMsg((condition), (formatStr)); }
 #define NotNull(pntr)                        Assert((pntr) != nullptr)
-
-//TODO: Really this should be something like COMPILER_IS_MSVC not BUILDING_ON_WINDOWS
-#if BUILDING_ON_WINDOWS
-#define rmdir(dirname) _rmdir(dirname)
-#define chdir(dirname) _chdir(dirname)
-#define mkdir(dirname, permissions) _mkdir(dirname) //permissions are ignored
-#endif
 
 #endif //  _PIG_BUILD_BASE_H

@@ -308,6 +308,7 @@
 			"#define CONSUME_UNTIL_NOT_CHARS(linePntr, expectedCharsStr)",
 			"#define CONSUME_WHITESPACE(linePntr)",
 			"#define CheckStrLit(stringLiteral)",
+			"#define INIT(type)",
 			"#define IsSlash(character)",
 			"#define MakeStr(length, pntr)",
 			"#define MakeStrNt(nullTermPntr)",

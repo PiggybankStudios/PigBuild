@@ -18,6 +18,7 @@
 	[X] TAG_X macros? Maybe T_X for brevity? Should we add leading "|" for ultimate brevity?
 	[?] Remove T_UNIX tag?
 	[?] Rename Str_Empty_Const to something shorter?
+	[!] Add functions to "pig_build_file.h" for "mkdir", "rmdir" and "chdir"
 	[!] Update the README.md
 	[!] Variadic args function for joining tag strings?
 	[X] Replace usages of ZEROED for Str with Str_Empty
