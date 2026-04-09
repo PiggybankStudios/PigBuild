@@ -111,6 +111,9 @@ u64 FnvHash(const void* bufferPntr, u64 numBytes, u64 startingState)
 // change then your builder will be re-compiled (this function will call exit(REBUILD_EXIT_CODE);)
 void RecompileIfNeeded(StrArray* buildScriptSourceFolders)
 {
+	StrArray localBuildScriptSourceFolders = ZEROED;
+	if (buildScriptSourceFolders == nullptr) { buildScriptSourceFolders = &localBuildScriptSourceFolders; }
+	
 	// For convenience we are going to add pig_build/src and it's subfolders automatically if the build_script didn't mention them
 	bool sourceFoldersContainPigBuildSrc = false;
 	bool sourceFoldersContainPigBuildSrcOptional = false;
