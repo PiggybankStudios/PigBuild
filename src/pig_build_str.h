@@ -20,7 +20,11 @@ struct Str
 // |                         Str Macros                          |
 // +--------------------------------------------------------------+
 #define MakeStr_Const(lengthValue, pntrValue) { .length=(lengthValue), .pntr=(void*)(pntrValue) }
+#if LANGUAGE_IS_CPP
+#define MakeStr(length, pntr) Str MakeStr_Const((length), (pntr))
+#else
 #define MakeStr(length, pntr) (Str)MakeStr_Const((length), (pntr))
+#endif
 #define Str_Empty_Const MakeStr_Const(0, nullptr)
 #define Str_Empty       MakeStr(0, nullptr)
 

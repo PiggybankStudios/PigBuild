@@ -73,6 +73,8 @@ Date:   03\21\2026
 //Platform-dependent includes
 #if BUILDING_ON_WINDOWS
 #include <windows.h>
+#include <direct.h> //for _rmdir, _mkdir, _chdir
+#include "Shlwapi.h" //for PathFileExistsA
 #else //!BUILDING_ON_WINDOWS
 #include <unistd.h>
 #include <sys/stat.h>
@@ -153,5 +155,12 @@ typedef double r64;
 #define Assert(condition)                    assert(condition)
 #define AssertFmt(condition, formatStr, ...) if (!(condition)) { PrintLine_E("Assertion Failed! Message:\n" formatStr, ##__VA_ARGS__); AssertMsg((condition), (formatStr)); }
 #define NotNull(pntr)                        Assert((pntr) != nullptr)
+
+//TODO: Really this should be something like COMPILER_IS_MSVC not BUILDING_ON_WINDOWS
+#if BUILDING_ON_WINDOWS
+#define rmdir(dirname) _rmdir(dirname)
+#define chdir(dirname) _chdir(dirname)
+#define mkdir(dirname, permissions) _mkdir(dirname) //permissions are ignored
+#endif
 
 #endif //  _PIG_BUILD_BASE_H
