@@ -20,53 +20,55 @@ Date:   04\05\2026
 // +--------------------------------------------------------------+
 // |                       Android Helpers                        |
 // +--------------------------------------------------------------+
-typedef enum AndroidTargetArchitechture AndroidTargetArchitechture;
-enum AndroidTargetArchitechture
+#if LANGUAGE_IS_C
+typedef enum AndroidTargetArchitecture AndroidTargetArchitecture;
+#endif
+enum AndroidTargetArchitecture
 {
-	AndroidTargetArchitechture_None = 0,
-	AndroidTargetArchitechture_Arm8,
-	AndroidTargetArchitechture_Arm7,
-	AndroidTargetArchitechture_x86,
-	AndroidTargetArchitechture_Count,
+	AndroidTargetArchitecture_None = 0,
+	AndroidTargetArchitecture_Arm8,
+	AndroidTargetArchitecture_Arm7,
+	AndroidTargetArchitecture_x86,
+	AndroidTargetArchitecture_Count,
 };
-const char* GetAndroidTargetArchitechtureStr(AndroidTargetArchitechture enumValue)
+const char* GetAndroidTargetArchitectureStr(AndroidTargetArchitecture enumValue)
 {
 	switch (enumValue)
 	{
-		case AndroidTargetArchitechture_None:  return "None";
-		case AndroidTargetArchitechture_Arm8:  return "Arm8";
-		case AndroidTargetArchitechture_Arm7:  return "Arm7";
-		case AndroidTargetArchitechture_x86:   return "x86";
+		case AndroidTargetArchitecture_None:  return "None";
+		case AndroidTargetArchitecture_Arm8:  return "Arm8";
+		case AndroidTargetArchitecture_Arm7:  return "Arm7";
+		case AndroidTargetArchitecture_x86:   return "x86";
 		default: return "Unknown";
 	}
 }
-const char* GetAndroidTargetArchitechtureFolderName(AndroidTargetArchitechture enumValue)
+const char* GetAndroidTargetArchitectureFolderName(AndroidTargetArchitecture enumValue)
 {
 	switch (enumValue)
 	{
-		case AndroidTargetArchitechture_Arm8:  return "arm64-v8a";
-		case AndroidTargetArchitechture_Arm7:  return "armeabi-v7a";
-		case AndroidTargetArchitechture_x86:   return "x86_64";
+		case AndroidTargetArchitecture_Arm8:  return "arm64-v8a";
+		case AndroidTargetArchitecture_Arm7:  return "armeabi-v7a";
+		case AndroidTargetArchitecture_x86:   return "x86_64";
 		default: return "unknown";
 	}
 }
-const char* GetAndroidTargetArchitechtureTargetStr(AndroidTargetArchitechture enumValue)
+const char* GetAndroidTargetArchitectureTargetStr(AndroidTargetArchitecture enumValue)
 {
 	switch (enumValue)
 	{
-		case AndroidTargetArchitechture_Arm8:  return "aarch64-none-linux-android35";
-		case AndroidTargetArchitechture_Arm7:  return "armv7a-none-linux-androideabi35";
-		case AndroidTargetArchitechture_x86:   return "x86_64-none-linux-android35";
+		case AndroidTargetArchitecture_Arm8:  return "aarch64-none-linux-android35";
+		case AndroidTargetArchitecture_Arm7:  return "armv7a-none-linux-androideabi35";
+		case AndroidTargetArchitecture_x86:   return "x86_64-none-linux-android35";
 		default: return "unknown";
 	}
 }
-const char* GetAndroidTargetArchitechtureToolchainFolderStr(AndroidTargetArchitechture enumValue)
+const char* GetAndroidTargetArchitectureToolchainFolderStr(AndroidTargetArchitecture enumValue)
 {
 	switch (enumValue)
 	{
-		case AndroidTargetArchitechture_Arm8:  return "aarch64-linux-android";
-		case AndroidTargetArchitechture_Arm7:  return "arm-linux-androideabi";
-		case AndroidTargetArchitechture_x86:   return "x86_64-linux-android";
+		case AndroidTargetArchitecture_Arm8:  return "aarch64-linux-android";
+		case AndroidTargetArchitecture_Arm7:  return "arm-linux-androideabi";
+		case AndroidTargetArchitecture_x86:   return "x86_64-linux-android";
 		default: return "unknown";
 	}
 }
