@@ -8,7 +8,7 @@ Description:
 
 #include <stdio.h>
 
-int main(int argc, const char* argv)
+int main(int argc, const char* argv[])
 {
 	#if DEBUG_BUILD
 	printf("Hello Vulkan! (DEBUG)\n");
