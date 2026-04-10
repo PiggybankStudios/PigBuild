@@ -22,9 +22,9 @@ int main(int argc, const char* argv[])
 	while (!WindowShouldClose())
 	{
 		PollInputEvents();
-		ClearBackground((Color){.r=255, .g=200, .b=187});
+		ClearBackground(DARKGRAY);
 		BeginDrawing();
-		
+		DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
 		EndDrawing();
 	}
 	
