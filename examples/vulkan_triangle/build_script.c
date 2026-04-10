@@ -14,6 +14,11 @@ int main(int argc, const char* argv[])
 	bool isMsvcInitialized = WasMsvcDevBatchRun();
 	Str pigBuildFolder = StrLit("../..");
 	
+	//TODO: Download Raylib from: https://github.com/raysan5/raylib/releases/tag/5.5
+	//      Windows: ?
+	//      Linux: ?
+	//      OSX: https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_macos.tar.gz
+	
 	// +--------------------------------------------------------------+
 	// |                           Windows                            |
 	// +--------------------------------------------------------------+
@@ -67,6 +72,12 @@ int main(int argc, const char* argv[])
 		CopyFileToPath(StrLit("../main.c"), StrLit("main.m"), true);
 		AddArgNt(&args, CLI_QUOTED_ARG, "main.m");
 		AddArgNt(&args, CLANG_OUTPUT_FILE, "vulkan_triangle");
+		AddArgNt(&args, CLANG_INCLUDE_DIR, "[ROOT]");
+		AddArgNt(&args, CLANG_INCLUDE_DIR, "[ROOT]/raylib/include");
+		AddArgNt(&args, CLANG_DEFINE, DEBUG_BUILD ? "DEBUG_BUILD=1" : "DEBUG_BUILD=0");
+		//TODO: Add optimization and debug info clang argumeents
+		
+		AddArgNt(&args, CLANG_LIBRARY_DIR, "[ROOT]/raylib/lib");
 		AddArgNt(&args, CLANG_FRAMEWORK, "CoreText");
 		AddArgNt(&args, CLANG_FRAMEWORK, "Cocoa");
 		AddArgNt(&args, CLANG_FRAMEWORK, "QuartzCore");
@@ -77,9 +88,13 @@ int main(int argc, const char* argv[])
 		// AddArgNt(&args, CLANG_FRAMEWORK, "AVFoundation");
 		AddArgNt(&args, CLANG_FRAMEWORK, "Metal");
 		AddArgNt(&args, CLANG_FRAMEWORK, "MetalKit");
+		AddArgNt(&args, CLANG_SYSTEM_LIBRARY, "raylib");
+		AddArgNt(&args, CLANG_RPATH_DIR, ".");
 		
 		RunCliProgramAndExitOnFailure(StrLit("clang"), "", &args, StrLit("Failed to build vulkan_triangle!"));
 		AssertFileExist(StrLit("vulkan_triangle"), true);
+		
+		CopyFileToFolder(StrLit("../raylib/lib/libraylib.550.dylib"), StrLit("."), true);
 	}
 	#endif
 	
