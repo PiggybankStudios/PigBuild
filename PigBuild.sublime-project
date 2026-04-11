@@ -5,6 +5,8 @@
 			"path": ".",
 			"file_exclude_patterns": [
 				"examples/*/build.bat",
+				"examples/*/build.sh",
+				"examples/*/*.sublime-*",
 			],
 			"folder_exclude_patterns": [
 				"examples/*/build",

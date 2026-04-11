@@ -1,2 +1,3 @@
 @echo off
-call pig_build\shell\build.bat %*
+set PIG_BUILD_ROOT=%~dp0\..\..
+call %PIG_BUILD_ROOT%\shell\build.bat %*

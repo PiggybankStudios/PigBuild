@@ -19,6 +19,7 @@
 	[?] Remove T_UNIX tag?
 	[?] Rename Str_Empty_Const to something shorter?
 	[!] Add functions to "pig_build_file.h" for "mkdir", "rmdir" and "chdir"
+	[!] Do our shell scripts handle spaces in the parent directory names? Can we make them handle it properly? (mostly include folder for compiling the build_script.c)
 	[!] Update the README.md
 	[!] Variadic args function for joining tag strings?
 	[X] Replace usages of ZEROED for Str with Str_Empty
