@@ -2,7 +2,11 @@
 	"folders":
 	[
 		{
-			"path": "."
+			"path": ".",
+		},
+		{
+			"path": "../../src",
+			"name": "Pig Build",
 		}
 	]
 }

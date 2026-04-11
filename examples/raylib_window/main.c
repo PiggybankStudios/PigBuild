@@ -7,29 +7,38 @@ Description:
 */
 
 #include <stdio.h>
+#include <stdint.h>
 
 #include "raylib.h"
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include "cimgui.h"
+
+#define TEXT "This is an example!"
+#define TEXT_SIZE 20
 
 int main(int argc, const char* argv[])
 {
 	#if DEBUG_BUILD
-	printf("Hello Vulkan! (DEBUG)\n");
+	printf("Hello Raylib! (DEBUG)\n");
 	#else
-	printf("Hello Vulkan!\n");
+	printf("Hello Raylib!\n");
 	#endif
 	
-	InitWindow(640, 480, "Vulkan Triangle");
+	InitWindow(640, 480, "Raylib Window");
+	SetWindowState(FLAG_VSYNC_HINT);
+	SetWindowState(FLAG_WINDOW_RESIZABLE);
+	uint64_t frame = 0;
 	while (!WindowShouldClose())
 	{
-		PollInputEvents();
+		// PollInputEvents();
 		ClearBackground(DARKGRAY);
 		BeginDrawing();
-		DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
+		int textWidth = MeasureText(TEXT, TEXT_SIZE);
+		float textX = -(float)textWidth + (float)((frame+100)%(GetScreenWidth() + textWidth));
+		DrawText(TEXT, textX, GetScreenHeight()/2, TEXT_SIZE, LIGHTGRAY);
 		EndDrawing();
+		frame++;
 	}
-	
-	//TODO: Use Raylib or GLFW or Sokol to make a Window with Vulkan support?
-	//TODO: Use an existing hello triangle in Vulkan example in C (or go dig up my old one)
 	
 	return 0;
 }

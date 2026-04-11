@@ -1,5 +1,5 @@
 
-#define PIG_BUILD_PRINT_SYS_CMDS 1
+#define PIG_BUILD_PRINT_SYS_CMDS 0
 #include "pig_build.h"
 
 #define BUILD_WINDOWS (BUILDING_ON_WINDOWS)
@@ -23,6 +23,55 @@ int main(int argc, const char* argv[])
 	//      Windows: ?
 	//      Linux: ?
 	//      OSX: https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.MACOS.zip
+	//TODO: Download cimgui from: https://github.com/cimgui/cimgui
+	//      All Platforms: https://github.com/cimgui/cimgui/commit/0e533fd0b70f6add19825bea83b66743d5b8d95b "pull 1.92.7 docking and generate"
+	//TODO: Download Dear ImGui v1.92.7 from: https://github.com/ocornut/imgui/releases/tag/v1.92.7
+	//      All Platforms: https://github.com/ocornut/imgui/archive/refs/tags/v1.92.7.zip
+	
+	// +--------------------------------------------------------------+
+	// |                          Dear ImGui                          |
+	// +--------------------------------------------------------------+
+	Str imguiObjectFile = (BUILDING_ON_WINDOWS ? StrLit("imgui.obj") : StrLit("imgui.o"));
+	// if (!DoesFileExist(imguiObjectFile))
+	{
+		// +==============================+
+		// |      Windows Dear ImGui      |
+		// +==============================+
+		#if BUILD_WINDOWS
+		{
+			Unimplemented(); //TODO: Implement me!
+		}
+		#endif
+		// +==============================+
+		// |       Linux Dear ImGui       |
+		// +==============================+
+		#if BUILD_LINUX
+		{
+			Unimplemented(); //TODO: Implement me!
+		}
+		#endif
+		// +==============================+
+		// |        OSX Dear ImGui        |
+		// +==============================+
+		#if BUILD_OSX
+		{
+			WriteLine("[Building imgui.o...]");
+			
+			CliArgList args = EMPTY;
+			AddArg(&args, CLANG_COMPILE);
+			AddArg(&args, CLANG_FULL_FILE_PATHS);
+			AddArgNt(&args, CLI_QUOTED_ARG, "[ROOT]/imgui_main.cpp");
+			AddArgStr(&args, CLANG_OUTPUT_FILE, imguiObjectFile);
+			AddArgNt(&args, CLANG_LANG_VERSION, "c++20");
+			AddArgNt(&args, CLANG_INCLUDE_DIR, "[ROOT]");
+			AddArgNt(&args, CLANG_DEFINE, DEBUG_BUILD ? "DEBUG_BUILD=1" : "DEBUG_BUILD=0");
+			AddArgNt(&args, CLANG_SYSTEM_LIBRARY, "stdc++");
+			
+			RunCliProgramAndExitOnFailure(StrLit("clang"), "", &args, StrLit("Failed to compile Dear ImGui into imgui.o!"));
+			AssertFileExist(imguiObjectFile, true);
+		}
+		#endif
+	}
 	
 	// +--------------------------------------------------------------+
 	// |                           Windows                            |
@@ -36,6 +85,7 @@ int main(int argc, const char* argv[])
 		args.pathSepChar = PATH_SEP_CHAR;
 		args.rootDirPath = StrLit("..");
 		AddArg(&args, CL_NO_LOGO);
+		AddArg(&args, CL_FULL_FILE_PATHS);
 		AddArgNt(&args, CLI_QUOTED_ARG, "[ROOT]/main.c");
 		AddArgNt(&args, CL_BINARY_FILE, "raylib_window.exe");
 		AddArgNt(&args, CL_PDB_FILE, "raylib_window.pdb");
@@ -83,8 +133,11 @@ int main(int argc, const char* argv[])
 		AddArgNt(&args, CLANG_OUTPUT_FILE, "raylib_window");
 		AddArgNt(&args, CLANG_INCLUDE_DIR, "[ROOT]");
 		AddArgNt(&args, CLANG_INCLUDE_DIR, "[ROOT]/raylib/include");
+		AddArgNt(&args, CLANG_INCLUDE_DIR, "[ROOT]/cimgui");
+		AddArg(&args, CLANG_FULL_FILE_PATHS);
 		AddArgNt(&args, CLANG_DEFINE, DEBUG_BUILD ? "DEBUG_BUILD=1" : "DEBUG_BUILD=0");
 		//TODO: Add clang arguments for optimization and debug info
+		// AddArg(&args, "-fno-threadsafe-statics"); //Eliminates undefined references to stuff like "__cxa_guard_acquire"
 		
 		AddArgNt(&args, CLANG_LIBRARY_DIR, "[ROOT]/raylib/lib");
 		AddArgNt(&args, CLANG_LIBRARY_DIR, "[ROOT]/glfw/lib-arm64"); //TODO: We should choose the appropriate architecture for intel apple machines
@@ -103,6 +156,8 @@ int main(int argc, const char* argv[])
 		// AddArg(&args, "-Wl,-force_load,./../raylib/lib/libraylib.a"); //TODO: It seems like the static version of Raylib still links with the dynamic version of GLFW??
 		// AddArg(&args, "-Wl,-force_load,./../glfw/lib-arm64/libglfw3.a");
 		AddArgNt(&args, CLANG_RPATH_DIR, "."); //Add the current folder to RPATH so the .dylibs can be found when the program is run from this folder
+		AddArgNt(&args, CLANG_SYSTEM_LIBRARY, "stdc++"); //Eliminates undefined references to stuff like "__cxa_guard_acquire"
+		AddArgStr(&args, CLI_QUOTED_ARG, imguiObjectFile);
 		
 		RunCliProgramAndExitOnFailure(StrLit("clang"), "", &args, StrLit("Failed to build raylib_window!"));
 		AssertFileExist(StrLit("raylib_window"), true);
