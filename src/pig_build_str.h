@@ -134,18 +134,22 @@ Str GetDirectoryPart(Str fullPath, bool includeTrailingSlash)
 		if (IsSlash(character)) { lastSlashIndex = cIndex; }
 	}
 	if (lastSlashIndex < fullPath.length) { return StrSlice(fullPath, 0, lastSlashIndex + (includeTrailingSlash ? 1 : 0)); }
-	else { return fullPath; }
+	else { return StrSlice(fullPath, 0, 0); }
 }
 Str GetFileNamePart(Str fullPath, bool includeExtension)
 {
+	u64 periodIndex = fullPath.length;
 	u64 lastSlashIndex = fullPath.length;
 	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
 	{
 		char character = fullPath.chars[cIndex];
-		if (IsSlash(character)) { lastSlashIndex = cIndex; }
+		if (IsSlash(character)) { lastSlashIndex = cIndex; periodIndex = fullPath.length; }
+		else if (character == '.') { periodIndex = cIndex; }
 	}
-	if (lastSlashIndex < fullPath.length) { return StrSliceFrom(fullPath, lastSlashIndex+1); }
-	else { return fullPath; }
+	return StrSlice(fullPath,
+		(lastSlashIndex < fullPath.length) ? lastSlashIndex+1 : 0,
+		includeExtension ? fullPath.length : periodIndex
+	);
 }
 Str GetFileExtPart(Str fullPath)
 {
@@ -158,6 +162,17 @@ Str GetFileExtPart(Str fullPath)
 	}
 	if (periodIndex < fullPath.length) { return StrSliceFrom(fullPath, periodIndex); }
 	else { return StrSliceFrom(fullPath, fullPath.length); }
+}
+Str RemovePathExtension(Str fullPath)
+{
+	u64 periodIndex = fullPath.length;
+	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
+	{
+		char character = fullPath.chars[cIndex];
+		if (IsSlash(character)) { periodIndex = fullPath.length; }
+		else if (character == '.') { periodIndex = cIndex; }
+	}
+	return StrSlice(fullPath, 0, periodIndex);
 }
 bool IsCharWhitespace(char character)
 {

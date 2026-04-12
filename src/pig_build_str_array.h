@@ -48,6 +48,8 @@ Str* AddStr(StrArray* array, Str newString)
 	*result = CopyStr(newString, false);
 	return result;
 }
+#define AddStrLit(arrayPntr, strLit)     AddStr((arrayPntr), StrLit(strLit))
+#define AddStrNt(arrayPntr, nullTermStr) AddStr((arrayPntr), MakeStrNt(nullTermStr))
 
 //Since tag macros all contain leading '|' character, we need to slice it off when adding it to a StrArray
 Str* AddTag(StrArray* array, const char* newStringWithLeadingSepChar)
