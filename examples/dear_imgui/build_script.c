@@ -56,14 +56,14 @@ int main(int argc, const char* argv[])
 		CliArgList commonArgs = EMPTY;
 		AddArg(&commonArgs, CLANG_FULL_FILE_PATHS);
 		AddArgNt(&commonArgs, CLANG_DEFINE, DEBUG_BUILD ? "DEBUG_BUILD=1" : "DEBUG_BUILD=0");
-		//TODO: Add clang arguments for optimization and debug info
+		AddArgNt(&commonArgs, CLANG_OPTIMIZATION_LEVEL, DEBUG_BUILD ? "0" : "2");
+		if (DEBUG_BUILD) { AddArg(&commonArgs, CLANG_DEBUG_INFO_DEFAULT); }
 		AddArgNt(&commonArgs, CLANG_INCLUDE_DIR, "[ROOT]");
 		AddArgNt(&commonArgs, CLANG_INCLUDE_DIR, "[ROOT]/imgui");
 		AddArgNt(&commonArgs, CLANG_INCLUDE_DIR, "[ROOT]/imgui/backends");
 		AddArgNt(&commonArgs, CLANG_INCLUDE_DIR, "[ROOT]/glfw/include");
 		AddArgNt(&commonArgs, CLANG_LANG_VERSION, "c++20");
-		AddTaggedArg(&commonArgs, ".mm", CLANG_ENABLE_OBJC_ARC);
-		// AddArg(&commonArgs, "-fno-threadsafe-statics"); //Eliminates undefined references to stuff like "__cxa_guard_acquire"
+		AddTaggedArg(&commonArgs, ".mm", CLANG_ENABLE_OBJC_ARC); //Turn on Automatic Reference Counting only for .mm files (we do this using tags)
 		
 		StrArray sourceFiles = EMPTY;
 		AddStr(&sourceFiles, StrLit("[ROOT]/imgui/imgui.cpp"));
@@ -72,7 +72,6 @@ int main(int argc, const char* argv[])
 		AddStr(&sourceFiles, StrLit("[ROOT]/imgui/imgui_tables.cpp"));
 		AddStr(&sourceFiles, StrLit("[ROOT]/imgui/imgui_demo.cpp"));
 		AddStr(&sourceFiles, StrLit("[ROOT]/imgui/backends/imgui_impl_metal.mm"));
-		// AddStr(&sourceFiles, StrLit("[ROOT]/imgui/backends/imgui_impl_vulkan.cpp"));
 		AddStr(&sourceFiles, StrLit("[ROOT]/imgui/backends/imgui_impl_glfw.cpp"));
 		AddStr(&sourceFiles, StrLit("main.mm"));
 		
