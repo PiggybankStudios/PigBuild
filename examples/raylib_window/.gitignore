@@ -1,6 +1,4 @@
 build/
-pig_build/
 raylib/
 glfw/
-cimgui/
 *.sublime-workspace
