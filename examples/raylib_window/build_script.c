@@ -9,6 +9,12 @@
 #define DEBUG_BUILD     1
 #define RUN_AFTER_BUILD 0
 
+#if DEBUG_BUILD
+#define IF_DEBUG(...) __VA_ARGS__
+#else
+#define IF_DEBUG(...) //nothing
+#endif
+
 int main(int argc, const char* argv[])
 {
 	RecompileIfNeeded(nullptr);
@@ -40,13 +46,14 @@ int main(int argc, const char* argv[])
 		AddArgNt(&args, CLI_QUOTED_ARG, "[ROOT]/main.c");
 		AddArgNt(&args, CL_BINARY_FILE, "raylib_window.exe");
 		AddArgNt(&args, CL_PDB_FILE, "raylib_window.pdb");
-		#if DEBUG_BUILD
-		AddArg(&args, CL_DEBUG_INFO);
-		#endif
+		AddArgNt(&args, CL_INCLUDE_DIR, "[ROOT]");
+		AddArgNt(&args, CL_INCLUDE_DIR, "[ROOT]/raylib/include");
+		IF_DEBUG(AddArg(&args, CL_DEBUG_INFO);)
 		AddArgNt(&args, CL_DEFINE, DEBUG_BUILD ? "DEBUG_BUILD=1" : "DEBUG_BUILD=0");
 		AddArgNt(&args, CL_OPTIMIZATION_LEVEL, DEBUG_BUILD ? "d" : "2");
 		AddArg(&args, DEBUG_BUILD ? CL_STD_LIB_DYNAMIC_DBG : CL_STD_LIB_DYNAMIC);
 		AddArg(&args, CL_LINK);
+		AddArgNt(&args, LINK_LIBRARY_DIR, "[ROOT]/raylib/lib");
 		AddArgNt(&args, CLI_QUOTED_ARG, "raylib.lib"); //NOTE: raylib.lib MUST be before User32.lib and others
 		AddArgNt(&args, CLI_QUOTED_ARG, "Gdi32.lib"); //Needed for CreateFontA and other Windows graphics functions
 		AddArgNt(&args, CLI_QUOTED_ARG, "User32.lib"); //Needed for GetForegroundWindow, GetDC, etc.

@@ -4,9 +4,13 @@ REM By default blocks like IF and FOR in batch are treated as a single command a
 REM Enabling "delayed expansion" allows us to use !variable! syntax inside blocks to get the value of variables on that line (and at each iteration in the case of loops)
 setlocal enabledelayedexpansion
 
+IF NOT DEFINED PIG_BUILD_ROOT (
+	set PIG_BUILD_ROOT=..\pig_build
+)
+
 REM These are the flags for building the build_script.c. Flags for the target program are decided inside build_script.c
 REM We need Shlwapi.lib for PathFileExistsA
-set compiler_flags=/Fe"builder.exe" /Fd"builder.pdb" /std:clatest /INCREMENTAL:NO /Od /FC /nologo /Zi /I".." /I"..\pig_build\src" /link Shlwapi.lib
+set compiler_flags=/Fe"builder.exe" /Fd"builder.pdb" /std:clatest /INCREMENTAL:NO /Od /FC /nologo /Zi /I".." /I"%PIG_BUILD_ROOT%\src" /link Shlwapi.lib
 
 REM If the build.bat was double-clicked directly inside the pig_build/shell folder then let's walk up 2 folders to be in the root directory of the real project
 FOR %%I IN ("%CD%") DO SET parentFolder=%%~nxI
@@ -32,7 +36,7 @@ popd
 EXIT /B 0
 :BuildAndRun
 
-CALL ..\pig_build\shell\init_msvc.bat msvc_environment.txt
+CALL %PIG_BUILD_ROOT%\shell\init_msvc.bat msvc_environment.txt
 echo Compiling build_script.c...
 del builder.* builder_hash.txt build_script.obj > NUL 2> NUL
 cl ..\build_script.c %compiler_flags%

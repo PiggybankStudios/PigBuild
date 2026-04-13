@@ -6,7 +6,11 @@
 		},
 		{
 			"path": "../../src",
-			"name": "Pig Build",
+			"name": "Pig Build (src)",
+		},
+		{
+			"path": "../../shell",
+			"name": "Pig Build (shell)",
 		}
 	]
 }
