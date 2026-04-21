@@ -53,10 +53,11 @@ void DownloadFromUrl(Str url, Str filePath)
 	}
 	#else //!PIG_BUILD_ENABLE_LIB_CURL
 	{
+		Str urlNt = CopyStr(url, true);
 		CliArgList args = EMPTY;
 		AddArg(&args, "-Ls");
-		AddArgStr(&args, "-o \'[VAL]\'", filePath);
-		AddArgStr(&args, CLI_SINGLE_QUOTED_ARG, url);
+		AddArgStr(&args, "-o \"[VAL]\"", filePath);
+		AddArg(&args, urlNt.chars);
 		//TODO: Make the error message here much clearer! Is curl not installed? Did the URL return a error code? etc.
 		RunCliProgramAndExitOnFailure(StrLit("curl"), "", &args, StrLit("Failed to download file using \"curl\" CLI tool!"));
 		AssertFileExist(filePath, false);
