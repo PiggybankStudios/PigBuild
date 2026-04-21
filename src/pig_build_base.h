@@ -74,6 +74,7 @@ Date:   03\21\2026
 #if BUILDING_ON_WINDOWS
 #include <windows.h>
 #include <direct.h> //for _rmdir, _mkdir, _chdir
+#pragma comment(lib, "Shlwapi.lib")
 #include "Shlwapi.h" //for PathFileExistsA
 #else //!BUILDING_ON_WINDOWS
 #include <unistd.h>

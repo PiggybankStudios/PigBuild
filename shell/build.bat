@@ -9,8 +9,7 @@ IF NOT DEFINED PIG_BUILD_ROOT (
 )
 
 REM These are the flags for building the build_script.c. Flags for the target program are decided inside build_script.c
-REM We need Shlwapi.lib for PathFileExistsA
-set compiler_flags=/Fe"builder.exe" /Fd"builder.pdb" /std:clatest /INCREMENTAL:NO /Od /FC /nologo /Zi /I".." /I"%PIG_BUILD_ROOT%\src" /link Shlwapi.lib
+set compiler_flags=/Fe"builder.exe" /Fd"builder.pdb" /std:clatest /INCREMENTAL:NO /Od /FC /nologo /Zi /I".." /I"%PIG_BUILD_ROOT%\src"
 
 REM If the build.bat was double-clicked directly inside the pig_build/shell folder then let's walk up 2 folders to be in the root directory of the real project
 FOR %%I IN ("%CD%") DO SET parentFolder=%%~nxI

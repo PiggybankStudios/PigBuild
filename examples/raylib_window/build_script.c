@@ -29,7 +29,7 @@ int main(int argc, const char* argv[])
 	
 	Str raylibDownloadUrl = StrLit("https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_macos.tar.gz");
 	Str raylibDownloadPath = StrLit("raylib-5.5_macos.tar.gz");
-	if (true || !DoesFileExist(raylibDownloadPath))
+	if (!DoesFileExist(raylibDownloadPath))
 	{
 		PrintLine("Download Raylib from \"%.*s\"...", StrPrint(raylibDownloadUrl));
 		Str raylibDownloadTempPath = AddSuffixToFileName(raylibDownloadPath, StrLit("_TEMP"), false);
