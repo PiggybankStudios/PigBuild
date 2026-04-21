@@ -1,5 +1,6 @@
 
 #define PIG_BUILD_PRINT_SYS_CMDS 0
+#define PIG_BUILD_FOLDER_PATH "../../.."
 #include "pig_build.h"
 
 #define BUILD_WINDOWS (BUILDING_ON_WINDOWS)
@@ -28,11 +29,9 @@
 
 int main(int argc, const char* argv[])
 {
-	StrArray buildScriptFolders = EMPTY;
-	AddStrLit(&buildScriptFolders, "../../../src");
-	RecompileIfNeeded(&buildScriptFolders);
+	RecompileIfNeeded(nullptr);
 	bool isMsvcInitialized = WasMsvcDevBatchRun();
-	Str pigBuildFolder = StrLit("../..");
+	Str pigBuildFolder = StrLit(PIG_BUILD_FOLDER_PATH);
 	
 	//TODO: Download GLFW from: https://github.com/glfw/glfw/releases/tag/3.4
 	//      Windows: https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
@@ -79,7 +78,7 @@ int main(int argc, const char* argv[])
 		for (u64 fIndex = 0; fIndex < sourceFiles.length; fIndex++)
 		{
 			Str sourcePath = sourceFiles.strings[fIndex];
-			Str sourceExt = GetFileExtPart(sourcePath);
+			Str sourceExt = GetFileExtPart(sourcePath, false);
 			Str objectPath = JoinStrings2(GetFileNamePart(sourcePath, false), StrLit(".obj"), false);
 			
 			// Rudamentary incremental build, only compile main.mm unconditionally,

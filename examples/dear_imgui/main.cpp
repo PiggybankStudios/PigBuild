@@ -25,6 +25,10 @@ Description:
 #error Multiple TARGET_IS_X macros set in compiler options!
 #endif
 
+#if TARGET_IS_WINDOWS
+#include <Windows.h>
+#endif
+
 #include <stdio.h>
 #include <stdint.h>
 
@@ -37,9 +41,7 @@ Description:
 #include "GLFW/glfw3.h"
 #include "GLFW/glfw3native.h"
 
-#if TARGET_IS_WINDOWS
-#import <windows.h>
-#elif TARGET_IS_OSX
+#if TARGET_IS_OSX
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
 #endif
@@ -155,7 +157,7 @@ int main(int argc, const char* argv[])
 			ImGui::Render();
 			#if TARGET_IS_WINDOWS
 			glViewport(0, 0, framebufferWidth, framebufferHeight);
-			glClearColor(clearColor.x * clearColor.w, clearColor.y * clearColor.w, clearColor.z * clearColor.w, clearColor.w);
+			glClearColor(clearColor[0] * clearColor[4], clearColor[1] * clearColor[4], clearColor[2] * clearColor[4], clearColor[4]);
 			glClear(GL_COLOR_BUFFER_BIT);
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 			#elif TARGET_IS_OSX
