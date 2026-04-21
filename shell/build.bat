@@ -5,11 +5,12 @@ REM Enabling "delayed expansion" allows us to use !variable! syntax inside block
 setlocal enabledelayedexpansion
 
 IF NOT DEFINED PIG_BUILD_ROOT (
+	echo Assuming default PIG_BUILD_ROOT
 	set PIG_BUILD_ROOT=..\pig_build
 )
 
 REM These are the flags for building the build_script.c. Flags for the target program are decided inside build_script.c
-set compiler_flags=/Fe"builder.exe" /Fd"builder.pdb" /std:clatest /INCREMENTAL:NO /Od /FC /nologo /Zi /I".." /I"%PIG_BUILD_ROOT%\src"
+set compiler_flags=/Fe"builder.exe" /Fd"builder.pdb" /std:clatest /INCREMENTAL:NO /Od /FC /nologo /Zi /I".." /I"%PIG_BUILD_ROOT%\src" %PIG_BUILD_FLAGS%
 
 REM If the build.bat was double-clicked directly inside the pig_build/shell folder then let's walk up 2 folders to be in the root directory of the real project
 FOR %%I IN ("%CD%") DO SET parentFolder=%%~nxI

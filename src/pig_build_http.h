@@ -4,7 +4,7 @@ Author: Taylor Robbins
 Date:   04\21\2026
 Description:
 	** Holds DownloadFromUrl which helps you download files from particular
-	** http(s) urls using libcurl (or curl CLI) on Unix platforms and WinHTTP on Windows.
+	** http(s) urls using the "curl" CLI tool (or libcurl).
 	** This is most commonly used to download dependencies automatically during build.
 	**
 	** If you want your builder program to link directly with libcurl instead of calling
@@ -19,8 +19,12 @@ Description:
 #include "pig_build_str.h"
 #include "pig_build_file.h"
 
-//NOTE: If you enable this then we expect `-lcurl` to be passed as a compiler flag,
-//      use PIG_BUILD_FLAGS in your routing shell script to add compiler flags for your build script
+//NOTE: If you enable this then we expect to link with libcurl
+//      On Linux/OSX we just need `-lcurl` to be passed as a compiler flag. Add this to your build.sh:
+//        PIG_BUILD_FLAGS="-lcurl"
+//      On Windows you'll need to add the include directory and the library directories, and link with libcurl.a.
+//        You can download it from https://curl.se/windows/ and then add these options to your build.bat:
+//        set PIG_BUILD_FLAGS=/I"[libcurl]\include" /link /LIBPATH:"[libcurl]\lib libcurl.a"
 #ifndef PIG_BUILD_ENABLE_LIB_CURL
 #define PIG_BUILD_ENABLE_LIB_CURL 0
 #endif
