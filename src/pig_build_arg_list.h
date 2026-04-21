@@ -30,6 +30,7 @@ Description:
 // This allows us to replace that part of the argument string with an actual value, adding escaping if the argument is in quotes
 #define CLI_VAL_STR      "[VAL]"
 #define CLI_UNQUOTED_ARG "[VAL]"
+#define CLI_SINGLE_QUOTED_ARG   "\'[VAL]\'"
 #define CLI_QUOTED_ARG   "\"[VAL]\""
 #if BUILDING_ON_WINDOWS
 #define CLI_PIPE_OUTPUT_TO_FILE "> \"[VAL]\""

@@ -1,5 +1,7 @@
 
 #define PIG_BUILD_PRINT_SYS_CMDS 0
+#define PIG_BUILD_ENABLE_LIB_CURL 0
+#define PIG_BUILD_FOLDER_PATH "../../.."
 #include "pig_build.h"
 
 #define BUILD_WINDOWS (BUILDING_ON_WINDOWS)
@@ -15,11 +17,28 @@
 #define IF_DEBUG(...) //nothing
 #endif
 
+#define GB (1024ULL * 1024ULL * 1024ULL)
+#define MB (1024ULL * 1024ULL)
+#define kB (1024ULL)
+
 int main(int argc, const char* argv[])
 {
 	RecompileIfNeeded(nullptr);
+	Str pigBuildFolder = StrLit(PIG_BUILD_FOLDER_PATH);
 	bool isMsvcInitialized = WasMsvcDevBatchRun();
-	Str pigBuildFolder = StrLit("../..");
+	
+	Str raylibDownloadUrl = StrLit("https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_macos.tar.gz");
+	Str raylibDownloadPath = StrLit("raylib-5.5_macos.tar.gz");
+	if (true || !DoesFileExist(raylibDownloadPath))
+	{
+		PrintLine("Download Raylib from \"%.*s\"...", StrPrint(raylibDownloadUrl));
+		Str raylibDownloadTempPath = AddSuffixToFileName(raylibDownloadPath, StrLit("_TEMP"), false);
+		DownloadFromUrl(raylibDownloadUrl, raylibDownloadTempPath);
+		EnsureFileSizeAndHash(raylibDownloadTempPath, 3*MB + 242*kB + 211 /*3,393,747 bytes*/, 0xCEE86F8F86D3A727);
+		CopyFileToPath(raylibDownloadTempPath, raylibDownloadPath, true);
+		RemoveFile(raylibDownloadTempPath);
+		PrintLine("Download and verified Raylib!");
+	}
 	
 	//TODO: Download Raylib from: https://github.com/raysan5/raylib/releases/tag/5.5
 	//      Windows: ?

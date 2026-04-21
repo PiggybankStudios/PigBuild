@@ -14,11 +14,13 @@ Description:
 #include "pig_build_str.h"
 #include "pig_build_str_array.h"
 #include "pig_build_file.h"
+#include "pig_build_hash.h"
 #include "pig_build_misc.h"
 #include "pig_build_recompile.h"
 #include "pig_build_cli_flags.h"
 #include "pig_build_tags.h"
 #include "pig_build_arg_list.h"
+#include "pig_build_http.h"
 
 // These are optional headers, mostly for PigCore-based projects or other PiggybankStudios repositories.
 // They are included in PigBuild for reference but not expected to be used by other projects

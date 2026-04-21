@@ -47,7 +47,7 @@ struct Str
 #define IsEmptyStrPntr(stringPntr) ((stringPntr) == nullptr || (stringPntr)->length == 0)
 
 // +--------------------------------------------------------------+
-// |                        Str Functions                        |
+// |                     Basic Str Functions                      |
 // +--------------------------------------------------------------+
 void FreeStr(Str* strPntr)
 {
@@ -103,6 +103,25 @@ Str StrSliceFrom(Str target, u64 startIndex)
 {
 	return StrSlice(target, startIndex, target.length);
 }
+
+Str JoinStrings2(Str left, Str right, bool addNullTerm)
+{
+	Str result = AllocStr(left.length + right.length, addNullTerm);
+	if (left.length > 0) { memcpy(&result.chars[0], &left.chars[0], left.length); }
+	if (right.length > 0) { memcpy(&result.chars[left.length], &right.chars[0], right.length); }
+	if (addNullTerm) { result.chars[result.length] = '\0'; }
+	return result;
+}
+Str JoinStrings3(Str left, Str middle, Str right, bool addNullTerm)
+{
+	Str result = AllocStr(left.length + middle.length + right.length, addNullTerm);
+	if (left.length > 0) { memcpy(&result.chars[0], &left.chars[0], left.length); }
+	if (middle.length > 0) { memcpy(&result.chars[left.length], &middle.chars[0], middle.length); }
+	if (right.length > 0) { memcpy(&result.chars[left.length + middle.length], &right.chars[0], right.length); }
+	if (addNullTerm) { result.chars[result.length] = '\0'; }
+	return result;
+}
+
 bool StrExactContains(Str haystack, Str needle)
 {
 	Assert(needle.length > 0);
@@ -125,55 +144,7 @@ bool StrExactEndsWith(Str target, Str suffix)
 	if (target.length < suffix.length) { return false; }
 	return StrExactEquals(StrSlice(target, target.length - suffix.length, target.length), suffix);
 }
-Str GetDirectoryPart(Str fullPath, bool includeTrailingSlash)
-{
-	u64 lastSlashIndex = fullPath.length;
-	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
-	{
-		char character = fullPath.chars[cIndex];
-		if (IsSlash(character)) { lastSlashIndex = cIndex; }
-	}
-	if (lastSlashIndex < fullPath.length) { return StrSlice(fullPath, 0, lastSlashIndex + (includeTrailingSlash ? 1 : 0)); }
-	else { return StrSlice(fullPath, 0, 0); }
-}
-Str GetFileNamePart(Str fullPath, bool includeExtension)
-{
-	u64 periodIndex = fullPath.length;
-	u64 lastSlashIndex = fullPath.length;
-	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
-	{
-		char character = fullPath.chars[cIndex];
-		if (IsSlash(character)) { lastSlashIndex = cIndex; periodIndex = fullPath.length; }
-		else if (character == '.') { periodIndex = cIndex; }
-	}
-	return StrSlice(fullPath,
-		(lastSlashIndex < fullPath.length) ? lastSlashIndex+1 : 0,
-		includeExtension ? fullPath.length : periodIndex
-	);
-}
-Str GetFileExtPart(Str fullPath)
-{
-	u64 periodIndex = fullPath.length;
-	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
-	{
-		char character = fullPath.chars[cIndex];
-		if (IsSlash(character)) { periodIndex = fullPath.length; } //reset periodIndex
-		else if (character == '.') { periodIndex = cIndex; }
-	}
-	if (periodIndex < fullPath.length) { return StrSliceFrom(fullPath, periodIndex); }
-	else { return StrSliceFrom(fullPath, fullPath.length); }
-}
-Str RemovePathExtension(Str fullPath)
-{
-	u64 periodIndex = fullPath.length;
-	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
-	{
-		char character = fullPath.chars[cIndex];
-		if (IsSlash(character)) { periodIndex = fullPath.length; }
-		else if (character == '.') { periodIndex = cIndex; }
-	}
-	return StrSlice(fullPath, 0, periodIndex);
-}
+
 bool IsCharWhitespace(char character)
 {
 	if (character == ' ') { return true; }
@@ -215,75 +186,6 @@ u64 FindNextNonIdentifierChar(Str targetStr, u64 startIndex)
 	return targetStr.length;
 }
 
-bool TryParseBoolArg(Str boolStr, bool* valueOut)
-{
-	if (StrExactEquals(boolStr, StrLit("1"))) { *valueOut = true; return true; }
-	if (StrExactEquals(boolStr, StrLit("0"))) { *valueOut = false; return true; }
-	if (StrExactEquals(boolStr, StrLit("true"))) { *valueOut = true; return true; }
-	if (StrExactEquals(boolStr, StrLit("false"))) { *valueOut = false; return true; }
-	return false;
-}
-
-Str EscapeString(Str unescapedString, bool addNullTerm)
-{
-	Str result = Str_Empty_Const;
-	for (int pass = 0; pass < 2; pass++)
-	{
-		u64 byteIndex = 0;
-		for (u64 cIndex = 0; cIndex < unescapedString.length; cIndex++)
-		{
-			char character = unescapedString.chars[cIndex];
-			if (character == '\"' || character == '\\' || character == '\'')
-			{
-				if (result.chars != nullptr)
-				{
-					result.chars[byteIndex+0] = '\\';
-					result.chars[byteIndex+1] = character;
-				}
-				byteIndex += 2;
-			}
-			else if (character == '\n' || character == '\r' || character == '\t')
-			{
-				if (result.chars != nullptr)
-				{
-					result.chars[byteIndex+0] = '\\';
-					if (character == '\n') { result.chars[byteIndex+1] = 'n'; }
-					if (character == '\r') { result.chars[byteIndex+1] = 'r'; }
-					if (character == '\t') { result.chars[byteIndex+1] = 't'; }
-				}
-				byteIndex += 2;
-			}
-			else
-			{
-				if (result.chars != nullptr) { result.chars[byteIndex] = character; }
-				byteIndex++;
-			}
-		}
-		
-		if (pass == 0) { result = AllocStr(byteIndex, addNullTerm); }
-		else if (addNullTerm) { result.chars[result.length] = '\0'; }
-	}
-	return result;
-}
-
-Str JoinStrings2(Str left, Str right, bool addNullTerm)
-{
-	Str result = AllocStr(left.length + right.length, addNullTerm);
-	if (left.length > 0) { memcpy(&result.chars[0], &left.chars[0], left.length); }
-	if (right.length > 0) { memcpy(&result.chars[left.length], &right.chars[0], right.length); }
-	if (addNullTerm) { result.chars[result.length] = '\0'; }
-	return result;
-}
-Str JoinStrings3(Str left, Str middle, Str right, bool addNullTerm)
-{
-	Str result = AllocStr(left.length + middle.length + right.length, addNullTerm);
-	if (left.length > 0) { memcpy(&result.chars[0], &left.chars[0], left.length); }
-	if (middle.length > 0) { memcpy(&result.chars[left.length], &middle.chars[0], middle.length); }
-	if (right.length > 0) { memcpy(&result.chars[left.length + middle.length], &right.chars[0], right.length); }
-	if (addNullTerm) { result.chars[result.length] = '\0'; }
-	return result;
-}
-
 //Returns the number of target characters that were replaced
 u64 StrReplaceChars(Str haystack, char targetChar, char replaceChar)
 {
@@ -297,33 +199,6 @@ u64 StrReplaceChars(Str haystack, char targetChar, char replaceChar)
 		}
 	}
 	return numReplacements;
-}
-
-void FixPathSlashes(Str path, char slashChar)
-{
-	StrReplaceChars(path, (slashChar == '/') ? '\\' : '/', slashChar);
-}
-
-bool HasTrailingSlash(Str path)
-{
-	return (path.length > 0 && IsSlash(path.chars[path.length-1]));
-}
-
-Str WithoutTrailingSlash(Str path)
-{
-	if (HasTrailingSlash(path)) { return StrSlice(path, 0, path.length-1); }
-	else { return path; }
-}
-Str WithTrailingSlash(Str path)
-{
-	if (HasTrailingSlash(path)) { return path; }
-	else { return JoinStrings2(path, StrLit("/"), true); }
-}
-
-Str JoinPaths(Str leftPath, Str rightPath, bool addNullTerm)
-{
-	if (leftPath.length == 0 || rightPath.length == 0 || HasTrailingSlash(leftPath) || IsSlash(rightPath.chars[0])) { return JoinStrings2(leftPath, rightPath, addNullTerm); }
-	else { return JoinStrings3(leftPath, StrLit("/"), rightPath, addNullTerm); }
 }
 
 Str StrReplace(Str haystack, Str target, Str replacement, bool addNullTerm)
@@ -370,6 +245,204 @@ Str StrReplaceRange(Str targetStr, u64 startIndex, u64 endIndex, Str replacement
 Str StrInsert(Str targetStr, u64 insertIndex, Str insertStr, bool addNullTerm)
 {
 	return StrReplaceRange(targetStr, insertIndex, insertIndex, insertStr, addNullTerm);
+}
+
+// +--------------------------------------------------------------+
+// |                      File Path Helpers                       |
+// +--------------------------------------------------------------+
+Str GetDirectoryPart(Str fullPath, bool includeTrailingSlash)
+{
+	u64 lastSlashIndex = fullPath.length;
+	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
+	{
+		char character = fullPath.chars[cIndex];
+		if (IsSlash(character)) { lastSlashIndex = cIndex; }
+	}
+	if (lastSlashIndex < fullPath.length) { return StrSlice(fullPath, 0, lastSlashIndex + (includeTrailingSlash ? 1 : 0)); }
+	else { return StrSlice(fullPath, 0, 0); }
+}
+Str GetFileNamePart(Str fullPath, bool includeExtension)
+{
+	u64 periodIndex = fullPath.length;
+	u64 lastSlashIndex = fullPath.length;
+	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
+	{
+		char character = fullPath.chars[cIndex];
+		if (IsSlash(character)) { lastSlashIndex = cIndex; periodIndex = fullPath.length; }
+		else if (character == '.') { periodIndex = cIndex; }
+	}
+	return StrSlice(fullPath,
+		(lastSlashIndex < fullPath.length) ? lastSlashIndex+1 : 0,
+		includeExtension ? fullPath.length : periodIndex
+	);
+}
+Str GetFileExtPart(Str fullPath, bool includeSubExtensions)
+{
+	u64 periodIndex = fullPath.length;
+	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
+	{
+		char character = fullPath.chars[cIndex];
+		if (IsSlash(character)) { periodIndex = fullPath.length; } //reset periodIndex
+		else if (character == '.' && (!includeSubExtensions || periodIndex >= fullPath.length)) { periodIndex = cIndex; }
+	}
+	if (periodIndex < fullPath.length) { return StrSliceFrom(fullPath, periodIndex); }
+	else { return StrSliceFrom(fullPath, fullPath.length); }
+}
+Str RemovePathExtension(Str fullPath, bool includeSubExtensions)
+{
+	u64 periodIndex = fullPath.length;
+	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
+	{
+		char character = fullPath.chars[cIndex];
+		if (IsSlash(character)) { periodIndex = fullPath.length; }
+		else if (character == '.' && (!includeSubExtensions || periodIndex >= fullPath.length)) { periodIndex = cIndex; }
+	}
+	return StrSlice(fullPath, 0, periodIndex);
+}
+Str AddSuffixToFileName(Str filePath, Str suffix, bool addNullTerm)
+{
+	Str fileExtension = GetFileExtPart(filePath, true);
+	Str fileDirAndName = RemovePathExtension(filePath, true);
+	return JoinStrings3(fileDirAndName, suffix, fileExtension, addNullTerm);
+}
+
+void FixPathSlashes(Str path, char slashChar)
+{
+	StrReplaceChars(path, (slashChar == '/') ? '\\' : '/', slashChar);
+}
+
+bool HasTrailingSlash(Str path)
+{
+	return (path.length > 0 && IsSlash(path.chars[path.length-1]));
+}
+
+Str WithoutTrailingSlash(Str path)
+{
+	if (HasTrailingSlash(path)) { return StrSlice(path, 0, path.length-1); }
+	else { return path; }
+}
+Str WithTrailingSlash(Str path)
+{
+	if (HasTrailingSlash(path)) { return path; }
+	else { return JoinStrings2(path, StrLit("/"), true); }
+}
+
+Str JoinPaths(Str leftPath, Str rightPath, bool addNullTerm)
+{
+	if (leftPath.length == 0 || rightPath.length == 0 || HasTrailingSlash(leftPath) || IsSlash(rightPath.chars[0])) { return JoinStrings2(leftPath, rightPath, addNullTerm); }
+	else { return JoinStrings3(leftPath, StrLit("/"), rightPath, addNullTerm); }
+}
+
+// +--------------------------------------------------------------+
+// |                      Parsing Functions                       |
+// +--------------------------------------------------------------+
+bool TryParseBoolArg(Str boolStr, bool* valueOut)
+{
+	if (StrExactEquals(boolStr, StrLit("1"))) { *valueOut = true; return true; }
+	if (StrExactEquals(boolStr, StrLit("0"))) { *valueOut = false; return true; }
+	if (StrExactEquals(boolStr, StrLit("true"))) { *valueOut = true; return true; }
+	if (StrExactEquals(boolStr, StrLit("false"))) { *valueOut = false; return true; }
+	return false;
+}
+
+bool TryParseHexU64(Str str, u64* valueOut)
+{
+	u8 charIndex = 0;
+	u64 result = 0;
+	str = TrimWhitespace(str);
+	if (str.length >= 2 && str.chars[0] == '0' && str.chars[1] == 'x') { str.chars += 2; str.length-=2; }
+	if (str.length == 0) { return false; }
+	while (str.length > 0 && charIndex < 16)
+	{
+		if (str.chars[0] >= '0' && str.chars[0] <= '9')
+		{
+			result = result * 16ULL + (u64)(str.chars[0] - '0');
+		}
+		else if (str.chars[0] >= 'A' && str.chars[0] <= 'F')
+		{
+			result = result * 16ULL + (10 + (u64)(str.chars[0] - 'A'));
+		}
+		else if (str.chars[0] >= 'a' && str.chars[0] <= 'f')
+		{
+			result = result * 16ULL + (10 + (u64)(str.chars[0] - 'a'));
+		}
+		else
+		{
+			PrintLine("Invalid char in hex at index[%u]: \'%c\'", charIndex, str.chars[0]);
+			return false;
+		}
+		str.chars++; str.length--;
+		charIndex++;
+	}
+	if (str.length > 0)
+	{
+		PrintLine("String is too long for u64 hex! Remaining: [%llu]\"%.*s\"", str.length, StrPrint(str));
+		return false;
+	}
+	if (valueOut != nullptr) { *valueOut = result; }
+	return true;
+}
+
+char GetHexChar(u8 hexValue, bool upperCase)
+{
+	if (hexValue <= 9) { return '0' + hexValue; }
+	else if (hexValue < 16) { return (upperCase ? 'A' : 'a') + (hexValue - 10); }
+	else { return '?'; }
+}
+Str ConvertU64ToHexStr(u64 value, bool upperCase)
+{
+	Str result = AllocStr(2 + (sizeof(u64)*2), true);
+	result.chars[0] = '0';
+	result.chars[1] = 'x';
+	for (u8 bIndex = 0; bIndex < (sizeof(u64)*2); bIndex++)
+	{
+		result.chars[(result.length-1) - bIndex] = GetHexChar((u8)(value & 0x0FULL), upperCase);
+		value = (value >> 4ULL);
+	}
+	result.chars[result.length] = '\0';
+	return result;
+}
+
+Str EscapeString(Str unescapedString, bool addNullTerm)
+{
+	Str result = Str_Empty_Const;
+	for (int pass = 0; pass < 2; pass++)
+	{
+		u64 byteIndex = 0;
+		for (u64 cIndex = 0; cIndex < unescapedString.length; cIndex++)
+		{
+			char character = unescapedString.chars[cIndex];
+			if (character == '\"' || character == '\\' || character == '\'')
+			{
+				if (result.chars != nullptr)
+				{
+					result.chars[byteIndex+0] = '\\';
+					result.chars[byteIndex+1] = character;
+				}
+				byteIndex += 2;
+			}
+			else if (character == '\n' || character == '\r' || character == '\t')
+			{
+				if (result.chars != nullptr)
+				{
+					result.chars[byteIndex+0] = '\\';
+					if (character == '\n') { result.chars[byteIndex+1] = 'n'; }
+					if (character == '\r') { result.chars[byteIndex+1] = 'r'; }
+					if (character == '\t') { result.chars[byteIndex+1] = 't'; }
+				}
+				byteIndex += 2;
+			}
+			else
+			{
+				if (result.chars != nullptr) { result.chars[byteIndex] = character; }
+				byteIndex++;
+			}
+		}
+		
+		if (pass == 0) { result = AllocStr(byteIndex, addNullTerm); }
+		else if (addNullTerm) { result.chars[result.length] = '\0'; }
+	}
+	return result;
 }
 
 #endif //  _PIG_BUILD_STR_H

@@ -283,6 +283,7 @@ void AppendPrintToFile(Str filePath, const char* formatString, ...)
 	AppendToFile(filePath, printedStr, true);
 }
 
+//TODO: We can probably just use `remove` from the C standard library
 void RemoveFile(Str filePath)
 {
 	Str filePathNt = CopyStr(filePath, true);
@@ -296,6 +297,11 @@ void RemoveFile(Str filePath)
 			DWORD errorCode = GetLastError();
 			AssertFmt(errorCode == ERROR_FILE_NOT_FOUND, "DeleteFileA Error: %d", errorCode);
 		}
+	}
+	#elif (BUILDING_ON_LINUX || BUILDING_ON_OSX)
+	{
+		int unlinkResult = unlink(filePathNt.chars);
+		AssertFmt(unlinkResult == 0, "Failed to delete file with unlink(\"%s\")", filePathNt.chars);
 	}
 	#else
 	AssertMsg(false, "RemoveFile does not support the current platform yet!");

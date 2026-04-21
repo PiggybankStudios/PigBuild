@@ -7,4 +7,5 @@
 
 # Take the path to the curren shell script, get the directory part, cd to it, and store the output from `pwd` which should give us a full path
 PIG_BUILD_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-PIG_BUILD_ROOT=$PIG_BUILD_ROOT $PIG_BUILD_ROOT/shell/build.sh $@
+PIG_BUILD_FLAGS="-lcurl"
+PIG_BUILD_ROOT=$PIG_BUILD_ROOT PIG_BUILD_FLAGS=$PIG_BUILD_FLAGS $PIG_BUILD_ROOT/shell/build.sh $@

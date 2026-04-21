@@ -14,7 +14,7 @@ if [ -z "$PIG_BUILD_ROOT" ]; then
 fi
 
 # The flags are only used when compiling the build_script.c (not for compiling your main program, those flags should be defined inside the build_script.c)
-compiler_flags="-std=gnu2x -fdiagnostics-absolute-paths -O0 -g -I.. -I$PIG_BUILD_ROOT/src -o builder ../build_script.c"
+compiler_flags="-std=gnu2x -fdiagnostics-absolute-paths -O0 -g -I.. -I$PIG_BUILD_ROOT/src -o builder ../build_script.c $PIG_BUILD_FLAGS"
 
 # Check if clang is installed
 clang --version &> /dev/null
