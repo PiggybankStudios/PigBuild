@@ -18,6 +18,8 @@ Description:
 #include "pig_build_base.h"
 #include "pig_build_str.h"
 #include "pig_build_file.h"
+#include "pig_build_hash.h"
+#include "pig_build_zip.h"
 
 //NOTE: If you enable this then we expect to link with libcurl
 //      On Linux/OSX we just need `-lcurl` to be passed as a compiler flag. Add this to your build.sh:
@@ -67,6 +69,34 @@ void DownloadFromUrl(Str url, Str filePath)
 		AssertFileExist(filePath, false);
 	}
 	#endif
+}
+
+void DownloadFromUrlAndCheck(Str url, Str filePath, u64 expectedSize, u64 expectedHash)
+{
+	DownloadFromUrl(url, filePath);
+	EnsureFileSizeAndHash(filePath, expectedSize, expectedHash);
+}
+
+void DownloadAndExtractArchive(Str url, Str archiveFilePath, u64 expectedArchiveSize, u64 expectedArchiveHash, Str outputFolderPath, Str archiveDirToExtract)
+{
+	Str tempPath = AddSuffixToFileName(archiveFilePath, StrLit("_TEMP"), false);
+	DownloadFromUrlAndCheck(url, tempPath, expectedArchiveSize, expectedArchiveHash);
+	CopyFileToPath(tempPath, archiveFilePath, true);
+	RemoveFile(tempPath);
+	
+	if (!DoesFolderExist(outputFolderPath))
+	{
+		Str outputFolderPathNt = CopyStr(outputFolderPath, true);
+		mkdir(outputFolderPathNt.chars, FOLDER_PERMISSIONS);
+		FreeStr(&outputFolderPathNt);
+	}
+	
+	UnzipResult unzipResult = UnzipEntireArchiveInto(archiveFilePath, archiveDirToExtract, outputFolderPath);
+	if (!unzipResult.success)
+	{
+		PrintLine_E("Failed to unpack archive %.*s, from \"%.*s\"", StrPrint(unzipResult.errorStr), StrPrint(url));
+		exit(6);
+	}
 }
 
 #endif //  _PIG_BUILD_HTTP_H

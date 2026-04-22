@@ -90,6 +90,87 @@ Str GetFullPath(Str relativePath, char slashChar)
 	return result;
 }
 
+bool DoesFileOrFolderExist(Str path, bool* isFolderOut)
+{
+	bool result = false;
+	
+	#if BUILDING_ON_WINDOWS
+	{
+		Str fullPath = GetFullPath(path, PATH_SEP_CHAR);
+		BOOL fileExistsResult = PathFileExistsA(fullPath.chars);
+		if (fileExistsResult == TRUE)
+		{
+			if (isFolderOut != nullptr)
+			{
+				DWORD fileType = GetFileAttributesA(fullPath.chars);
+				if (fileType != INVALID_FILE_ATTRIBUTES)
+				{
+					*isFolderOut = IsFlagSet(fileType, FILE_ATTRIBUTE_DIRECTORY);
+					result = true;
+				}
+				else { result = false; }
+			}
+			else { result = true; }
+		}
+		else
+		{
+			result = false;
+		}
+	}
+	#elif (BUILDING_ON_LINUX || BUILDING_ON_OSX || BUILDING_ON_ANDROID)
+	{
+		Str fullPath = GetFullPath(path, PATH_SEP_CHAR);
+		
+		int accessResult = access(fullPath.chars, F_OK);
+		result = (accessResult == 0);
+		
+		if (isFolderOut != nullptr && result)
+		{
+			plex stat statStruct = EMPTY;
+			int statResult = stat(fullPath.chars, &statStruct);
+			if (statResult == 0)
+			{
+				*isFolderOut = IsFlagSet(statStruct.st_mode, S_IFDIR);
+			}
+			else
+			{
+				PrintLine_E("stat(\"%.*s\") call failed! Can't determine if that path is a folder or file!", StrPrint(fullPath));
+				*isFolderOut = false;
+			}
+		}
+		
+	}
+	#else
+	AssertMsg(false, "DoesFileOrFolderExist does not support the current platform yet!");
+	#endif
+	
+	return result;
+}
+bool DoesPathExist(Str path)
+{
+	return DoesFileOrFolderExist(path, nullptr);
+}
+bool DoesFileExist(Str path)
+{
+	bool isFolder = false;
+	bool doesExist = DoesFileOrFolderExist(path, &isFolder);
+	return (doesExist && !isFolder);
+}
+bool DoesFolderExist(Str path)
+{
+	bool isFolder = false;
+	bool doesExist = DoesFileOrFolderExist(path, &isFolder);
+	return (doesExist && isFolder);
+}
+void AssertFileExist(Str filePath, bool wasCreatedByBuild)
+{
+	if (!DoesFileExist(filePath))
+	{
+		PrintLine_E("Missing file \"%.*s\" %s!", StrPrint(filePath), wasCreatedByBuild ? "was not created" : "was not found");
+		exit(6);
+	}
+}
+
 bool TryReadFile(Str filePath, Str* contentsOut)
 {
 	Str filePathNt = CopyStr(filePath, true);
@@ -391,36 +472,6 @@ void CopyFileToFolder(Str filePath, Str folderPath, bool copyPermissions)
 	Str newPath = JoinPaths(folderPath, GetFileNamePart(filePath, true), false);
 	CopyFileToPath(filePath, newPath, copyPermissions);
 	free(newPath.chars);
-}
-
-bool DoesFileExist(Str filePath)
-{
-	Str filePathNt = CopyStr(filePath, true);
-	#if BUILDING_ON_WINDOWS
-	{
-		BOOL fileExistsResult = PathFileExistsA(filePathNt.chars);
-		free(filePathNt.chars);
-		return (fileExistsResult == TRUE);
-	}
-	#elif (BUILDING_ON_LINUX || BUILDING_ON_OSX)
-	{
-		int accessResult = access(filePathNt.chars, F_OK);
-		free(filePathNt.chars);
-		return (accessResult == 0);
-	}
-	#else
-	AssertMsg(false, "pig_build_file.h's DoesFileExist does not support the current platform yet!");
-	return false;
-	#endif
-}
-
-void AssertFileExist(Str filePath, bool wasCreatedByBuild)
-{
-	if (!DoesFileExist(filePath))
-	{
-		PrintLine_E("Missing file \"%.*s\" %s!", StrPrint(filePath), wasCreatedByBuild ? "was not created" : "was not found");
-		exit(6);
-	}
 }
 
 FileIter StartFileIter(Str folderPath)

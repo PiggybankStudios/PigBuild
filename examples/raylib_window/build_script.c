@@ -27,32 +27,38 @@ int main(int argc, const char* argv[])
 	Str pigBuildFolder = StrLit(PIG_BUILD_FOLDER_PATH);
 	bool isMsvcInitialized = WasMsvcDevBatchRun();
 	
-	#if BUILDING_ON_WINDOWS
-	Str raylibDownloadUrl = StrLit("https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_win64_msvc16.zip");
-	Str raylibDownloadPath = StrLit("raylib-5.5_win64_msvc16.zip");
-	const u64 raylibSize = 2*MB + 421*kB + 24; //2,528,280 bytes
-	const u64 raylibHash = 0x2E8E3A68CA7AA05D;
-	#elif BUILDING_ON_OSX
-	Str raylibDownloadUrl = StrLit("https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_macos.tar.gz");
-	Str raylibDownloadPath = StrLit("raylib-5.5_macos.tar.gz");
-	const u64 raylibSize = 3*MB + 242*kB + 211; //3,393,747 bytes
-	const u64 raylibHash = 0xCEE86F8F86D3A727;
-	#endif
-	if (!DoesFileExist(raylibDownloadPath))
+	// +--------------------------------------------------------------+
+	// |                       Download Raylib                        |
+	// +--------------------------------------------------------------+
 	{
-		PrintLine("Download Raylib from \"%.*s\"...", StrPrint(raylibDownloadUrl));
-		Str raylibDownloadTempPath = AddSuffixToFileName(raylibDownloadPath, StrLit("_TEMP"), false);
-		DownloadFromUrl(raylibDownloadUrl, raylibDownloadTempPath);
-		EnsureFileSizeAndHash(raylibDownloadTempPath, raylibSize, raylibHash);
-		CopyFileToPath(raylibDownloadTempPath, raylibDownloadPath, true);
-		RemoveFile(raylibDownloadTempPath);
-		PrintLine("Download and verified Raylib!");
+		Str raylibDownloadDir = StrLit("../raylib");
+		#if BUILDING_ON_WINDOWS
+		Str raylibDownloadUrl = StrLit("https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_win64_msvc16.zip");
+		const u64 raylibSize = 2*MB + 421*kB + 24; //2,528,280 bytes
+		const u64 raylibHash = 0x2E8E3A68CA7AA05D;
+		#elif BUILDING_ON_LINUX
+		Str raylibDownloadUrl = StrLit("https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_linux_amd64.tar.gz");
+		const u64 raylibSize = 0;
+		const u64 raylibHash = 0x0000000000000001;
+		#elif BUILDING_ON_OSX
+		Str raylibDownloadUrl = StrLit("https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_macos.tar.gz");
+		const u64 raylibSize = 3*MB + 242*kB + 211; //3,393,747 bytes
+		const u64 raylibHash = 0xCEE86F8F86D3A727;
+		#endif
+		if (!DoesFileExist(GetFileNamePart(raylibDownloadUrl, true)) || !DoesFolderExist(raylibDownloadDir))
+		{
+			PrintLine("Downloading Raylib from \"%.*s\"...", StrPrint(raylibDownloadUrl));
+			DownloadAndExtractArchive(
+				raylibDownloadUrl, 
+				GetFileNamePart(raylibDownloadUrl, true),
+				raylibSize, raylibHash,
+				raylibDownloadDir,
+				GetFileNamePart(raylibDownloadUrl, false)
+			);
+			PrintLine("Download and extracted Raylib!");
+		}
 	}
 	
-	//TODO: Download Raylib from: https://github.com/raysan5/raylib/releases/tag/5.5
-	//      Windows: https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_win64_msvc16.zip
-	//      Linux: https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_linux_amd64.tar.gz
-	//      OSX: https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_macos.tar.gz
 	//TODO: Download GLFW from: https://github.com/glfw/glfw/releases/tag/3.4
 	//      Windows: ?
 	//      Linux: ?

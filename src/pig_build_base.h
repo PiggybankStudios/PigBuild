@@ -173,4 +173,11 @@ typedef double r64;
 #define AssertFmt(condition, formatStr, ...) if (!(condition)) { PrintLine_E("Assertion Failed! Message:\n" formatStr, ##__VA_ARGS__); AssertMsg((condition), (formatStr)); }
 #define NotNull(pntr)                        Assert((pntr) != nullptr)
 
+// Macros used to check or modify specific bit(s) in a field, the pattern of using individual bits as booleans is often referred to as "flags"
+#define IsFlagSet(BitwiseField, Bit) ((Bit) != 0 && ((BitwiseField) & (Bit)) == (Bit))
+#define FlagSet(BitwiseField, Bit)   (BitwiseField) |= (Bit)
+#define FlagUnset(BitwiseField, Bit) (BitwiseField) &= ~(Bit)
+#define FlagToggle(BitwiseField, Bit) ((BitwiseField) ^= (Bit))
+#define FlagSetTo(BitwiseField, Bit, condition) if (condition) { FlagSet((BitwiseField), (Bit)); } else { FlagUnset((BitwiseField), (Bit)); }
+
 #endif //  _PIG_BUILD_BASE_H

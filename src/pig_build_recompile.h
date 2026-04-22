@@ -46,6 +46,7 @@ void RecompileIfNeeded(StrArray* buildScriptSourceFolders)
 	// For convenience we are going to add pig_build/src and it's subfolders automatically if the build_script didn't mention them
 	bool sourceFoldersContainPigBuildSrc = false;
 	bool sourceFoldersContainPigBuildSrcOptional = false;
+	bool sourceFoldersContainPigBuildSrcThirdParty = false;
 	for (u64 fIndex = 0; fIndex < buildScriptSourceFolders->length; fIndex++)
 	{
 		if (StrExactEquals(buildScriptSourceFolders->strings[fIndex], StrLit(PIG_BUILD_FOLDER_PATH "/src")))
@@ -55,6 +56,10 @@ void RecompileIfNeeded(StrArray* buildScriptSourceFolders)
 		if (StrExactEquals(buildScriptSourceFolders->strings[fIndex], StrLit(PIG_BUILD_FOLDER_PATH "/src/optional")))
 		{
 			sourceFoldersContainPigBuildSrcOptional = true;
+		}
+		if (StrExactEquals(buildScriptSourceFolders->strings[fIndex], StrLit(PIG_BUILD_FOLDER_PATH "/src/third_party")))
+		{
+			sourceFoldersContainPigBuildSrcThirdParty = true;
 		}
 	}
 	if (!sourceFoldersContainPigBuildSrc)
@@ -66,6 +71,11 @@ void RecompileIfNeeded(StrArray* buildScriptSourceFolders)
 	{
 		// PrintLine("Adding %s to buildScriptSourceFolders", PIG_BUILD_FOLDER_PATH "/src/optional");
 		AddStr(buildScriptSourceFolders, StrLit(PIG_BUILD_FOLDER_PATH "/src/optional"));
+	}
+	if (!sourceFoldersContainPigBuildSrcThirdParty)
+	{
+		// PrintLine("Adding %s to buildScriptSourceFolders", PIG_BUILD_FOLDER_PATH "/src/third_party");
+		AddStr(buildScriptSourceFolders, StrLit(PIG_BUILD_FOLDER_PATH "/src/third_party"));
 	}
 	
 	Str buildScriptFilePath = StrLit_Const(BUILD_SCRIPT_SOURCE_PATH);

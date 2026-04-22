@@ -12,5 +12,37 @@
 			"path": "../../shell",
 			"name": "Pig Build (shell)",
 		}
-	]
+	],
+	"settings":
+	{
+		"build_options":
+		[
+		],
+		"custom_constants":
+		[
+			"EMPTY",
+			"GB",
+			"MB",
+			"PIG_BUILD_ENABLE_LIB_CURL",
+			"kB",
+		],
+		"custom_functions":
+		[
+			"bool DoesFileExist(Str path)",
+			"bool DoesFileOrFolderExist(Str path, bool* isFolderOut)",
+			"bool DoesFolderExist(Str path)",
+			"bool DoesPathExist(Str path)",
+			"void DownloadAndExtractArchive(Str url, Str archiveFilePath, u64 expectedArchiveSize, u64 expectedArchiveHash, Str outputFolderPath, Str archiveDirToExtract)",
+			"void DownloadFromUrl(Str url, Str filePath)",
+			"void DownloadFromUrlAndCheck(Str url, Str filePath, u64 expectedSize, u64 expectedHash)",
+			"void UnzipEntireArchiveInto(Str archiveFilePath, Str outputFolderPath)",
+		],
+		"custom_globals":
+		[
+		],
+		"custom_types":
+		[
+			"UnzipResult",
+		],
+	},
 }
