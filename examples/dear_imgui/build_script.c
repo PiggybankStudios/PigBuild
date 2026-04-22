@@ -33,12 +33,31 @@ int main(int argc, const char* argv[])
 	bool isMsvcInitialized = WasMsvcDevBatchRun();
 	Str pigBuildFolder = StrLit(PIG_BUILD_FOLDER_PATH);
 	
+	// +--------------------------------------------------------------+
+	// |                      Downlod Dear ImGui                      |
+	// +--------------------------------------------------------------+
+	{
+		Str imguiUrl = StrLit("https://github.com/ocornut/imgui/archive/refs/tags/v1.92.7.zip");
+		Str imguiZipPath = StrLit("imgui_v1.92.7.zip");
+		Str imguiZipRootFolder = StrLit("imgui-1.92.7");
+		Str imguiFolderPath = StrLit("../imgui");
+		if (!DoesFileExist(imguiZipPath) || !DoesFolderExist(imguiFolderPath))
+		{
+			PrintLine("Downloading Dear ImGui from \"%.*s\"", StrPrint(imguiUrl));
+			DownloadAndExtractArchive(
+				imguiUrl,
+				imguiZipPath,
+				2247481, 0x223CB155060498F1,
+				imguiFolderPath,
+				imguiZipRootFolder
+			);
+		}
+	}
+	
 	//TODO: Download GLFW from: https://github.com/glfw/glfw/releases/tag/3.4
 	//      Windows: https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.WIN64.zip
-	//      Linux: ?
+	//      Linux: https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.zip TODO: And then build?
 	//      OSX: https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.MACOS.zip
-	//TODO: Download Dear ImGui v1.92.7 from: https://github.com/ocornut/imgui/releases/tag/v1.92.7
-	//      All Platforms: https://github.com/ocornut/imgui/archive/refs/tags/v1.92.7.zip
 	
 	StrArray sourceFiles = EMPTY;
 	AddStr(&sourceFiles, BUILDING_ON_OSX ? StrLit("main.mm") : StrLit("[ROOT]/main.cpp"));
@@ -131,7 +150,7 @@ int main(int argc, const char* argv[])
 	#if BUILD_LINUX
 	{
 		WriteLine("[Building for Linux...]");
-		AssertMsg(false, "Linux is not yet implemented in build_script.c"); //TODO: Implement me!
+		// AssertMsg(false, "Linux is not yet implemented in build_script.c"); //TODO: Implement me!
 	}
 	#endif
 	
