@@ -16,6 +16,7 @@ Description:
 #include "pig_build_str.h"
 #include "pig_build_file.h"
 
+//TODO: We should probably do MINIZ_NO_STDIO and use our own file wrappers to read/write files
 #include "third_party/miniz.c"
 
 typedef struct UnzipResult UnzipResult;
@@ -32,8 +33,10 @@ UnzipResult UnzipEntireArchiveInto(Str archiveFilePath, Str folderToExtractInArc
 	UnzipResult result = EMPTY;
 	result.errorStr = StrLit("Unknown");
 	
+	//TODO: We should probabl automatically create the output folder if it doesn't already exist
+	
 	Str finalExtension = GetFileExtPart(archiveFilePath, false);
-	Str fullExtension = GetFileExtPart(archiveFilePath, true);
+	Str subfinalExtension = GetFileExtPart(StrSlice(archiveFilePath, 0, archiveFilePath.length-finalExtension.length), false);
 	if (StrExactEquals(finalExtension, StrLit(".zip")))
 	{
 		Str archiveFilePathNt = CopyStr(archiveFilePath, true);
@@ -96,9 +99,37 @@ UnzipResult UnzipEntireArchiveInto(Str archiveFilePath, Str folderToExtractInArc
 		
 		result.success = true;
 	}
+	else if (StrExactStartsWith(subfinalExtension, StrLit(".tar")))
+	{
+		CliArgList args = EMPTY;
+		AddArg(&args, "--extract");
+		AddArgStr(&args, "--file=\"[VAL]\"", archiveFilePath);
+		AddArgStr(&args, "-C \"[VAL]\"", outputFolderPath);
+		
+		if (StrExactEquals(finalExtension, StrLit(".gz"))) { AddArg(&args, "--gzip"); }
+		else if (StrExactEquals(finalExtension, StrLit(".bz2"))) { AddArg(&args, "--bzip2"); }
+		else if (StrExactEquals(finalExtension, StrLit(".xz"))) { AddArg(&args, "--xz"); }
+		else { AssertFmt(false, "Unsupported .tar subtype \"%.*s\"! We support .gz, .bz2 and .xz", StrPrint(finalExtension)); }
+		
+		if (!IsEmptyStr(folderToExtractInArchive))
+		{
+			AddArgStr(&args, CLI_QUOTED_ARG, WithTrailingSlash(folderToExtractInArchive));
+			AddArgInt(&args, "--strip-components=[VAL]", (i32)CountPathParts(folderToExtractInArchive));
+		}
+		
+		// RunCliProgramAndExitOnFailure(StrLit("tar"), "", &args, StrLit("Failed to unpack .tar file with \"tar\" CLI tool. Is it not installed? Is the file corrupt?"));
+		int tarReturnCode = RunCliProgram(StrLit("tar"), "", &args);
+		if (tarReturnCode != 0)
+		{
+			result.errorStr = StrLit("Failed to unpack .tar file with \"tar\" CLI tool. Is it not installed? Is the file corrupt?");
+			return result;
+		}
+		
+		result.success = true;
+	}
 	else
 	{
-		AssertMsg(false, "We only support .zip files right now!"); //TODO: Implement me!
+		AssertFmt(false, "We only support .zip and .tar files right now! Not \"%.*s\"", StrPrint(finalExtension));
 	}
 	
 	return result;

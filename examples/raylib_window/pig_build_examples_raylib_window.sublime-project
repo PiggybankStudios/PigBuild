@@ -28,10 +28,13 @@
 		],
 		"custom_functions":
 		[
+			"Str GetFileNamePart(Str fullPath, bool includeExtension, bool includeSubExtensions)",
+			"Str GetPathPartAtIndex(Str fileOrFolderPath, u64 index)",
 			"bool DoesFileExist(Str path)",
 			"bool DoesFileOrFolderExist(Str path, bool* isFolderOut)",
 			"bool DoesFolderExist(Str path)",
 			"bool DoesPathExist(Str path)",
+			"u64 CountPathParts(Str fileOrFolderPath)",
 			"void DownloadAndExtractArchive(Str url, Str archiveFilePath, u64 expectedArchiveSize, u64 expectedArchiveHash, Str outputFolderPath, Str archiveDirToExtract)",
 			"void DownloadFromUrl(Str url, Str filePath)",
 			"void DownloadFromUrlAndCheck(Str url, Str filePath, u64 expectedSize, u64 expectedHash)",

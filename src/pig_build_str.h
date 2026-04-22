@@ -261,6 +261,7 @@ Str GetDirectoryPart(Str fullPath, bool includeTrailingSlash)
 	if (lastSlashIndex < fullPath.length) { return StrSlice(fullPath, 0, lastSlashIndex + (includeTrailingSlash ? 1 : 0)); }
 	else { return StrSlice(fullPath, 0, 0); }
 }
+//NOTE: If your filename contains multiple periods, this only chops off the last period onwards, aka the "real" extension. For example "library.tar.gz" becomes "libary.tar"
 Str GetFileNamePart(Str fullPath, bool includeExtension)
 {
 	u64 periodIndex = fullPath.length;
@@ -304,6 +305,52 @@ Str AddSuffixToFileName(Str filePath, Str suffix, bool addNullTerm)
 	Str fileExtension = GetFileExtPart(filePath, true);
 	Str fileDirAndName = RemovePathExtension(filePath, true);
 	return JoinStrings3(fileDirAndName, suffix, fileExtension, addNullTerm);
+}
+
+u64 CountPathParts(Str fileOrFolderPath)
+{
+	u64 numParts = 0;
+	u64 prevSlashIndex = 0;
+	for (u64 cIndex = 0; cIndex <= fileOrFolderPath.length; cIndex++)
+	{
+		if (cIndex == fileOrFolderPath.length || IsSlash(fileOrFolderPath.chars[cIndex]))
+		{
+			if (prevSlashIndex == cIndex && (cIndex == 0 || cIndex == fileOrFolderPath.length))
+			{
+				//ignore leading or trailing slashes
+			}
+			else if (cIndex > prevSlashIndex)
+			{
+				numParts++;
+			}
+			else { AssertFmt(cIndex > prevSlashIndex, "Empty section in path is not valid! \"%.*s\"", StrPrint(fileOrFolderPath)); }
+			prevSlashIndex = cIndex+1;
+		}
+	}
+	return numParts;
+}
+Str GetPathPartAtIndex(Str fileOrFolderPath, u64 index)
+{
+	u64 partIndex = 0;
+	u64 prevSlashIndex = 0;
+	for (u64 cIndex = 0; cIndex <= fileOrFolderPath.length; cIndex++)
+	{
+		if (cIndex == fileOrFolderPath.length || IsSlash(fileOrFolderPath.chars[cIndex]))
+		{
+			if (prevSlashIndex == cIndex && (cIndex == 0 || cIndex == fileOrFolderPath.length))
+			{
+				//ignore leading or trailing slashes
+			}
+			else if (cIndex > prevSlashIndex)
+			{
+				if (partIndex == index) { return StrSlice(fileOrFolderPath, prevSlashIndex, cIndex); }
+				partIndex++;
+			}
+			else { AssertFmt(cIndex > prevSlashIndex, "Empty section in path is not valid! \"%.*s\"", StrPrint(fileOrFolderPath)); }
+			prevSlashIndex = cIndex+1;
+		}
+	}
+	return StrSliceFrom(fileOrFolderPath, fileOrFolderPath.length);
 }
 
 void FixPathSlashes(Str path, char slashChar)

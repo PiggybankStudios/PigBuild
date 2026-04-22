@@ -75,9 +75,17 @@ Str GetFullPath(Str relativePath, char slashChar)
 		
 		char* temporaryBuffer = (char*)malloc(PATH_MAX);
 		char* realPathResult = realpath(relativePathNt.chars, temporaryBuffer);
-		NotNull(realPathResult);
-		
-		result = CopyStr(MakeStrNt(realPathResult), true);
+		AssertFmt(realPathResult != nullptr || errno == ENOENT, "realpath returned nullptr for \"%s\"", relativePathNt.chars);
+		if (realPathResult == nullptr && errno == ENOENT)
+		{
+			//TODO: This is a temporary solution where we just hope the relativePath is okay for the calling code.]
+			//      We should probably attempt resolving using parent directories one-by-one until we find one that does resolve, then maybe we do our own collapsing of folder names and ".." pieces?
+			result = CopyStr(relativePath, true);
+		}
+		else
+		{
+			result = CopyStr(MakeStrNt(realPathResult), true);
+		}
 		
 		FixPathSlashes(result, slashChar);
 		free(temporaryBuffer);
@@ -126,7 +134,7 @@ bool DoesFileOrFolderExist(Str path, bool* isFolderOut)
 		
 		if (isFolderOut != nullptr && result)
 		{
-			plex stat statStruct = EMPTY;
+			struct stat statStruct = EMPTY;
 			int statResult = stat(fullPath.chars, &statStruct);
 			if (statResult == 0)
 			{

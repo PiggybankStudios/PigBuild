@@ -38,8 +38,8 @@ int main(int argc, const char* argv[])
 		const u64 raylibHash = 0x2E8E3A68CA7AA05D;
 		#elif BUILDING_ON_LINUX
 		Str raylibDownloadUrl = StrLit("https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_linux_amd64.tar.gz");
-		const u64 raylibSize = 0;
-		const u64 raylibHash = 0x0000000000000001;
+		const u64 raylibSize = 1*MB + 715*kB + 859; //1,781,595 bytes
+		const u64 raylibHash = 0x2FEED00E55F51F74;
 		#elif BUILDING_ON_OSX
 		Str raylibDownloadUrl = StrLit("https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_macos.tar.gz");
 		const u64 raylibSize = 3*MB + 242*kB + 211; //3,393,747 bytes
@@ -47,21 +47,23 @@ int main(int argc, const char* argv[])
 		#endif
 		if (!DoesFileExist(GetFileNamePart(raylibDownloadUrl, true)) || !DoesFolderExist(raylibDownloadDir))
 		{
+			Str raylibRootFolderName = GetFileNamePart(raylibDownloadUrl, false);
+			if (StrExactEndsWith(raylibRootFolderName, StrLit(".tar"))) { raylibRootFolderName = StrSlice(raylibRootFolderName, 0, raylibRootFolderName.length-4); }
 			PrintLine("Downloading Raylib from \"%.*s\"...", StrPrint(raylibDownloadUrl));
 			DownloadAndExtractArchive(
 				raylibDownloadUrl, 
 				GetFileNamePart(raylibDownloadUrl, true),
 				raylibSize, raylibHash,
 				raylibDownloadDir,
-				GetFileNamePart(raylibDownloadUrl, false)
+				raylibRootFolderName
 			);
-			PrintLine("Download and extracted Raylib!");
+			PrintLine("Downloaded and extracted Raylib!");
 		}
 	}
 	
 	//TODO: Download GLFW from: https://github.com/glfw/glfw/releases/tag/3.4
-	//      Windows: ?
-	//      Linux: ?
+	//      Windows: Not needed?
+	//      Linux: Not needed?
 	//      OSX: https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.bin.MACOS.zip
 	
 	// +--------------------------------------------------------------+
@@ -108,7 +110,25 @@ int main(int argc, const char* argv[])
 	#if BUILD_LINUX
 	{
 		WriteLine("[Building for Linux...]");
-		AssertMsg(false, "OSX is not yet implemented in build_script.c"); //TODO: Implement me!
+		
+		CliArgList args = EMPTY;
+		AddArgNt(&args, CLI_QUOTED_ARG, "[ROOT]/main.c");
+		AddArgNt(&args, CLANG_OUTPUT_FILE, "raylib_window");
+		AddArgNt(&args, CLANG_INCLUDE_DIR, "[ROOT]");
+		AddArgNt(&args, CLANG_INCLUDE_DIR, "[ROOT]/raylib/include");
+		AddArg(&args, CLANG_FULL_FILE_PATHS);
+		AddArgNt(&args, CLANG_DEFINE, DEBUG_BUILD ? "DEBUG_BUILD=1" : "DEBUG_BUILD=0");
+		AddArgNt(&args, CLANG_OPTIMIZATION_LEVEL, DEBUG_BUILD ? "0" : "2");
+		IF_DEBUG(AddArgNt(&args, CLANG_DEBUG_INFO, "dwarf-4"));
+		
+		AddArgNt(&args, CLANG_LIBRARY_DIR, "[ROOT]/raylib/lib");
+		AddArgNt(&args, CLANG_SYSTEM_LIBRARY, "raylib");
+		AddArgNt(&args, CLANG_RPATH_DIR, "."); //Add the current folder to RPATH so the .dylibs can be found when the program is run from this folder
+		
+		RunCliProgramAndExitOnFailure(StrLit("clang"), "", &args, StrLit("Failed to build raylib_window!"));
+		AssertFileExist(StrLit("raylib_window"), true);
+		
+		CopyFileToFolder(StrLit("../raylib/lib/libraylib.so.550"), StrLit("."), true);
 	}
 	#endif
 	
@@ -127,7 +147,8 @@ int main(int argc, const char* argv[])
 		AddArgNt(&args, CLANG_INCLUDE_DIR, "[ROOT]/raylib/include");
 		AddArg(&args, CLANG_FULL_FILE_PATHS);
 		AddArgNt(&args, CLANG_DEFINE, DEBUG_BUILD ? "DEBUG_BUILD=1" : "DEBUG_BUILD=0");
-		//TODO: Add clang arguments for optimization and debug info
+		AddArgNt(&args, CLANG_OPTIMIZATION_LEVEL, DEBUG_BUILD ? "0" : "2");
+		//TODO: Should we do (CLANG_DEBUG_INFO, "dwarf-4")? Or some other value?
 		// AddArg(&args, "-fno-threadsafe-statics"); //Eliminates undefined references to stuff like "__cxa_guard_acquire"
 		
 		AddArgNt(&args, CLANG_LIBRARY_DIR, "[ROOT]/raylib/lib");
