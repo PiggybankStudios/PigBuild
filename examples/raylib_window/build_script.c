@@ -84,7 +84,7 @@ int main(int argc, const char* argv[])
 		AddArgNt(&args, CL_PDB_FILE, "raylib_window.pdb");
 		AddArgNt(&args, CL_INCLUDE_DIR, "[ROOT]");
 		AddArgNt(&args, CL_INCLUDE_DIR, "[ROOT]/raylib/include");
-		IF_DEBUG(AddArg(&args, CL_DEBUG_INFO);)
+		IF_DEBUG(AddArg(&args, CL_DEBUG_INFO));
 		AddArgNt(&args, CL_DEFINE, DEBUG_BUILD ? "DEBUG_BUILD=1" : "DEBUG_BUILD=0");
 		AddArgNt(&args, CL_OPTIMIZATION_LEVEL, DEBUG_BUILD ? "d" : "2");
 		AddArg(&args, DEBUG_BUILD ? CL_STD_LIB_DYNAMIC_DBG : CL_STD_LIB_DYNAMIC);
@@ -148,7 +148,7 @@ int main(int argc, const char* argv[])
 		AddArg(&args, CLANG_FULL_FILE_PATHS);
 		AddArgNt(&args, CLANG_DEFINE, DEBUG_BUILD ? "DEBUG_BUILD=1" : "DEBUG_BUILD=0");
 		AddArgNt(&args, CLANG_OPTIMIZATION_LEVEL, DEBUG_BUILD ? "0" : "2");
-		//TODO: Should we do (CLANG_DEBUG_INFO, "dwarf-4")? Or some other value?
+		IF_DEBUG(AddArg(&args, CLANG_DEBUG_INFO_DEFAULT));
 		// AddArg(&args, "-fno-threadsafe-statics"); //Eliminates undefined references to stuff like "__cxa_guard_acquire"
 		
 		AddArgNt(&args, CLANG_LIBRARY_DIR, "[ROOT]/raylib/lib");
