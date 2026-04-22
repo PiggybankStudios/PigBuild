@@ -56,31 +56,29 @@ void FreeStr(Str* strPntr)
 	free(strPntr->chars);
 	memset(strPntr, 0x00, sizeof(Str));
 }
-Str CopyStr(Str strToCopy, bool addNullTerm)
+Str CopyStr(Str strToCopy)
 {
 	Str result = Str_Empty_Const;
-	if (strToCopy.length == 0 && !addNullTerm) { return result; }
 	result.length = strToCopy.length;
-	result.chars = (char*)malloc(strToCopy.length + (addNullTerm ? 1 : 0));
+	result.chars = (char*)malloc(strToCopy.length + 1);
 	NotNull(result.chars);
 	if (strToCopy.length > 0) { memcpy(result.chars, strToCopy.chars, strToCopy.length); }
-	if (addNullTerm) { result.chars[result.length] = '\0'; }
+	result.chars[result.length] = '\0';
 	return result;
 }
-Str CopyStrNt(const char* strToCopyNt, bool addNullTerm)
+Str CopyStrNt(const char* strToCopyNt)
 {
-	return CopyStr(MakeStrNt(strToCopyNt), addNullTerm);
+	return CopyStr(MakeStrNt(strToCopyNt));
 }
-#define CopyStrLit(stringLiteral, addNullTerm) CopyStr(StrLit(stringLiteral), (addNullTerm))
-Str AllocStr(u64 length, bool addNullTerm)
+#define CopyStrLit(stringLiteral) CopyStr(StrLit(stringLiteral))
+Str AllocStr(u64 length)
 {
 	Str result = Str_Empty_Const;
-	if (length == 0 && !addNullTerm) { return result; }
 	result.length = length;
-	result.chars = (char*)malloc(length + (addNullTerm ? 1 : 0));
+	result.chars = (char*)malloc(length + 1);
 	NotNull(result.chars);
 	if (length > 0) { memset(result.chars, 0x00, length); }
-	if (addNullTerm) { result.chars[result.length] = '\0'; }
+	result.chars[result.length] = '\0';
 	return result;
 }
 
@@ -104,21 +102,19 @@ Str StrSliceFrom(Str target, u64 startIndex)
 	return StrSlice(target, startIndex, target.length);
 }
 
-Str JoinStrings2(Str left, Str right, bool addNullTerm)
+Str JoinStrings2(Str left, Str right)
 {
-	Str result = AllocStr(left.length + right.length, addNullTerm);
+	Str result = AllocStr(left.length + right.length);
 	if (left.length > 0) { memcpy(&result.chars[0], &left.chars[0], left.length); }
 	if (right.length > 0) { memcpy(&result.chars[left.length], &right.chars[0], right.length); }
-	if (addNullTerm) { result.chars[result.length] = '\0'; }
 	return result;
 }
-Str JoinStrings3(Str left, Str middle, Str right, bool addNullTerm)
+Str JoinStrings3(Str left, Str middle, Str right)
 {
-	Str result = AllocStr(left.length + middle.length + right.length, addNullTerm);
+	Str result = AllocStr(left.length + middle.length + right.length);
 	if (left.length > 0) { memcpy(&result.chars[0], &left.chars[0], left.length); }
 	if (middle.length > 0) { memcpy(&result.chars[left.length], &middle.chars[0], middle.length); }
 	if (right.length > 0) { memcpy(&result.chars[left.length + middle.length], &right.chars[0], right.length); }
-	if (addNullTerm) { result.chars[result.length] = '\0'; }
 	return result;
 }
 
@@ -201,7 +197,7 @@ u64 StrReplaceChars(Str haystack, char targetChar, char replaceChar)
 	return numReplacements;
 }
 
-Str StrReplace(Str haystack, Str target, Str replacement, bool addNullTerm)
+Str StrReplace(Str haystack, Str target, Str replacement)
 {
 	Str result = Str_Empty_Const;
 	for (u64 cIndex = 0; cIndex < haystack.length; cIndex++)
@@ -214,7 +210,7 @@ Str StrReplace(Str haystack, Str target, Str replacement, bool addNullTerm)
 		}
 		else { result.length += 1; }
 	}
-	result = AllocStr(result.length, addNullTerm);
+	result = AllocStr(result.length);
 	u64 writeIndex = 0;
 	for (u64 cIndex = 0; cIndex < haystack.length; cIndex++)
 	{
@@ -231,20 +227,19 @@ Str StrReplace(Str haystack, Str target, Str replacement, bool addNullTerm)
 			writeIndex += 1;
 		}
 	}
-	if (addNullTerm) { result.chars[result.length] = '\0'; }
 	return result;
 }
-Str StrReplaceRange(Str targetStr, u64 startIndex, u64 endIndex, Str replacementStr, bool addNullTerm)
+Str StrReplaceRange(Str targetStr, u64 startIndex, u64 endIndex, Str replacementStr)
 {
 	Assert(startIndex <= targetStr.length);
 	Assert(endIndex <= targetStr.length);
 	Str leftPart = StrSlice(targetStr, 0, Min2(startIndex, endIndex));
 	Str rightPart = StrSliceFrom(targetStr, Max2(startIndex, endIndex));
-	return JoinStrings3(leftPart, replacementStr, rightPart, addNullTerm);
+	return JoinStrings3(leftPart, replacementStr, rightPart);
 }
-Str StrInsert(Str targetStr, u64 insertIndex, Str insertStr, bool addNullTerm)
+Str StrInsert(Str targetStr, u64 insertIndex, Str insertStr)
 {
-	return StrReplaceRange(targetStr, insertIndex, insertIndex, insertStr, addNullTerm);
+	return StrReplaceRange(targetStr, insertIndex, insertIndex, insertStr);
 }
 
 // +--------------------------------------------------------------+
@@ -300,11 +295,11 @@ Str RemovePathExtension(Str fullPath, bool includeSubExtensions)
 	}
 	return StrSlice(fullPath, 0, periodIndex);
 }
-Str AddSuffixToFileName(Str filePath, Str suffix, bool addNullTerm)
+Str AddSuffixToFileName(Str filePath, Str suffix)
 {
 	Str fileExtension = GetFileExtPart(filePath, true);
 	Str fileDirAndName = RemovePathExtension(filePath, true);
-	return JoinStrings3(fileDirAndName, suffix, fileExtension, addNullTerm);
+	return JoinStrings3(fileDirAndName, suffix, fileExtension);
 }
 
 u64 CountPathParts(Str fileOrFolderPath)
@@ -371,13 +366,13 @@ Str WithoutTrailingSlash(Str path)
 Str WithTrailingSlash(Str path)
 {
 	if (HasTrailingSlash(path)) { return path; }
-	else { return JoinStrings2(path, StrLit("/"), true); }
+	else { return JoinStrings2(path, StrLit("/")); }
 }
 
-Str JoinPaths(Str leftPath, Str rightPath, bool addNullTerm)
+Str JoinPaths(Str leftPath, Str rightPath)
 {
-	if (leftPath.length == 0 || rightPath.length == 0 || HasTrailingSlash(leftPath) || IsSlash(rightPath.chars[0])) { return JoinStrings2(leftPath, rightPath, addNullTerm); }
-	else { return JoinStrings3(leftPath, StrLit("/"), rightPath, addNullTerm); }
+	if (leftPath.length == 0 || rightPath.length == 0 || HasTrailingSlash(leftPath) || IsSlash(rightPath.chars[0])) { return JoinStrings2(leftPath, rightPath); }
+	else { return JoinStrings3(leftPath, StrLit("/"), rightPath); }
 }
 
 // +--------------------------------------------------------------+
@@ -438,7 +433,7 @@ char GetHexChar(u8 hexValue, bool upperCase)
 }
 Str ConvertU64ToHexStr(u64 value, bool upperCase)
 {
-	Str result = AllocStr(2 + (sizeof(u64)*2), true);
+	Str result = AllocStr(2 + (sizeof(u64)*2));
 	result.chars[0] = '0';
 	result.chars[1] = 'x';
 	for (u8 bIndex = 0; bIndex < (sizeof(u64)*2); bIndex++)
@@ -450,7 +445,7 @@ Str ConvertU64ToHexStr(u64 value, bool upperCase)
 	return result;
 }
 
-Str EscapeString(Str unescapedString, bool addNullTerm)
+Str EscapeString(Str unescapedString)
 {
 	Str result = Str_Empty_Const;
 	for (int pass = 0; pass < 2; pass++)
@@ -486,8 +481,8 @@ Str EscapeString(Str unescapedString, bool addNullTerm)
 			}
 		}
 		
-		if (pass == 0) { result = AllocStr(byteIndex, addNullTerm); }
-		else if (addNullTerm) { result.chars[result.length] = '\0'; }
+		if (pass == 0) { result = AllocStr(byteIndex); }
+		else { result.chars[result.length] = '\0'; }
 	}
 	return result;
 }

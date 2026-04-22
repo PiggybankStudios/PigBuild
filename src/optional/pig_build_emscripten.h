@@ -34,7 +34,7 @@ Str GetEmscriptenSdkPath()
 		WriteLine_E("Please set the EMSCRIPTEN_SDK_PATH environment variable before trying to build for the web with USE_EMSCRIPTEN");
 		exit(7);
 	}
-	Str result = CopyStr(WithoutTrailingSlash(MakeStrNt(sdkEnvVariable)), true);
+	Str result = CopyStr(WithoutTrailingSlash(MakeStrNt(sdkEnvVariable)));
 	FixPathSlashes(result, PATH_SEP_CHAR);
 	return result;
 }
@@ -50,7 +50,7 @@ void InitializeEmsdkIf(Str pigCoreFolder, bool* isEmsdkInitialized)
 	if (*isEmsdkInitialized == false)
 	{
 		PrintLine("Initializing Emscripten SDK...");
-		Str batchPath = JoinStrings2(pigCoreFolder, StrLit("/" PIG_BUILD_FOLDER_NAME "/shell/init_emsdk.bat"), false);
+		Str batchPath = JoinStrings2(pigCoreFolder, StrLit("/" PIG_BUILD_FOLDER_NAME "/shell/init_emsdk.bat"));
 		RunBatchFileAndApplyDumpedEnvironment(batchPath, StrLit(EMSDK_ENVIRONMENT_TXT_PATH), false);
 		*isEmsdkInitialized = true;
 	}

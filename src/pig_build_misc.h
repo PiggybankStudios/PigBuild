@@ -23,7 +23,7 @@ Description:
 int RunCliProgramTagArray(Str programPath, StrArray* tagsListPntr, const CliArgList* args)
 {
 	// PrintLine("Joining/filtering %llu arguments against %llu tags for \"%.*s\"", args->numArgs, (tagsListPntr != nullptr) ? tagsListPntr->length : 0ULL, StrPrint(programPath));
-	Str joinedArgs = FilterAndJoinCliArgsList(programPath, args, tagsListPntr, true);
+	Str joinedArgs = FilterAndJoinCliArgsList(programPath, args, tagsListPntr);
 	#if PIG_BUILD_PRINT_SYS_CMDS
 	PrintLine(">> %s", joinedArgs.chars);
 	#endif
@@ -267,7 +267,7 @@ void ConcatAllFilesIntoSingleFile(const StrArray* pathArray, Str outputFilePath)
 		free(inputFileContents.chars);
 	}
 	
-	Str combinedContents = AllocStr(totalLength, true);
+	Str combinedContents = AllocStr(totalLength);
 	
 	u64 writeIndex = 0;
 	for (u64 fIndex = 0; fIndex < allFilesContents.length; fIndex++)
@@ -321,14 +321,14 @@ void ParseAndApplyEnvironmentVariables(Str environmentVars)
 			
 			if (equalsIndex >= lineStart)
 			{
-				Str varName = CopyStr(StrSlice(line, 0, equalsIndex-lineStart), true);
-				Str varValue = CopyStr(StrSliceFrom(line, (equalsIndex-lineStart)+1), true);
+				Str varName = CopyStr(StrSlice(line, 0, equalsIndex-lineStart));
+				Str varValue = CopyStr(StrSliceFrom(line, (equalsIndex-lineStart)+1));
 				
 				// PrintLine("set %.*s=%.*s", StrPrint(varName), StrPrint(varValue));
 				#if BUILDING_ON_WINDOWS
 				_putenv_s(varName.chars, varValue.chars);
 				#else
-				Str varEqualsValueStr = JoinStrings3(varName, StrLit("="), varValue, true);
+				Str varEqualsValueStr = JoinStrings3(varName, StrLit("="), varValue);
 				putenv(varEqualsValueStr.chars);
 				#endif
 				free(varName.chars);
@@ -352,7 +352,7 @@ void RunBatchFileAndApplyDumpedEnvironment(Str batchFilePath, Str environmentFil
 {
 	CliArgList cmd = EMPTY;
 	AddArgStr(&cmd, CLI_QUOTED_ARG, environmentFilePath);
-	Str fixedBatchFilePath = CopyStr(batchFilePath, false);
+	Str fixedBatchFilePath = CopyStr(batchFilePath);
 	FixPathSlashes(fixedBatchFilePath, PATH_SEP_CHAR);
 	
 	if (!DoesFileExist(environmentFilePath) || !skipRunningIfFileExists)
@@ -385,7 +385,7 @@ void InitializeMsvcIf(Str pigBuildFolder, bool* isMsvcInitialized)
 {
 	if (*isMsvcInitialized == false)
 	{
-		Str batchPath = JoinPaths(pigBuildFolder, StrLit("shell/init_msvc.bat"), false);
+		Str batchPath = JoinPaths(pigBuildFolder, StrLit("shell/init_msvc.bat"));
 		Str environmentPath = StrLit_Const(MSVC_ENVIRONMENT_TXT_PATH);
 		if (DoesFileExist(environmentPath)) { WriteLine("Loading MSVC Environment..."); }
 		// else { WriteLine("Initializing MSVC Compiler..."); } //NOTE: This is already printed inside init_msvc.bat

@@ -72,7 +72,7 @@ Str FormatArg(const CliArg* arg, Str rootDirPath, char pathSepChar)
 {
 	Str valTargetStr = StrLit_Const(CLI_VAL_STR);
 	Str formatStr = arg->format;
-	Str valueStr = StrReplace(arg->value, StrLit(CLI_ROOT_DIR), rootDirPath, false);
+	Str valueStr = StrReplace(arg->value, StrLit(CLI_ROOT_DIR), rootDirPath);
 	FixPathSlashes(valueStr, pathSepChar);
 	
 	u64 insertValIndex = formatStr.length;
@@ -84,7 +84,7 @@ Str FormatArg(const CliArg* arg, Str rootDirPath, char pathSepChar)
 			if (cIndex > 0 && cIndex + valTargetStr.length < formatStr.length &&
 				formatStr.chars[cIndex-1] == '\"' && formatStr.chars[cIndex + valTargetStr.length] == '\"')
 			{
-				Str escapedString = EscapeString(valueStr, false);
+				Str escapedString = EscapeString(valueStr);
 				free(valueStr.chars);
 				valueStr = escapedString;
 			}
@@ -104,10 +104,10 @@ Str FormatArg(const CliArg* arg, Str rootDirPath, char pathSepChar)
 		exit(4);
 	}
 	
-	Str result = CopyStr(formatStr, false);
+	Str result = CopyStr(formatStr);
 	if (insertValIndex < formatStr.length)
 	{
-		result = StrReplaceRange(formatStr, insertValIndex, insertValIndex + valTargetStr.length, valueStr, true);
+		result = StrReplaceRange(formatStr, insertValIndex, insertValIndex + valTargetStr.length, valueStr);
 	}
 	FreeStr(&valueStr);
 	
@@ -161,8 +161,8 @@ CliArg* AddTaggedArgStr(CliArgList* list, const char* includeExcludeTagsStr, con
 	if (list->numArgs >= CLI_MAX_ARGS) { WriteLine_E("Too many CLI arguments!"); exit(4); }
 	CliArg* newArg = &list->args[list->numArgs];
 	memset(newArg, 0x00, sizeof(CliArg));
-	newArg->format = CopyStrNt(formatStrNt, false);
-	newArg->value = CopyStr(valueStr, false);
+	newArg->format = CopyStrNt(formatStrNt);
+	newArg->value = CopyStr(valueStr);
 	SplitIncludeExcludeTagsListStr(MakeStrNt(includeExcludeTagsStr), &newArg->includeTags, &newArg->excludeTags);
 	// if (newArg->includeTags.length > 0 || newArg->excludeTags.length > 0)
 	// {
@@ -211,8 +211,8 @@ void AddArgList(CliArgList* dest, const CliArgList* source)
 		const CliArg* sourceArg = &source->args[aIndex];
 		CliArg* destArg = &dest->args[dest->numArgs];
 		memset(destArg, 0x00, sizeof(CliArg));
-		destArg->format = CopyStr(sourceArg->format, false);
-		destArg->value = CopyStr(sourceArg->value, false);
+		destArg->format = CopyStr(sourceArg->format);
+		destArg->value = CopyStr(sourceArg->value);
 		for (u64 iIndex = 0; iIndex < sourceArg->includeTags.length; iIndex++)
 		{
 			AddStr(&destArg->includeTags, sourceArg->includeTags.strings[iIndex]);
@@ -266,7 +266,7 @@ bool DoesArgMatchTags(const CliArg* arg, const StrArray* tagsListPntr)
 	return true;
 }
 
-Str FilterAndJoinCliArgsList(Str prefix, const CliArgList* list, StrArray* tagsListPntr, bool addNullTerm)
+Str FilterAndJoinCliArgsList(Str prefix, const CliArgList* list, StrArray* tagsListPntr)
 {
 	StrArray localEmptyTagList = EMPTY;
 	if (tagsListPntr == nullptr) { tagsListPntr = &localEmptyTagList; }
@@ -274,8 +274,8 @@ Str FilterAndJoinCliArgsList(Str prefix, const CliArgList* list, StrArray* tagsL
 	char pathSepChar = list->pathSepChar;
 	if (pathSepChar == '\0') { pathSepChar = PATH_SEP_CHAR; }
 	Str rootDirPath = Str_Empty_Const;
-	if (IsEmptyStr(list->rootDirPath)) { rootDirPath = CopyStrLit("..", false); }
-	else { rootDirPath = CopyStr(list->rootDirPath, false); }
+	if (IsEmptyStr(list->rootDirPath)) { rootDirPath = CopyStrLit(".."); }
+	else { rootDirPath = CopyStr(list->rootDirPath); }
 	FixPathSlashes(rootDirPath, pathSepChar);
 	
 	u64 numFormattedStrings = 0;
@@ -296,7 +296,7 @@ Str FilterAndJoinCliArgsList(Str prefix, const CliArgList* list, StrArray* tagsL
 	}
 	free(rootDirPath.chars);
 	
-	Str result = AllocStr(totalLength, addNullTerm);
+	Str result = AllocStr(totalLength);
 	u64 writeIndex = 0;
 	memcpy(&result.chars[writeIndex], &prefix.chars[0], prefix.length); writeIndex += prefix.length;
 	
@@ -312,7 +312,7 @@ Str FilterAndJoinCliArgsList(Str prefix, const CliArgList* list, StrArray* tagsL
 	}
 	Assert(writeIndex == result.length);
 	
-	if (addNullTerm) { result.chars[writeIndex] = '\0'; }
+	result.chars[writeIndex] = '\0';
 	// PrintLine("Filtered %llu arguments to %llu", list->numArgs, numFormattedStrings);
 	return result;
 }

@@ -44,7 +44,7 @@ Str GetPlaydateSdkPath()
 		WriteLine_E("Please set the PLAYDATE_SDK_PATH environment variable before trying to build for the Playdate");
 		exit(7);
 	}
-	Str result = CopyStr(WithoutTrailingSlash(MakeStrNt(sdkEnvVariable)), true);
+	Str result = CopyStr(WithoutTrailingSlash(MakeStrNt(sdkEnvVariable)));
 	FixPathSlashes(result, PATH_SEP_CHAR);
 	return result;
 }
@@ -189,7 +189,7 @@ void FillPlaydateFlags(CliArgList* compilerFlags, CliArgList* linkerFlags, Str p
 		AddTaggedArg(linkerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_GC_SECTIONS);
 		AddTaggedArg(linkerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_DISABLE_MISMATCH_WARNING);
 		AddTaggedArg(linkerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_EMIT_RELOCATIONS);
-		AddTaggedArgStr(linkerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_LINKER_SCRIPT, JoinStrings2(playdateSdkDir, StrLit("/C_API/buildsupport/link_map.ld"), false));
+		AddTaggedArgStr(linkerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_LINKER_SCRIPT, JoinStrings2(playdateSdkDir, StrLit("/C_API/buildsupport/link_map.ld")));
 	}
 	
 	// +==============================+

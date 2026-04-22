@@ -39,7 +39,7 @@ UnzipResult UnzipEntireArchiveInto(Str archiveFilePath, Str folderToExtractInArc
 	Str subfinalExtension = GetFileExtPart(StrSlice(archiveFilePath, 0, archiveFilePath.length-finalExtension.length), false);
 	if (StrExactEquals(finalExtension, StrLit(".zip")))
 	{
-		Str archiveFilePathNt = CopyStr(archiveFilePath, true);
+		Str archiveFilePathNt = CopyStr(archiveFilePath);
 		mz_zip_archive archive = EMPTY;
 		mz_bool initResult = mz_zip_reader_init_file(
 			&archive,
@@ -61,7 +61,7 @@ UnzipResult UnzipEntireArchiveInto(Str archiveFilePath, Str folderToExtractInArc
 		for (u64 fIndex = 0; fIndex < result.numFiles; fIndex++)
 		{
 			u64 entryPathLength = (u64)mz_zip_reader_get_filename(&archive, (mz_uint)fIndex, nullptr, 0);
-			Str entryPath = AllocStr(entryPathLength, true);
+			Str entryPath = AllocStr(entryPathLength);
 			u64 secondEntryPathLength = mz_zip_reader_get_filename(&archive, (mz_uint)fIndex, entryPath.chars, entryPath.length);
 			Assert(secondEntryPathLength == entryPathLength);
 			entryPath.chars[entryPath.length] = '\0';
@@ -69,7 +69,7 @@ UnzipResult UnzipEntireArchiveInto(Str archiveFilePath, Str folderToExtractInArc
 			if (folderToExtractInArchive.length == 0 || StrExactStartsWith(entryPath, folderToExtractInArchive))
 			{
 				Str entryRelativePath = (folderToExtractInArchive.length > 0) ? StrSliceFrom(entryPath, folderToExtractInArchive.length) : entryPath;
-				Str outputPath = JoinPaths(outputFolderPath, entryRelativePath, true);
+				Str outputPath = JoinPaths(outputFolderPath, entryRelativePath);
 				
 				if (mz_zip_reader_is_file_a_directory(&archive, (mz_uint)fIndex))
 				{

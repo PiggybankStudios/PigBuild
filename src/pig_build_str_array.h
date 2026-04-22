@@ -45,7 +45,7 @@ Str* AddStr(StrArray* array, Str newString)
 	
 	Str* result = &array->strings[array->length];
 	array->length++;
-	*result = CopyStr(newString, false);
+	*result = CopyStr(newString);
 	return result;
 }
 #define AddStrLit(arrayPntr, strLit)     AddStr((arrayPntr), StrLit(strLit))

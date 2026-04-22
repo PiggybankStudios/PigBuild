@@ -150,10 +150,10 @@ void FillPigCoreFlags(CliArgList* compilerFlags, CliArgList* linkerFlags, Str pi
 	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX, CLANG_INCLUDE_DIR, "/usr/include/dbus-1.0");
 	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX, CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/dbus-1.0/include"); //This was the path on Lubuntu
 	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX, CLANG_INCLUDE_DIR, "/usr/lib64/dbus-1.0/include"); //This is the path on Fedora Workstation
-	Str freetypeDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/freetype/include"), false);
+	Str freetypeDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/freetype/include"));
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_BUILD_WITH_FREETYPE, CL_INCLUDE_DIR, freetypeDir);
 	AddTaggedArgStr(compilerFlags, T_CLANG   T_BUILD_WITH_FREETYPE, CLANG_INCLUDE_DIR, freetypeDir);
-	Str plutosvgDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/plutosvg"), false);
+	Str plutosvgDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/plutosvg"));
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_BUILD_WITH_FREETYPE, CL_INCLUDE_DIR, plutosvgDir);
 	AddTaggedArgStr(compilerFlags, T_CLANG   T_BUILD_WITH_FREETYPE, CLANG_INCLUDE_DIR, plutosvgDir);
 	//TODO: Really we should do `pkg-config --cflags gtk4`

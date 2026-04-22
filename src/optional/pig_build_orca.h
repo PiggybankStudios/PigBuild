@@ -46,10 +46,10 @@ void FillOrcaFlags(CliArgList* compilerFlags, CliArgList* linkerFlags, Str orcaS
 {
 	AddTaggedArg(compilerFlags,    T_CLANG T_ORCA, CLANG_NO_ENTRYPOINT);
 	AddTaggedArg(compilerFlags,    T_CLANG T_ORCA, CLANG_EXPORT_DYNAMIC);
-	AddTaggedArgStr(compilerFlags, T_CLANG T_ORCA, CLANG_STDLIB_FOLDER, JoinStrings2(orcaSdkPath, StrLit("/orca-libc"), false));
-	AddTaggedArgStr(compilerFlags, T_CLANG T_ORCA, CLANG_INCLUDE_DIR, JoinStrings2(orcaSdkPath, StrLit("/src"), false));
-	AddTaggedArgStr(compilerFlags, T_CLANG T_ORCA, CLANG_INCLUDE_DIR, JoinStrings2(orcaSdkPath, StrLit("/src/ext"), false));
-	AddTaggedArgStr(compilerFlags, T_CLANG T_ORCA, CLANG_LIBRARY_DIR, JoinStrings2(orcaSdkPath, StrLit("/bin"), false));
+	AddTaggedArgStr(compilerFlags, T_CLANG T_ORCA, CLANG_STDLIB_FOLDER, JoinStrings2(orcaSdkPath, StrLit("/orca-libc")));
+	AddTaggedArgStr(compilerFlags, T_CLANG T_ORCA, CLANG_INCLUDE_DIR, JoinStrings2(orcaSdkPath, StrLit("/src")));
+	AddTaggedArgStr(compilerFlags, T_CLANG T_ORCA, CLANG_INCLUDE_DIR, JoinStrings2(orcaSdkPath, StrLit("/src/ext")));
+	AddTaggedArgStr(compilerFlags, T_CLANG T_ORCA, CLANG_LIBRARY_DIR, JoinStrings2(orcaSdkPath, StrLit("/bin")));
 	AddTaggedArgNt(compilerFlags,  T_CLANG T_ORCA, CLANG_DEFINE, "__ORCA__"); //#define __ORCA__ so that base_compiler_check.h can set TARGET_IS_ORCA
 	AddTaggedArgNt(linkerFlags,    T_CLANG T_ORCA, CLANG_SYSTEM_LIBRARY, "orca_wasm");
 }

@@ -70,7 +70,7 @@ Str GetFullPath(Str relativePath, char slashChar)
 	}
 	#elif (BUILDING_ON_LINUX || BUILDING_ON_OSX)
 	{
-		Str relativePathNt = CopyStr(relativePath, true);
+		Str relativePathNt = CopyStr(relativePath);
 		FixPathSlashes(relativePathNt, PATH_SEP_CHAR);
 		
 		char* temporaryBuffer = (char*)malloc(PATH_MAX);
@@ -80,11 +80,11 @@ Str GetFullPath(Str relativePath, char slashChar)
 		{
 			//TODO: This is a temporary solution where we just hope the relativePath is okay for the calling code.]
 			//      We should probably attempt resolving using parent directories one-by-one until we find one that does resolve, then maybe we do our own collapsing of folder names and ".." pieces?
-			result = CopyStr(relativePath, true);
+			result = CopyStr(relativePath);
 		}
 		else
 		{
-			result = CopyStr(MakeStrNt(realPathResult), true);
+			result = CopyStr(MakeStrNt(realPathResult));
 		}
 		
 		FixPathSlashes(result, slashChar);
@@ -181,7 +181,7 @@ void AssertFileExist(Str filePath, bool wasCreatedByBuild)
 
 bool TryReadFile(Str filePath, Str* contentsOut)
 {
-	Str filePathNt = CopyStr(filePath, true);
+	Str filePathNt = CopyStr(filePath);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
 	
 	//NOTE: We open the file in binary mode because otherwise the result from jumping to SEEK_END to
@@ -199,7 +199,7 @@ bool TryReadFile(Str filePath, Str* contentsOut)
 	long fileSize = ftell(fileHandle); Assert(fileSize >= 0); Assert(fileSize <= INT_MAX);
 	int seekResult2 = fseek(fileHandle, 0, SEEK_SET); Assert(seekResult2 == 0);
 	
-	*contentsOut = AllocStr((u64)fileSize, true);
+	*contentsOut = AllocStr((u64)fileSize);
 	
 	int readResult = fread(
 		contentsOut->chars,
@@ -233,7 +233,7 @@ Str ReadEntireFile(Str filePath)
 
 void CreateAndWriteFile(Str filePath, Str contents, bool convertNewLines)
 {
-	Str filePathNt = CopyStr(filePath, true);
+	Str filePathNt = CopyStr(filePath);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
 	
 	#if BUILDING_ON_WINDOWS
@@ -291,7 +291,7 @@ void CreateAndWriteFile(Str filePath, Str contents, bool convertNewLines)
 
 void AppendToFile(Str filePath, Str contentsToAppend, bool convertNewLines)
 {
-	Str filePathNt = CopyStr(filePath, true);
+	Str filePathNt = CopyStr(filePath);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
 	
 	#if BUILDING_ON_WINDOWS
@@ -375,7 +375,7 @@ void AppendPrintToFile(Str filePath, const char* formatString, ...)
 //TODO: We can probably just use `remove` from the C standard library
 void RemoveFile(Str filePath)
 {
-	Str filePathNt = CopyStr(filePath, true);
+	Str filePathNt = CopyStr(filePath);
 	FixPathSlashes(filePathNt, PATH_SEP_CHAR);
 	
 	#if BUILDING_ON_WINDOWS
@@ -399,7 +399,7 @@ void RemoveFile(Str filePath)
 
 void MyRemoveDirectory(Str folderPath, bool recursive)
 {
-	Str folderPathNt = CopyStr(folderPath, true);
+	Str folderPathNt = CopyStr(folderPath);
 	FixPathSlashes(folderPathNt, PATH_SEP_CHAR);
 	
 	if (!recursive)
@@ -462,13 +462,13 @@ void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
 	#if BUILDING_ON_LINUX
 	if (copyPermissions)
 	{
-		Str filePathNt = CopyStr(filePath, true);
+		Str filePathNt = CopyStr(filePath);
 		struct stat oldFileStats = EMPTY;
 		int statResult = stat(filePathNt.chars, &oldFileStats);
 		Assert(statResult == 0);
 		free(filePathNt.chars);
 		
-		Str newFilePathNt = CopyStr(newFilePath, true);
+		Str newFilePathNt = CopyStr(newFilePath);
 		int modResult = chmod(newFilePathNt.chars, oldFileStats.st_mode);
 		Assert(modResult == 0);
 		free(newFilePathNt.chars);
@@ -477,7 +477,7 @@ void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
 }
 void CopyFileToFolder(Str filePath, Str folderPath, bool copyPermissions)
 {
-	Str newPath = JoinPaths(folderPath, GetFileNamePart(filePath, true), false);
+	Str newPath = JoinPaths(folderPath, GetFileNamePart(filePath, true));
 	CopyFileToPath(filePath, newPath, copyPermissions);
 	free(newPath.chars);
 }
@@ -489,7 +489,7 @@ FileIter StartFileIter(Str folderPath)
 	result.nextIndex = 0;
 	result.finished = false;
 	bool needsTrailingSlash = (folderPath.length == 0 || (folderPath.chars[folderPath.length-1] != '\\' && folderPath.chars[folderPath.length-1] != '/'));
-	result.folderPathNt = AllocStr(folderPath.length + (needsTrailingSlash ? 1 : 0), true);
+	result.folderPathNt = AllocStr(folderPath.length + (needsTrailingSlash ? 1 : 0));
 	memcpy(result.folderPathNt.chars, folderPath.chars, folderPath.length);
 	if (needsTrailingSlash) { result.folderPathNt.chars[folderPath.length] = PATH_SEP_CHAR; }
 	result.folderPathNt.chars[result.folderPathNt.length] = '\0';
@@ -593,7 +593,7 @@ bool StepFileIter(FileIter* fileIter, Str* pathOut, bool* isFolderOut)
 			Str fileName = MakeStrNt(entry->d_name);
 			if (StrExactEquals(fileName, StrLit(".")) || StrExactEquals(fileName, StrLit(".."))) { continue; } //ignore current and parent folder entries
 			
-			Str fullPath = JoinStrings2(fileIter->folderPathNt, fileName, true);
+			Str fullPath = JoinStrings2(fileIter->folderPathNt, fileName);
 			if (isFolderOut != nullptr)
 			{
 				struct stat statStruct = EMPTY;

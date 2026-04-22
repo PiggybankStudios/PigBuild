@@ -233,7 +233,7 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str headerPath, Str shaderPath)
 	assert(shaderName.length > 0);
 	
 	Str shaderFullPath = GetFullPath(shaderPath, '/');
-	Str escapedFullShaderPath = EscapeString(shaderFullPath, false);
+	Str escapedFullShaderPath = EscapeString(shaderFullPath);
 	AppendToFile(headerPath, StrLit(
 		"\n\n//NOTE: These lines were added by pig_build.exe\n"
 		"//NOTE: Because an empty array is invalid in C, we always add at least one dummy entry to these definition #defines while the corresponding COUNT #define will remain 0\n"
@@ -382,17 +382,17 @@ RECURSIVE_DIR_WALK_CALLBACK_DEF(FindShaderFilesCallback)
 	if (!isFolder && StrExactEndsWith(path, StrLit(".glsl")))
 	{
 		Str shaderName = GetFileNamePart(path, false);
-		Str rootPath = StrReplace(path, StrLit(".."), StrLit("[ROOT]"), false);
+		Str rootPath = StrReplace(path, StrLit(".."), StrLit("[ROOT]"));
 		FixPathSlashes(rootPath, '/');
 		AddStr(&context->shaderPaths, rootPath);
-		AddStr(&context->headerPaths, JoinStrings2(rootPath, StrLit(".h"), true));
+		AddStr(&context->headerPaths, JoinStrings2(rootPath, StrLit(".h")));
 		#if BUILDING_ON_OSX
-		AddStr(&context->sourcePaths, JoinStrings2(rootPath, StrLit(".m"), true));
+		AddStr(&context->sourcePaths, JoinStrings2(rootPath, StrLit(".m")));
 		#else
-		AddStr(&context->sourcePaths, JoinStrings2(rootPath, StrLit(".c"), true));
+		AddStr(&context->sourcePaths, JoinStrings2(rootPath, StrLit(".c")));
 		#endif
-		AddStr(&context->objPaths, JoinStrings2(shaderName, StrLit(".obj"), true));
-		AddStr(&context->oPaths, JoinStrings2(shaderName, StrLit(".o"), true));
+		AddStr(&context->objPaths, JoinStrings2(shaderName, StrLit(".obj")));
+		AddStr(&context->oPaths, JoinStrings2(shaderName, StrLit(".o")));
 	}
 	return true;
 }

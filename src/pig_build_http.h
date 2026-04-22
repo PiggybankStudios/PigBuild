@@ -59,7 +59,7 @@ void DownloadFromUrl(Str url, Str filePath)
 	}
 	#else //!PIG_BUILD_ENABLE_LIB_CURL
 	{
-		Str urlNt = CopyStr(url, true);
+		Str urlNt = CopyStr(url);
 		CliArgList args = EMPTY;
 		AddArg(&args, "-Ls");
 		AddArgStr(&args, "-o \"[VAL]\"", filePath);
@@ -79,14 +79,14 @@ void DownloadFromUrlAndCheck(Str url, Str filePath, u64 expectedSize, u64 expect
 
 void DownloadAndExtractArchive(Str url, Str archiveFilePath, u64 expectedArchiveSize, u64 expectedArchiveHash, Str outputFolderPath, Str archiveDirToExtract)
 {
-	Str tempPath = AddSuffixToFileName(archiveFilePath, StrLit("_TEMP"), false);
+	Str tempPath = AddSuffixToFileName(archiveFilePath, StrLit("_TEMP"));
 	DownloadFromUrlAndCheck(url, tempPath, expectedArchiveSize, expectedArchiveHash);
 	CopyFileToPath(tempPath, archiveFilePath, true);
 	RemoveFile(tempPath);
 	
 	if (!DoesFolderExist(outputFolderPath))
 	{
-		Str outputFolderPathNt = CopyStr(outputFolderPath, true);
+		Str outputFolderPathNt = CopyStr(outputFolderPath);
 		mkdir(outputFolderPathNt.chars, FOLDER_PERMISSIONS);
 		FreeStr(&outputFolderPathNt);
 	}
