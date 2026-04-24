@@ -41,7 +41,7 @@ Str GetFullPath(Str relativePath, char slashChar)
 	
 	#if BUILDING_ON_WINDOWS
 	{
-		Str relativePathNt = CopyStr(relativePath, true);
+		Str relativePathNt = CopyStr(relativePath);
 		FixPathSlashes(relativePathNt, PATH_SEP_CHAR);
 		
 		// Returns required buffer size +1 when the nBufferLength is too small
@@ -53,7 +53,7 @@ Str GetFullPath(Str relativePath, char slashChar)
 		);
 		Assert(getPathResult1 != 0);
 		
-		result = AllocStr((u64)getPathResult1-1, true);
+		result = AllocStr((u64)getPathResult1-1);
 		
 		// Returns the length of the string (not +1) when nBufferLength is large enough
 		DWORD getPathResult2 = GetFullPathNameA(
@@ -238,7 +238,7 @@ void CreateAndWriteFile(Str filePath, Str contents, bool convertNewLines)
 	
 	#if BUILDING_ON_WINDOWS
 	{
-		if (convertNewLines) { contents = StrReplace(contents, StrLit("\n"), StrLit("\r\n"), false); }
+		if (convertNewLines) { contents = StrReplace(contents, StrLit("\n"), StrLit("\r\n")); }
 		HANDLE fileHandle = CreateFileA(
 			filePathNt.chars,      //Name of the file
 			GENERIC_WRITE,         //Open for writing
@@ -296,7 +296,7 @@ void AppendToFile(Str filePath, Str contentsToAppend, bool convertNewLines)
 	
 	#if BUILDING_ON_WINDOWS
 	{
-		if (convertNewLines) { contentsToAppend = StrReplace(contentsToAppend, StrLit("\n"), StrLit("\r\n"), false); }
+		if (convertNewLines) { contentsToAppend = StrReplace(contentsToAppend, StrLit("\n"), StrLit("\r\n")); }
 		HANDLE fileHandle = CreateFileA(
 			filePathNt.chars,      //Name of the file
 			GENERIC_WRITE,         //Open for writing
@@ -414,7 +414,7 @@ void MyRemoveDirectory(Str folderPath, bool recursive)
 	{
 		#if BUILDING_ON_WINDOWS
 		{
-			Str searchStr = JoinPaths(folderPathNt, StrLit("*"), true);
+			Str searchStr = JoinPaths(folderPathNt, StrLit("*"));
 			
 			WIN32_FIND_DATAA findData = EMPTY;
 			HANDLE iterHandle = FindFirstFileA(searchStr.chars, &findData);
@@ -424,7 +424,7 @@ void MyRemoveDirectory(Str folderPath, bool recursive)
 			{
 				Str fileNameStr = MakeStrNt(findData.cFileName);
 				if (StrExactEquals(fileNameStr, StrLit(".")) || StrExactEquals(fileNameStr, StrLit(".."))) { continue; }
-				Str fullPath = JoinPaths(folderPath, fileNameStr, false);
+				Str fullPath = JoinPaths(folderPath, fileNameStr);
 				
 				if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 				{
@@ -498,7 +498,7 @@ FileIter StartFileIter(Str folderPath)
 	{
 		// ChangePathSlashesTo(result.folderPath, '\\'); //TODO: Should we do this?
 		//NOTE: File iteration in windows requires that we have a slash on the end and a * wildcard character
-		result.folderPathWithWildcard = JoinStrings2(result.folderPathNt, StrLit("*"), true);
+		result.folderPathWithWildcard = JoinStrings2(result.folderPathNt, StrLit("*"));
 	}
 	#elif (BUILDING_ON_LINUX || BUILDING_ON_OSX)
 	{
@@ -557,7 +557,7 @@ bool StepFileIter(FileIter* fileIter, Str* pathOut, bool* isFolderOut)
 			bool isFolder = (fileIter->findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 			if (pathOut != nullptr)
 			{
-				*pathOut = JoinStrings2(fileIter->folderPathNt, fileName, true);
+				*pathOut = JoinStrings2(fileIter->folderPathNt, fileName);
 				// FixPathSlashes(*pathOut); //TODO: Should we do this?
 			}
 			if (isFolderOut != nullptr) { *isFolderOut = isFolder; }
