@@ -100,18 +100,10 @@ CliArg* AddTaggedArgStr(CliArgs* args, const char* includeExcludeTagsStr, const 
 	// }
 	return newArg;
 }
-CliArg* AddTaggedArgInt(CliArgs* args, const char* includeExcludeTagsStr, const char* formatStrNt, i32 valueInt)
-{
-	char printBuffer[12];
-	int printResult = snprintf(&printBuffer[0], 12, "%d", valueInt);
-	printBuffer[printResult] = '\0';
-	return AddTaggedArgStr(args, includeExcludeTagsStr, formatStrNt, MakeStr((u64)printResult, &printBuffer[0]));
-}
 CliArg* AddTaggedArgNt(CliArgs* args, const char* includeExcludeTagsStr, const char* formatStrNt, const char* valueStr) { return AddTaggedArgStr(args, includeExcludeTagsStr, formatStrNt, MakeStrNt(valueStr)); }
 CliArg* AddTaggedArg(CliArgs* args, const char* includeExcludeTagsStr, const char* formatStrNt) { return AddTaggedArgStr(args, includeExcludeTagsStr, formatStrNt, Str_Empty); }
 CliArg* AddArgStr(CliArgs* args, const char* formatStrNt, Str valueStr)        { return AddTaggedArgStr(args, "", formatStrNt, valueStr); }
 CliArg* AddArgNt(CliArgs* args, const char* formatStrNt, const char* valueStr) { return  AddTaggedArgNt(args, "", formatStrNt, valueStr); }
-CliArg* AddArgInt(CliArgs* args, const char* formatStrNt, i32 valueInt)        { return AddTaggedArgInt(args, "", formatStrNt, valueInt); }
 CliArg* AddArg(CliArgs* args, const char* formatStrNt)                         { return    AddTaggedArg(args, "", formatStrNt);           }
 
 void AddArgList(CliArgs* dest, const CliArgs* source)

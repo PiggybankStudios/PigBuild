@@ -82,6 +82,36 @@ Str AllocStr(u64 length)
 	return result;
 }
 
+Str FormatStr(const char* formatString, ...)
+{
+	va_list args;
+	va_start(args, formatString);
+	int firstPrintResult = vsnprintf(nullptr, 0, formatString, args);
+	va_end(args);
+	AssertFmt(firstPrintResult >= 0, "FormatStr print failed: \"%s\"", formatString);
+	Str result = AllocStr(firstPrintResult);
+	if (result.length == 0) { return result; }
+	va_start(args, formatString);
+	int secondPrintResult = vsnprintf(result.chars, result.length+1, formatString, args);
+	va_end(args);
+	Assert(secondPrintResult == result.length);
+	return result;
+}
+
+#define FormatVaListStr(formatString, vaListName, strVarName) Str strVarName = Str_Empty_Const; do {    \
+	va_list vaListName;                                                                                 \
+	va_start(vaListName, formatString);                                                                 \
+	int firstPrintResult = vsnprintf(nullptr, 0, formatString, vaListName);                             \
+	va_end(vaListName);                                                                                 \
+	AssertFmt(firstPrintResult >= 0, "vsnprintf failed: \"%s\"", formatString);                         \
+	strVarName = AllocStr(firstPrintResult);                                                            \
+	if (strVarName.length == 0) { break; }                                                              \
+	va_start(vaListName, formatString);                                                                 \
+	int secondPrintResult = vsnprintf(strVarName.chars, strVarName.length+1, formatString, vaListName); \
+	va_end(vaListName);                                                                                 \
+	Assert(secondPrintResult == strVarName.length);                                                     \
+} while(0)
+
 bool StrExactEquals(Str left, Str right)
 {
 	if (left.length != right.length) { return false; }
@@ -244,7 +274,7 @@ Str StrInsert(Str targetStr, u64 insertIndex, Str insertStr)
 
 //TODO: RemoveLeadingStr, RemoveLeadingChars
 //TODO: RemoveTrailingStr, RemoveTrailingChars
-//TODO: FormatStr
+//TODO: SplitStrByChar, SplitStrByStr
 
 // +--------------------------------------------------------------+
 // |                      File Path Helpers                       |

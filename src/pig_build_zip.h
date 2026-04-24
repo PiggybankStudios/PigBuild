@@ -114,7 +114,7 @@ UnzipResult UnzipEntireArchiveInto(Str archiveFilePath, Str folderToExtractInArc
 		if (!IsEmptyStr(folderToExtractInArchive))
 		{
 			AddArgStr(&args, CLI_QUOTED_ARG, WithTrailingSlash(folderToExtractInArchive));
-			AddArgInt(&args, "--strip-components=[VAL]", (i32)CountPathParts(folderToExtractInArchive));
+			AddArgStr(&args, "--strip-components=[VAL]", FormatStr("%llu", CountPathParts(folderToExtractInArchive)));
 		}
 		
 		// RunCliProgramAndExitOnFailure(StrLit("tar"), "", &args, StrLit("Failed to unpack .tar file with \"tar\" CLI tool. Is it not installed? Is the file corrupt?"));

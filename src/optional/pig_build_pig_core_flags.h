@@ -85,8 +85,8 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreT
 	// AddTaggedArg(compilerFlags, T_MSVC_CL T_LANG_C, CL_ENABLE_ADDRESS_SANATIZER);
 	AddTaggedArgNt(compilerFlags,  T_CLANG   T_LANG_C, CLANG_LANG_VERSION, "gnu2x"); //Use C20+ language spec (NOTE: We originally had -std=c2x but that didn't define MAP_ANONYMOUS and mmap was failing)
 	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_LANG_CPP, CL_LANG_VERSION, "c++20");
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL T_LANG_CPP, CL_DISABLE_WARNING, CL_WARNING_ENUMERATION_MUST_HAVE_UNDERLYING_TYPE);
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL T_LANG_CPP, CL_DISABLE_WARNING, CL_WARNING_BITWISE_OP_BETWEEN_ENUMS);
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_LANG_CPP, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_ENUMERATION_MUST_HAVE_UNDERLYING_TYPE));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_LANG_CPP, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_BITWISE_OP_BETWEEN_ENUMS));
 	AddTaggedArgNt(compilerFlags,  T_CLANG   T_LANG_CPP, CLANG_LANG_VERSION, "c++20"); // TODO: What option should we actually choose here?
 	AddTaggedArgNt(compilerFlags,  T_CLANG   T_LANG_CPP, CLANG_SYSTEM_LIBRARY, "stdc++"); // Fixes tracy.so link-time errors regarding stuff like `operator delete(void*, unsigned long)`
 	AddTaggedArgNt(compilerFlags,  T_CLANG   T_LANG_OBJECTIVEC, CLANG_LANG_VERSION, "gnu2x"); //NOTE: We still ask for gnu23 features in Objective-C mode, the distinguishing factor is that we compile a .m file not a .c file
@@ -113,31 +113,31 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreT
 	// |      Configure warnings      |
 	// +==============================+
 	AddTaggedArgNt(compilerFlags,  T_MSVC_CL, CL_WARNING_LEVEL, "X"); //Treat all warnings as errors
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL, CL_WARNING_LEVEL, 4); //Use warning level 4, then disable various warnings we don't care about
+	AddTaggedArgNt(compilerFlags, T_MSVC_CL, CL_WARNING_LEVEL, "4"); //Use warning level 4, then disable various warnings we don't care about
 	AddTaggedArgNt(compilerFlags,  T_CLANG,   CLANG_WARNING_LEVEL, "all"); //This enables all the warnings about constructions that some users consider questionable, and that are easy to avoid (or modify to prevent the warning), even in conjunction with macros
 	AddTaggedArgNt(compilerFlags,  T_CLANG,   CLANG_WARNING_LEVEL, "extra"); //This enables some extra warning flags that are not enabled by -Wall
 	//We set the highest warning level above and then remove the warnings we don't care about here
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_LOGICAL_OP_ON_ADDRESS_OF_STR_CONST);
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_NAMELESS_STRUCT_OR_UNION);
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_STRUCT_WAS_PADDED);
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_DECLARATION_HIDES_CLASS_MEMBER);
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_UNREFERENCED_FUNC_REMOVED);
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_USAGE_OF_DEPRECATED);
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_ASSIGNMENT_WITHIN_CONDITIONAL_EXPR);
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, CL_WARNING_NAMED_TYPEDEF_IN_PARENTHESES);
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL, CL_ENABLE_WARNING, CL_WARNING_SWITCH_FALLTHROUGH);
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_LOGICAL_OP_ON_ADDRESS_OF_STR_CONST));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_NAMELESS_STRUCT_OR_UNION));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_STRUCT_WAS_PADDED));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_DECLARATION_HIDES_CLASS_MEMBER));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_UNREFERENCED_FUNC_REMOVED));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_USAGE_OF_DEPRECATED));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_ASSIGNMENT_WITHIN_CONDITIONAL_EXPR));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_NAMED_TYPEDEF_IN_PARENTHESES));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL, CL_ENABLE_WARNING, FormatStr("%d", CL_WARNING_SWITCH_FALLTHROUGH));
 	AddTaggedArgNt(compilerFlags,  T_CLANG,   CLANG_ENABLE_WARNING, CLANG_WARNING_SHADOWING);
 	AddTaggedArgNt(compilerFlags,  T_CLANG,   CLANG_ENABLE_WARNING, CLANG_WARNING_MISSING_FALLTHROUGH_IN_SWITCH);
 	AddTaggedArgNt(compilerFlags,  T_CLANG,   CLANG_DISABLE_WARNING, CLANG_WARNING_SWITCH_MISSING_CASES);
 	AddTaggedArgNt(compilerFlags,  T_CLANG,   CLANG_DISABLE_WARNING, CLANG_WARNING_UNUSED_FUNCTION);
 	AddTaggedArgNt(compilerFlags,  T_CLANG,   CLANG_DISABLE_WARNING, CLANG_WARNING_UNUSED_CMD_LINE_ARG);
 	//We don't care about these warnings in DEBUG_BUILDs, but we will solve them when we go to build in release mode because they probably indicate mistakes at that point
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, CL_WARNING_SWITCH_ONLY_DEFAULT);
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, CL_WARNING_UNREFERENCED_FUNC_PARAMETER);
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, CL_WARNING_UNREFERENCED_LCOAL_VARIABLE);
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, CL_WARNING_CONDITIONAL_EXPR_IS_CONSTANT);
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, CL_WARNING_LOCAL_VAR_INIT_BUT_NOT_REFERENCED);
-	AddTaggedArgInt(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, CL_WARNING_UNREACHABLE_CODE_DETECTED);
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_SWITCH_ONLY_DEFAULT));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_UNREFERENCED_FUNC_PARAMETER));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_UNREFERENCED_LCOAL_VARIABLE));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_CONDITIONAL_EXPR_IS_CONSTANT));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_LOCAL_VAR_INIT_BUT_NOT_REFERENCED));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_UNREACHABLE_CODE_DETECTED));
 	AddTaggedArgNt(compilerFlags,  T_CLANG   T_DEBUG_BUILD, CLANG_DISABLE_WARNING, "unused-parameter");
 	AddTaggedArgNt(compilerFlags,  T_CLANG   T_DEBUG_BUILD, CLANG_DISABLE_WARNING, "unused-variable");
 	

@@ -106,7 +106,7 @@ void FillPlaydateFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str playdat
 		AddTaggedArg(linkerFlags,    T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_DATA_EXEC_COMPAT);
 		AddTaggedArg(linkerFlags,    T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_ENABLE_ASLR);
 		AddTaggedArg(linkerFlags,    T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_CONSOLE_APPLICATION);
-		AddTaggedArgInt(linkerFlags, T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_TYPELIB_RESOURCE_ID, 1);
+		AddTaggedArgNt(linkerFlags, T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_TYPELIB_RESOURCE_ID, "1");
 		AddTaggedArg(linkerFlags,    T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_ENABLE_INCREMENTAL);
 		AddTaggedArgNt(linkerFlags,  T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_INCREMENTAL_FILE_NAME, "tests.ilk"); //TODO: This should really move down below inside the tests.exe block
 		AddTaggedArg(linkerFlags,    T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_CREATE_ASSEMBLY_MANIFEST);
@@ -159,7 +159,7 @@ void FillPlaydateFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str playdat
 		AddTaggedArgNt(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_DEBUG_INFO_EX, "dwarf-2");
 		AddTaggedArg(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_STD_LIB_DYNAMIC);
 		AddTaggedArgNt(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_DEPENDENCY_FILE, "tests.d"); //TODO: This should really move down below inside the tests.exe block
-		AddTaggedArgInt(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_ALIGN_FUNCS_TO, 16);
+		AddTaggedArgNt(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_ALIGN_FUNCS_TO, "16");
 		AddTaggedArg(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_SEP_DATA_SECTIONS);
 		AddTaggedArg(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_SEP_FUNC_SECTIONS);
 		AddTaggedArg(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_DISABLE_EXCEPTIONS);

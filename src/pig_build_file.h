@@ -360,16 +360,9 @@ void AppendToFile(Str filePath, Str contentsToAppend, bool convertNewLines)
 }
 void AppendPrintToFile(Str filePath, const char* formatString, ...)
 {
-	char printBuffer[512];
-	
-	va_list args;
-	va_start(args, formatString);
-	int printResult = vsnprintf(&printBuffer[0], ArrayCount(printBuffer), formatString, args);
-	va_end(args);
-	Assert(printResult >= 0);
-	Assert(printResult < ArrayCount(printBuffer));
-	Str printedStr = MakeStr((u64)printResult, &printBuffer[0]);
+	FormatVaListStr(formatString, args, printedStr);
 	AppendToFile(filePath, printedStr, true);
+	FreeStr(&printedStr);
 }
 
 //TODO: We can probably just use `remove` from the C standard library
