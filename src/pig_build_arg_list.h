@@ -37,8 +37,8 @@ Description:
 
 #include "pig_build_base.h"
 #include "pig_build_str.h"
-#include "pig_build_tags.h"
 #include "pig_build_str_array.h"
+#include "pig_build_tags.h"
 
 // +--------------------------------------------------------------+
 // |                   Composing Argument Lists                   |
@@ -81,43 +81,6 @@ struct CliArgs
 	char pathSepChar;
 	Array_CliArg array;
 };
-
-void SplitTagsListStr(Str tagsListStr, StrArray* tagArrayPntr)
-{
-	u64 lastCommaIndex = 0;
-	for (u64 cIndex = 0; cIndex <= tagsListStr.length; cIndex++)
-	{
-		if (cIndex == tagsListStr.length || tagsListStr.chars[cIndex] == ',' || tagsListStr.chars[cIndex] == '&' || tagsListStr.chars[cIndex] == '|')
-		{
-			Str tagStr = StrSlice(tagsListStr, lastCommaIndex, cIndex);
-			TrimWhitespace(tagStr);
-			if (tagStr.length > 0) { AddStr(tagArrayPntr, tagStr); }
-			lastCommaIndex = cIndex+1;
-		}
-	}
-}
-void SplitIncludeExcludeTagsListStr(Str tagsListStr, StrArray* includeArrayPntr, StrArray* excludeArrayPntr)
-{
-	u64 lastCommaIndex = 0;
-	for (u64 cIndex = 0; cIndex <= tagsListStr.length; cIndex++)
-	{
-		if (cIndex == tagsListStr.length || tagsListStr.chars[cIndex] == ',' || tagsListStr.chars[cIndex] == '&' || tagsListStr.chars[cIndex] == '|')
-		{
-			Str tagStr = StrSlice(tagsListStr, lastCommaIndex, cIndex);
-			TrimWhitespace(tagStr);
-			if (tagStr.length > 0)
-			{
-				Str equalsTrueStr = StrLit("==true");
-				Str equalsFalseStr = StrLit("==false");
-				if (tagStr.chars[cIndex] == '!') { AddStr(excludeArrayPntr, StrSliceFrom(tagStr, 1)); }
-				else if (StrExactEndsWith(tagStr, equalsFalseStr)) { AddStr(excludeArrayPntr, StrSlice(tagStr, 0, tagStr.length - equalsFalseStr.length)); }
-				else if (StrExactEndsWith(tagStr, equalsTrueStr)) { AddStr(includeArrayPntr, StrSlice(tagStr, 0, tagStr.length - equalsTrueStr.length)); }
-				else { AddStr(includeArrayPntr, tagStr); }
-			}
-			lastCommaIndex = cIndex+1;
-		}
-	}
-}
 
 CliArg* AddTaggedArgStr(CliArgs* args, const char* includeExcludeTagsStr, const char* formatStrNt, Str valueStr)
 {
@@ -168,47 +131,6 @@ void AddArgList(CliArgs* dest, const CliArgs* source)
 			destArg->excludeTags.strings[eIndex] = CopyStr(destArg->excludeTags.strings[eIndex]);
 		}
 	}
-}
-
-bool DoesArgMatchTags(const CliArg* arg, const StrArray* tagsListPntr)
-{
-	//If the CLI we are running doesn't use tags, then we assume all args match
-	if (tagsListPntr == nullptr || tagsListPntr->length == 0) { return true; }
-	
-	bool anyExcludesMatched = false;
-	for (u64 eIndex = 0; eIndex < arg->excludeTags.length; eIndex++)
-	{
-		for (u64 tIndex = 0; tIndex < tagsListPntr->length; tIndex++)
-		{
-			if (StrExactEquals(arg->excludeTags.strings[eIndex], tagsListPntr->strings[tIndex]))
-			{
-				// PrintLine("\"%.*s\" excluded because \"%.*s\"", StrPrint(arg->format), StrPrint(arg->excludeTags.strings[eIndex]));
-				anyExcludesMatched = true;
-				break;
-			}
-		}
-		if (anyExcludesMatched) { break; }
-	}
-	if (anyExcludesMatched) { return false; }
-	
-	bool allIncludesMatched = true;
-	for (u64 iIndex = 0; iIndex < arg->includeTags.length; iIndex++)
-	{
-		bool includeMatched = false;
-		for (u64 tIndex = 0; tIndex < tagsListPntr->length; tIndex++)
-		{
-			if (StrExactEquals(arg->includeTags.strings[iIndex], tagsListPntr->strings[tIndex])) { includeMatched = true; break; }
-		}
-		if (!includeMatched)
-		{
-			// PrintLine("\"%.*s\" not included because missing \"%.*s\" in %llu tag%s", StrPrint(arg->format), StrPrint(arg->includeTags.strings[iIndex]), tagsListPntr->length, Plural(tagsListPntr->length, "s"));
-			allIncludesMatched = false;
-			break;
-		}
-	}
-	if (!allIncludesMatched) { return false; }
-	
-	return true;
 }
 
 Str FormatCliArg(const CliArg* arg, Str rootDirPath, char pathSepChar)
@@ -274,7 +196,7 @@ Str FilterAndJoinCliArgsList(Str prefix, const CliArgs* args, StrArray* tagsList
 	u64 totalLength = prefix.length;
 	for (u64 aIndex = 0; aIndex < args->array.length; aIndex++)
 	{
-		if (DoesArgMatchTags(&args->array.args[aIndex], tagsListPntr))
+		if (DoTagsMatch(tagsListPntr, &args->array.args[aIndex].includeTags, &args->array.args[aIndex].excludeTags))
 		{
 			Str formattedStr = FormatCliArg(&args->array.args[aIndex], rootDirPath, pathSepChar);
 			if (formattedStr.length > 0)
