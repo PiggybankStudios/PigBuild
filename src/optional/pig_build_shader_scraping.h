@@ -375,11 +375,11 @@ RECURSIVE_DIR_WALK_CALLBACK_DEF(FindShaderFilesCallback)
 	{
 		for (u64 iIndex = 0; iIndex < context->ignoreListLength; iIndex++)
 		{
-			if (StrExactContains(path, context->ignoreList[iIndex])) { return false; }
+			if (StrAnyCaseContains(path, context->ignoreList[iIndex])) { return false; }
 		}
 	}
 	
-	if (!isFolder && StrExactEndsWith(path, StrLit(".glsl")))
+	if (!isFolder && StrAnyCaseEndsWith(path, StrLit(".glsl")))
 	{
 		Str shaderName = GetFileNamePart(path, false);
 		Str rootPath = StrReplace(path, StrLit(".."), StrLit("[ROOT]"));

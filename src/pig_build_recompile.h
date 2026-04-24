@@ -49,15 +49,15 @@ void RecompileIfNeeded(StrArray* buildScriptSourceFolders)
 	bool sourceFoldersContainPigBuildSrcThirdParty = false;
 	for (u64 fIndex = 0; fIndex < buildScriptSourceFolders->length; fIndex++)
 	{
-		if (StrExactEquals(buildScriptSourceFolders->strings[fIndex], StrLit(PIG_BUILD_FOLDER_PATH "/src")))
+		if (StrAnyCaseEquals(buildScriptSourceFolders->strings[fIndex], StrLit(PIG_BUILD_FOLDER_PATH "/src")))
 		{
 			sourceFoldersContainPigBuildSrc = true;
 		}
-		if (StrExactEquals(buildScriptSourceFolders->strings[fIndex], StrLit(PIG_BUILD_FOLDER_PATH "/src/optional")))
+		if (StrAnyCaseEquals(buildScriptSourceFolders->strings[fIndex], StrLit(PIG_BUILD_FOLDER_PATH "/src/optional")))
 		{
 			sourceFoldersContainPigBuildSrcOptional = true;
 		}
-		if (StrExactEquals(buildScriptSourceFolders->strings[fIndex], StrLit(PIG_BUILD_FOLDER_PATH "/src/third_party")))
+		if (StrAnyCaseEquals(buildScriptSourceFolders->strings[fIndex], StrLit(PIG_BUILD_FOLDER_PATH "/src/third_party")))
 		{
 			sourceFoldersContainPigBuildSrcThirdParty = true;
 		}

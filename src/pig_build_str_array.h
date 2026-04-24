@@ -72,25 +72,25 @@ void PopStr(StrArray* array)
 	PopItemArray_Str(array);
 }
 
-u64 FindStr(const StrArray* array, Str targetStr)
+u64 FindStr(const StrArray* array, Str targetStr, bool ignoreCase)
 {
 	for (u64 sIndex = 0; sIndex < array->length; sIndex++)
 	{
-		if (StrExactEquals(array->strings[sIndex], targetStr))
+		if (StrEquals(array->strings[sIndex], targetStr, ignoreCase))
 		{
 			return sIndex;
 		}
 	}
 	return array->length;
 }
-bool ContainsStr(const StrArray* array, Str targetStr)
+bool ContainsStr(const StrArray* array, Str targetStr, bool ignoreCase)
 {
-	return (FindStr(array, targetStr) < array->length);
+	return (FindStr(array, targetStr, ignoreCase) < array->length);
 }
 
-bool RemoveStr(StrArray* array, Str targetStr)
+bool RemoveStr(StrArray* array, Str targetStr, bool ignoreCase)
 {
-	u64 index = FindStr(array, targetStr);
+	u64 index = FindStr(array, targetStr, ignoreCase);
 	if (index >= array->length) { return false; }
 	else
 	{

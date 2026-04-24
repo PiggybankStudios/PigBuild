@@ -82,6 +82,15 @@ Str AllocStr(u64 length)
 	return result;
 }
 
+Str StrSlice(Str target, u64 startIndex, u64 endIndex)
+{
+	Assert(startIndex <= target.length);
+	Assert(endIndex <= target.length);
+	Assert(startIndex <= endIndex);
+	return MakeStr(endIndex - startIndex, target.chars + startIndex);
+}
+Str StrSliceFrom(Str target, u64 startIndex) { return StrSlice(target, startIndex, target.length); }
+
 Str FormatStr(const char* formatString, ...)
 {
 	va_list args;
@@ -120,17 +129,71 @@ bool StrExactEquals(Str left, Str right)
 	NotNull(right.chars);
 	return (memcmp(left.chars, right.chars, left.length) == 0);
 }
-Str StrSlice(Str target, u64 startIndex, u64 endIndex)
+bool StrAnyCaseEquals(Str left, Str right)
 {
-	Assert(startIndex <= target.length);
-	Assert(endIndex <= target.length);
-	Assert(startIndex <= endIndex);
-	return MakeStr(endIndex - startIndex, target.chars + startIndex);
+	if (left.length != right.length) { return false; }
+	if (left.length == 0) { return true; }
+	NotNull(left.chars);
+	NotNull(right.chars);
+	for (u64 cIndex = 0; cIndex < left.length; cIndex++)
+	{
+		char lowercaseLeft = (left.chars[cIndex] >= 'A' && left.chars[cIndex] <= 'Z') ? (left.chars[cIndex] - 'A' + 'a') : left.chars[cIndex];
+		char lowercaseRight = (right.chars[cIndex] >= 'A' && right.chars[cIndex] <= 'Z') ? (right.chars[cIndex] - 'A' + 'a') : right.chars[cIndex];
+		if (lowercaseLeft != lowercaseRight) { return false; }
+	}
+	return true;
 }
-Str StrSliceFrom(Str target, u64 startIndex)
+bool StrEquals(Str left, Str right, bool ignoreCase) { return ignoreCase ? StrAnyCaseEquals(left, right) : StrExactEquals(left, right); }
+
+bool StrExactContains(Str haystack, Str needle)
 {
-	return StrSlice(target, startIndex, target.length);
+	Assert(needle.length > 0);
+	if (haystack.length < needle.length) { return false; }
+	for (u64 bIndex = 0; bIndex <= haystack.length - needle.length; bIndex++)
+	{
+		if (StrExactEquals(StrSlice(haystack, bIndex, bIndex+needle.length), needle)) { return true; }
+	}
+	return false;
 }
+bool StrAnyCaseContains(Str haystack, Str needle)
+{
+	Assert(needle.length > 0);
+	if (haystack.length < needle.length) { return false; }
+	for (u64 bIndex = 0; bIndex <= haystack.length - needle.length; bIndex++)
+	{
+		if (StrAnyCaseEquals(StrSlice(haystack, bIndex, bIndex+needle.length), needle)) { return true; }
+	}
+	return false;
+}
+bool StrContains(Str haystack, Str needle, bool ignoreCase) { return ignoreCase ? StrAnyCaseContains(haystack, needle) : StrExactContains(haystack, needle); }
+
+bool StrExactStartsWith(Str target, Str prefix)
+{
+	Assert(prefix.length > 0);
+	if (target.length < prefix.length) { return false; }
+	return StrExactEquals(StrSlice(target, 0, prefix.length), prefix);
+}
+bool StrAnyCaseStartsWith(Str target, Str prefix)
+{
+	Assert(prefix.length > 0);
+	if (target.length < prefix.length) { return false; }
+	return StrAnyCaseEquals(StrSlice(target, 0, prefix.length), prefix);
+}
+bool StrStartsWith(Str target, Str prefix, bool ignoreCase) { return ignoreCase ? StrAnyCaseStartsWith(target, prefix) : StrExactStartsWith(target, prefix); }
+
+bool StrExactEndsWith(Str target, Str suffix)
+{
+	Assert(suffix.length > 0);
+	if (target.length < suffix.length) { return false; }
+	return StrExactEquals(StrSlice(target, target.length - suffix.length, target.length), suffix);
+}
+bool StrAnyCaseEndsWith(Str target, Str suffix)
+{
+	Assert(suffix.length > 0);
+	if (target.length < suffix.length) { return false; }
+	return StrAnyCaseEquals(StrSlice(target, target.length - suffix.length, target.length), suffix);
+}
+bool StrEndsWith(Str target, Str suffix, bool ignoreCase) { return ignoreCase ? StrAnyCaseEndsWith(target, suffix) : StrExactEndsWith(target, suffix); }
 
 Str JoinStrings2(Str left, Str right)
 {
@@ -146,29 +209,6 @@ Str JoinStrings3(Str left, Str middle, Str right)
 	if (middle.length > 0) { memcpy(&result.chars[left.length], &middle.chars[0], middle.length); }
 	if (right.length > 0) { memcpy(&result.chars[left.length + middle.length], &right.chars[0], right.length); }
 	return result;
-}
-
-bool StrExactContains(Str haystack, Str needle)
-{
-	Assert(needle.length > 0);
-	if (haystack.length < needle.length) { return false; }
-	for (u64 bIndex = 0; bIndex <= haystack.length - needle.length; bIndex++)
-	{
-		if (StrExactEquals(StrSlice(haystack, bIndex, bIndex+needle.length), needle)) { return true; }
-	}
-	return false;
-}
-bool StrExactStartsWith(Str target, Str prefix)
-{
-	Assert(prefix.length > 0);
-	if (target.length < prefix.length) { return false; }
-	return StrExactEquals(StrSlice(target, 0, prefix.length), prefix);
-}
-bool StrExactEndsWith(Str target, Str suffix)
-{
-	Assert(suffix.length > 0);
-	if (target.length < suffix.length) { return false; }
-	return StrExactEquals(StrSlice(target, target.length - suffix.length, target.length), suffix);
 }
 
 bool IsCharWhitespace(char character)
@@ -416,8 +456,8 @@ bool TryParseBoolArg(Str boolStr, bool* valueOut)
 {
 	if (StrExactEquals(boolStr, StrLit("1"))) { *valueOut = true; return true; }
 	if (StrExactEquals(boolStr, StrLit("0"))) { *valueOut = false; return true; }
-	if (StrExactEquals(boolStr, StrLit("true"))) { *valueOut = true; return true; }
-	if (StrExactEquals(boolStr, StrLit("false"))) { *valueOut = false; return true; }
+	if (StrAnyCaseEquals(boolStr, StrLit("true"))) { *valueOut = true; return true; }
+	if (StrAnyCaseEquals(boolStr, StrLit("false"))) { *valueOut = false; return true; }
 	return false;
 }
 

@@ -91,8 +91,8 @@ void SplitIncludeExcludeTagsListStr(Str tagsListStr, StrArray* includeArrayPntr,
 				Str equalsTrueStr = StrLit("==true");
 				Str equalsFalseStr = StrLit("==false");
 				if (tagStr.chars[cIndex] == '!') { AddStr(excludeArrayPntr, StrSliceFrom(tagStr, 1)); }
-				else if (StrExactEndsWith(tagStr, equalsFalseStr)) { AddStr(excludeArrayPntr, StrSlice(tagStr, 0, tagStr.length - equalsFalseStr.length)); }
-				else if (StrExactEndsWith(tagStr, equalsTrueStr)) { AddStr(includeArrayPntr, StrSlice(tagStr, 0, tagStr.length - equalsTrueStr.length)); }
+				else if (StrAnyCaseEndsWith(tagStr, equalsFalseStr)) { AddStr(excludeArrayPntr, StrSlice(tagStr, 0, tagStr.length - equalsFalseStr.length)); }
+				else if (StrAnyCaseEndsWith(tagStr, equalsTrueStr)) { AddStr(includeArrayPntr, StrSlice(tagStr, 0, tagStr.length - equalsTrueStr.length)); }
 				else { AddStr(includeArrayPntr, tagStr); }
 			}
 			lastCommaIndex = cIndex+1;
@@ -110,7 +110,7 @@ bool DoTagsMatch(const StrArray* tagsListPntr, const StrArray* includeTags, cons
 	{
 		for (u64 tIndex = 0; tIndex < tagsListPntr->length; tIndex++)
 		{
-			if (StrExactEquals(excludeTags->strings[eIndex], tagsListPntr->strings[tIndex]))
+			if (StrAnyCaseEquals(excludeTags->strings[eIndex], tagsListPntr->strings[tIndex]))
 			{
 				anyExcludesMatched = true;
 				break;
@@ -126,7 +126,7 @@ bool DoTagsMatch(const StrArray* tagsListPntr, const StrArray* includeTags, cons
 		bool includeMatched = false;
 		for (u64 tIndex = 0; tIndex < tagsListPntr->length; tIndex++)
 		{
-			if (StrExactEquals(includeTags->strings[iIndex], tagsListPntr->strings[tIndex])) { includeMatched = true; break; }
+			if (StrAnyCaseEquals(includeTags->strings[iIndex], tagsListPntr->strings[tIndex])) { includeMatched = true; break; }
 		}
 		if (!includeMatched)
 		{

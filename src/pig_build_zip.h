@@ -37,7 +37,7 @@ UnzipResult UnzipEntireArchiveInto(Str archiveFilePath, Str folderToExtractInArc
 	
 	Str finalExtension = GetFileExtPart(archiveFilePath, false);
 	Str subfinalExtension = GetFileExtPart(StrSlice(archiveFilePath, 0, archiveFilePath.length-finalExtension.length), false);
-	if (StrExactEquals(finalExtension, StrLit(".zip")))
+	if (StrAnyCaseEquals(finalExtension, StrLit(".zip")))
 	{
 		Str archiveFilePathNt = CopyStr(archiveFilePath);
 		mz_zip_archive archive = EMPTY;
@@ -66,7 +66,7 @@ UnzipResult UnzipEntireArchiveInto(Str archiveFilePath, Str folderToExtractInArc
 			Assert(secondEntryPathLength == entryPathLength);
 			entryPath.chars[entryPath.length] = '\0';
 			
-			if (folderToExtractInArchive.length == 0 || StrExactStartsWith(entryPath, folderToExtractInArchive))
+			if (folderToExtractInArchive.length == 0 || StrAnyCaseStartsWith(entryPath, folderToExtractInArchive))
 			{
 				Str entryRelativePath = (folderToExtractInArchive.length > 0) ? StrSliceFrom(entryPath, folderToExtractInArchive.length) : entryPath;
 				Str outputPath = JoinPaths(outputFolderPath, entryRelativePath);
@@ -99,16 +99,16 @@ UnzipResult UnzipEntireArchiveInto(Str archiveFilePath, Str folderToExtractInArc
 		
 		result.success = true;
 	}
-	else if (StrExactStartsWith(subfinalExtension, StrLit(".tar")))
+	else if (StrAnyCaseStartsWith(subfinalExtension, StrLit(".tar")))
 	{
 		CliArgs args = EMPTY;
 		AddArg(&args, "--extract");
 		AddArgStr(&args, "--file=\"[VAL]\"", archiveFilePath);
 		AddArgStr(&args, "-C \"[VAL]\"", outputFolderPath);
 		
-		if (StrExactEquals(finalExtension, StrLit(".gz"))) { AddArg(&args, "--gzip"); }
-		else if (StrExactEquals(finalExtension, StrLit(".bz2"))) { AddArg(&args, "--bzip2"); }
-		else if (StrExactEquals(finalExtension, StrLit(".xz"))) { AddArg(&args, "--xz"); }
+		if (StrAnyCaseEquals(finalExtension, StrLit(".gz"))) { AddArg(&args, "--gzip"); }
+		else if (StrAnyCaseEquals(finalExtension, StrLit(".bz2"))) { AddArg(&args, "--bzip2"); }
+		else if (StrAnyCaseEquals(finalExtension, StrLit(".xz"))) { AddArg(&args, "--xz"); }
 		else { AssertFmt(false, "Unsupported .tar subtype \"%.*s\"! We support .gz, .bz2 and .xz", StrPrint(finalExtension)); }
 		
 		if (!IsEmptyStr(folderToExtractInArchive))
