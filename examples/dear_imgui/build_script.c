@@ -78,7 +78,7 @@ int main(int argc, const char* argv[])
 		{
 			Str sourcePath = sourceFiles.strings[fIndex];
 			Str sourceExt = GetFileExtPart(sourcePath, false);
-			Str objectPath = JoinStrings2(GetFileNamePart(sourcePath, false), StrLit(".obj"), false);
+			Str objectPath = JoinStrings2(GetFileNamePart(sourcePath, false), StrLit(".obj"));
 			
 			// Rudamentary incremental build, only compile main.mm unconditionally,
 			// all the imgui source files should never change so we only compile them if the object file doesn't already exist

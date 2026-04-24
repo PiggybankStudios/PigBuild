@@ -12,6 +12,7 @@ Description:
 
 #include "pig_build_base.h"
 #include "pig_build_str.h"
+#include "pig_build_array.h"
 #include "pig_build_str_array.h"
 #include "pig_build_file.h"
 #include "pig_build_hash.h"

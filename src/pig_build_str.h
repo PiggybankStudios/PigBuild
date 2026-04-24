@@ -242,6 +242,9 @@ Str StrInsert(Str targetStr, u64 insertIndex, Str insertStr)
 	return StrReplaceRange(targetStr, insertIndex, insertIndex, insertStr);
 }
 
+//TODO: RemoveLeadingStr, RemoveLeadingChars
+//TODO: RemoveTrailingStr, RemoveTrailingChars
+
 // +--------------------------------------------------------------+
 // |                      File Path Helpers                       |
 // +--------------------------------------------------------------+

@@ -3,16 +3,33 @@ File:   pig_build_arg_list.h
 Author: Taylor Robbins
 Date:   06\16\2025
 Description:
-	** Holds the CliArgList structure which is sort of just a list of strings
-	** There are a few extra features that help us when putting together arguments
-	** for the compiler or other CLI tools we want to call:
-	**  1. We can add arguments that have a format string with "[VAL]" somewhere in it, that will get replaced with some argument (see AddArgNt\AddArgStr\AddArgInt). If [VAL] is in quotes, then the argument will be escaped
-	**  2. Paths will have their slashes replaced with forward or backslash, based on "pathSepChar" (usually we set this if running a Windows program, otherwise it defaults to '/')
-	**  3. Lists can be easily joined together to make longer argument lists TODO: We might want to add support for deduplicating arguments when joining?
-	**  4. Since we are running a build script, we don't have to worry about freeing memory, so we just allocate all the strings we need and never worry about freeing them
+	** Holds CliArgList which is like StrArray but with a bunch of extra features
+	** to help us manage arguments that need to get passed to tools that have
+	** a command-line interface (CLI).
+	**  1. Each entry is a "format" and optional "value" which don't get combined
+	**     until FilterAndJoinCliArgsList is called. The "format" string has the
+	**     text "[VAL]" inside it to indicate where the value string should get inserted
+	**  2. When values are inserted into formats, if "[VAL]" is inside quotes, we
+	**     escape special characters in the value string (see EscapeString in pig_build_str.h)
+	**  3. Forward and backslashes are normalized to match "pathSepChar" option in
+	**     CliArgList. This defaults to '\' on Windows and '/' on everything else.
+	**     This can be overridden by calling code before joining the list.
+	**  4. The text "[ROOT]" is replaced with a specific path given by "rootDirPath"
+	**     in CliArgList. This defaults to "..", assuming that root means one folder
+	**     up from where we are building artifacts, since most PigBuild projects
+	**     create a folder named "build" in the root of your project and pushd
+	**     into the folder. This can be overridden by calling code before joining.
+	**  5. Arguments can have tags attached to include or exclude them based on the
+	**     tagList that is passed to FilterAndJoinCliArgsList. If both includeTags
+	**     and excludeTags are empty for an argument then it always applies. Similarly
+	**     if the tagList is empty then all args apply.
+	**  6. TODO: We probably want to add a system that de-duplicates arguments so
+	**     we don't accidentally pass the same argument twice to a CLI tool
 	**
 	** NOTE: See RunCliProgram which lives in pig_build_misc.h which
 	**       is used to actually call a program with arguments in a CliArgList
+	** NOTE: There is no need to free CliArgList, since the build script itself only
+	**     runs for a short time, memory can just get freed when the build ends
 */
 
 #ifndef _PIG_BUILD_ARG_LIST_H
@@ -28,16 +45,16 @@ Description:
 // +--------------------------------------------------------------+
 // We have this string inside a bunch of #defines in places like pig_build_cli_flags.h
 // This allows us to replace that part of the argument string with an actual value, adding escaping if the argument is in quotes
-#define CLI_VAL_STR      "[VAL]"
-#define CLI_UNQUOTED_ARG "[VAL]"
+#define CLI_VAL_STR             "[VAL]"
+#define CLI_UNQUOTED_ARG        "[VAL]"
 #define CLI_SINGLE_QUOTED_ARG   "\'[VAL]\'"
-#define CLI_QUOTED_ARG   "\"[VAL]\""
+#define CLI_QUOTED_ARG          "\"[VAL]\""
 #if BUILDING_ON_WINDOWS
 #define CLI_PIPE_OUTPUT_TO_FILE "> \"[VAL]\""
 #else
 #define CLI_PIPE_OUTPUT_TO_FILE "| \"[VAL]\""
 #endif
-#define CLI_ROOT_DIR "[ROOT]"
+#define CLI_ROOT_DIR            "[ROOT]"
 
 //When running a program on Linux/OSX/etc. we have to specify we want to run a program out of the current working directory with "./"
 #if BUILDING_ON_WINDOWS
@@ -46,8 +63,7 @@ Description:
 #define EXEC_PROGRAM_IN_FOLDER_PREFIX "./"
 #endif
 
-//TODO: We should probably change these from fixed array to VarArray-like structure
-//      We are blowing the stack on main entry if we set these too high and we try and put a CliArgList on the stack
+//TODO: Get rid of this maximum!
 #define CLI_MAX_ARGS 400
 
 typedef struct CliArg CliArg;
