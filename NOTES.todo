@@ -25,28 +25,30 @@
 	[!] Variadic args function for joining tag strings?
 	[X] Replace usages of ZEROED for Str with Str_Empty
 	[X] Rename Str8 to Str
-	[!] Should we get rid of most of the addNullTerm strings and just do a CopyStrWithNullterm? Or just always add null-term?
+	[X] Should we get rid of most of the addNullTerm strings and just do a CopyStrWithNullterm? Or just always add null-term?
 	[!] Throw a clear error if the compiler is not found on Windows
 	[X] Add an AllocStr function?
 	[X] Add an Assert macro?
 	[!] Make AssertFileExists into an actual assertion
 	[X] Move SDK path lookups to an optional file somewhere (Give them good error messages if the environment variable isn't set, and good comments describing that they require user setting the environment var)
 	[!] Make a "new_project.bat/sh" script?
-	[!] Add "ClOrLink" tag?
+	[X] Add "ClOrLink" tag?
 	[X] Remove EXE_ macro usages in tag string formation
 	[X] If a builder is run without builder_hash.txt but DOESNT generate a new hash file then we can end up in a state where code changes can happen and the builder won't get rebuilt because it will think it's running right after a build
 	[!] Run `pkg-config` to get some kinds of flags automatically
-	[!] Make sure RecompileIfNeeded is hashing files inside "optional" folder
+	[X] Make sure RecompileIfNeeded is hashing files inside "optional" folder
 	[!] Only hash source code files like ".h", ".c", etc.
 	[!] RecompileIfNeeded should really take a StrArray of blob syntax strings to allow the build_script.c to really customize which files are hashed.
 	[!] Add buildConfig value restrictions (can't build Windows on OSX, etc.)
+	[!] Add MallocStruct and MallocArray macros
+	[!] How would we compile another pig_build-based project from within a build_script.c?
 	[ ] Rename "RunCliProgramTagArrayAndExitOnFailure" to something shorter
 	[?] Add a support for zip file manipulation in a new file "pig_build_zip.h"?
 	[?] Make a RecompileIfNeeded variant that takes a "|" delimated string rather than StrArray. Maybe SplitString helper function instead?
 	[?] Safe file replace operation? Like create a temp file, then copy and replace atomically an existing file. Then delete temp
 	[ ] Finish sorting the Android/Web/Orca/Playdate flags in pig_build_core_flags.h
 	[?] Should we allow the user to choose the name of the build script file and it's binary name?
-	[ ] Add an example "build_script.c" file
+	[X] Add an example "build_script.c" file
 	[ ] Add a "MOTIVATIONS.md" file that explains the design goals of this build system and it's pros/cons compared to other approaches
 	[?] Add basic temporary memory arena? Maybe wrap it with something called an "allocator" and have one implementation route to malloc/free?
 	[X] Add a "pig_build_all.h" or maybe just "pig_build.h"?
@@ -55,17 +57,17 @@
 	[ ] Add information for how you might do a bulk/parallel build of all configurations at once
 	[ ] Can we do anything to make this system compatible with Github Actions? and other CI/CD systems?
 	[ ] Should we add ourselves to the .gitignore of the parent directory inside "new_project.bat"? Or maybe just instruct the user to do so inside "README.md"
-	[ ] Move "init_msvc.bat" into this repo. Also add information about MSVC compiler and "vcvarsall.bat"/"VsDevCmd.bat" and how we can save the environment to txt file
-	[ ] Move "init_emsdk.bat" into this repo
+	[X] Move "init_msvc.bat" into this repo. Also add information about MSVC compiler and "vcvarsall.bat"/"VsDevCmd.bat" and how we can save the environment to txt file
+	[X] Move "init_emsdk.bat" into this repo
 	[X] Remove "plex" and "car" aliases
-	[ ] Document why we need each of the standard library #includes
+	[-] Document why we need each of the standard library #includes
 	[X] Add Str8_Empty?
 	[X] Add AllocStr8?
 	[X] Add types like "u8", "u64", "i32", "r32", etc.
-	[ ] Move all the macros into their own file
+	[X] Move all the macros into their own file
 	[X] Move all the string related functions into their own file
-	[ ] Move all the file related functions into their own file
-		[!] Should we just use fopen and similar functions from cstd?
+	[X] Move all the file related functions into their own file
+	[!] Should we just use fopen and similar functions from cstd?
 	[ ] Can we add support for multiple compilation units easily?
 	[ ] Can we add support for incremental compilation with intermediates tracking?
 	[ ] Move more of the "build_script.c" code into "pig_build"
