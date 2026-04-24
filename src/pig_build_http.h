@@ -60,7 +60,7 @@ void DownloadFromUrl(Str url, Str filePath)
 	#else //!PIG_BUILD_ENABLE_LIB_CURL
 	{
 		Str urlNt = CopyStr(url);
-		CliArgList args = EMPTY;
+		CliArgs args = EMPTY;
 		AddArg(&args, "-Ls");
 		AddArgStr(&args, "-o \"[VAL]\"", filePath);
 		AddArg(&args, urlNt.chars);

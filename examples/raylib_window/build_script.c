@@ -74,7 +74,7 @@ int main(int argc, const char* argv[])
 		InitializeMsvcIf(pigBuildFolder, &isMsvcInitialized);
 		WriteLine("[Building for Windows...]");
 		
-		CliArgList args = EMPTY;
+		CliArgs args = EMPTY;
 		args.pathSepChar = PATH_SEP_CHAR;
 		args.rootDirPath = StrLit("..");
 		AddArg(&args, CL_NO_LOGO);
@@ -111,7 +111,7 @@ int main(int argc, const char* argv[])
 	{
 		WriteLine("[Building for Linux...]");
 		
-		CliArgList args = EMPTY;
+		CliArgs args = EMPTY;
 		AddArgNt(&args, CLI_QUOTED_ARG, "[ROOT]/main.c");
 		AddArgNt(&args, CLANG_OUTPUT_FILE, "raylib_window");
 		AddArgNt(&args, CLANG_INCLUDE_DIR, "[ROOT]");
@@ -139,7 +139,7 @@ int main(int argc, const char* argv[])
 	{
 		WriteLine("[Building for OSX...]");
 		
-		CliArgList args = EMPTY;
+		CliArgs args = EMPTY;
 		CopyFileToPath(StrLit("../main.c"), StrLit("main.m"), true);
 		AddArgNt(&args, CLI_QUOTED_ARG, "main.m");
 		AddArgNt(&args, CLANG_OUTPUT_FILE, "raylib_window");
@@ -186,7 +186,7 @@ int main(int argc, const char* argv[])
 	// +--------------------------------------------------------------+
 	#if RUN_AFTER_BUILD
 	{
-		CliArgList args = EMPTY;
+		CliArgs args = EMPTY;
 		Str executableName = (BUILDING_ON_WINDOWS ? StrLit("raylib_window.exe") : StrLit("./raylib_window"));
 		PrintLine("\n[Running %.*s]", StrPrint(executableName));
 		RunCliProgram(executableName, "", &args);

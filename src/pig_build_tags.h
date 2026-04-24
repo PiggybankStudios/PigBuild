@@ -4,7 +4,7 @@ Author: Taylor Robbins
 Date:   04\05\2026
 Description:
 	** In order to help us wrangle a bunch of CLI args we made a system
-	** where every arg that goes into a CliArgList can have some number of
+	** where every arg that goes into a CliArgs can have some number of
 	** includeTags and excludeTags that define which CLI tool invocations it
 	** should be sent to based on whether it's include\excludeTags match
 	** the tags given for that CLI tool invocation.

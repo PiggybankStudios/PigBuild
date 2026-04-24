@@ -50,7 +50,7 @@ Description:
 #define T_NOT_WASM       T_WASM "==false"
 #define T_NOT_EMSCRIPTEN T_USE_EMSCRIPTEN "==false"
 
-void FillPigCoreFlags(CliArgList* compilerFlags, CliArgList* linkerFlags, Str pigCoreThirdPartyPath)
+void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreThirdPartyPath)
 {
 	// +--------------------------------------------------------------+
 	// |                        Compiler Flags                        |

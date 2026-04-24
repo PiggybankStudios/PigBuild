@@ -86,7 +86,7 @@ Str GetAndroidSdkPath()
 	return result;
 }
 
-void FillAndroidFlags(CliArgList* compilerFlags, CliArgList* linkerFlags, Str androidNdkDir, Str androidNdkToolchainDir)
+void FillAndroidFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str androidNdkDir, Str androidNdkToolchainDir)
 {
 	// +==============================+
 	// |      clang_AndroidFlags      |

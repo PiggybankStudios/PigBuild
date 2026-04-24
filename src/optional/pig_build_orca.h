@@ -22,7 +22,7 @@ Description:
 
 Str GetOrcaSdkPath()
 {
-	CliArgList cmd = EMPTY;
+	CliArgs cmd = EMPTY;
 	AddArg(&cmd, "sdk-path");
 	AddArgNt(&cmd, CLI_PIPE_OUTPUT_TO_FILE, FILENAME_ORCA_SDK_PATH);
 	int statusCode = RunCliProgram(StrLit("orca"), "", &cmd);
@@ -42,7 +42,7 @@ Str GetOrcaSdkPath()
 	return result;
 }
 
-void FillOrcaFlags(CliArgList* compilerFlags, CliArgList* linkerFlags, Str orcaSdkPath)
+void FillOrcaFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str orcaSdkPath)
 {
 	AddTaggedArg(compilerFlags,    T_CLANG T_ORCA, CLANG_NO_ENTRYPOINT);
 	AddTaggedArg(compilerFlags,    T_CLANG T_ORCA, CLANG_EXPORT_DYNAMIC);

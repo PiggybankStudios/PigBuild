@@ -41,9 +41,9 @@ The code in this repo used to live in [PigCore](https://github.com/PiggybankStud
 	
 	* `#include "pig_build_cli_flags.h"` - Contains a bunch of `#define`s that give readable names to CLI flags that we pass to the compilers: Clang, MSVC and GCC. That way we can do `AddStr(&args, CL_WARNINGS_AS_ERRORS)` instead of `AddStr(&args, "/WX")`
 	
-	* `#include "pig_build_tags.h"` - Tags are an optional system built into `CliArgList` that allows us to put all out arguments into one list that conditionally apply to each compiler invocation based on the matching of `includeTags` and `excludeTags`. This file just `#define`s a basic set of tag strings like `T_MSVC_CL`, `T_LINUX`, `T_LANG_C` etc.
+	* `#include "pig_build_tags.h"` - Tags are an optional system built into `CliArgs` that allows us to put all out arguments into one list that conditionally apply to each compiler invocation based on the matching of `includeTags` and `excludeTags`. This file just `#define`s a basic set of tag strings like `T_MSVC_CL`, `T_LINUX`, `T_LANG_C` etc.
 	
-	* `#include "pig_build_arg_list.h"` - Contains the `CliArgList` structure which acts like a `StrArray` but with more features that make it easier for us to handle common problems with authoring program arguments. For example it contains logic for escaping quoted strings properly and a system of `includeTags` and `excludeTags` that can be used to conditionally apply arguments to each compiler invocation. This list can be passed directly to `RunCliProgram` in `pig_build_misc.h`
+	* `#include "pig_build_arg_list.h"` - Contains the `CliArgs` structure which acts like a `StrArray` but with more features that make it easier for us to handle common problems with authoring program arguments. For example it contains logic for escaping quoted strings properly and a system of `includeTags` and `excludeTags` that can be used to conditionally apply arguments to each compiler invocation. This list can be passed directly to `RunCliProgram` in `pig_build_misc.h`
 	
 	* `#include "pig_build_misc.h"` - Contains extra helper functions and types that don't belong in any other file. Things like `RunCliProgram`, `LineParser`, `TwoPassPrint`, etc.
 	
@@ -68,8 +68,8 @@ int main(int argc, char* argv[])
 	// Do stuff like
 	system("clang main.c -o my_program");
 	
-	// Or use CliArgList
-	CliArgList args = EMPTY;
+	// Or use CliArgs
+	CliArgs args = EMPTY;
 	AddArg(&args, CL_NO_LOGO);
 	AddArgNt(&args, CLI_QUOTED_ARG, "src/main.c");
 	AddArgNt(&args, CL_BINARY_FILE, "my_program.exe");

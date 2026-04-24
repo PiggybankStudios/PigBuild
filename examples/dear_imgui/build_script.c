@@ -58,7 +58,7 @@ int main(int argc, const char* argv[])
 		InitializeMsvcIf(pigBuildFolder, &isMsvcInitialized);
 		WriteLine("[Building for Windows...]");
 		
-		CliArgList commonArgs = EMPTY;
+		CliArgs commonArgs = EMPTY;
 		AddArg(&commonArgs, CL_NO_LOGO);
 		AddArg(&commonArgs, CL_FULL_FILE_PATHS);
 		AddArgNt(&commonArgs, CL_INCLUDE_DIR, "[ROOT]");
@@ -85,7 +85,7 @@ int main(int argc, const char* argv[])
 			if (REBUILD_IMGUI || !DoesFileExist(objectPath) || StrExactEquals(sourcePath, StrLit("[ROOT]/main.cpp")))
 			{
 				PrintLine("Compiling \"%.*s\" -> \"%.*s\"", StrPrint(sourcePath), StrPrint(objectPath));
-				CliArgList args = EMPTY;
+				CliArgs args = EMPTY;
 				args.pathSepChar = PATH_SEP_CHAR;
 				args.rootDirPath = StrLit("..");
 				AddArg(&args, CL_COMPILE);
@@ -103,7 +103,7 @@ int main(int argc, const char* argv[])
 		}
 		
 		{
-			CliArgList args = EMPTY;
+			CliArgs args = EMPTY;
 			AddArg(&args, LINK_NO_LOGO);
 			IF_DEBUG(AddArg(&args, LINK_DEBUG_INFO));
 			AddArgNt(&args, LINK_OUTPUT_FILE, "imgui_demo.exe");
@@ -131,7 +131,7 @@ int main(int argc, const char* argv[])
 	{
 		WriteLine("[Building for Linux...]");
 		
-		CliArgList commonArgs = EMPTY;
+		CliArgs commonArgs = EMPTY;
 		AddArg(&commonArgs, CLANG_FULL_FILE_PATHS);
 		AddArgNt(&commonArgs, CLANG_DEFINE, DEBUG_BUILD ? "DEBUG_BUILD=1" : "DEBUG_BUILD=0");
 		AddArgNt(&commonArgs, CLANG_DEFINE, "TARGET_IS_LINUX=1");
@@ -155,7 +155,7 @@ int main(int argc, const char* argv[])
 			if (REBUILD_IMGUI || !DoesFileExist(objectPath) || StrExactEquals(sourcePath, StrLit("[ROOT]/main.cpp")))
 			{
 				PrintLine("Compiling \"%.*s\" -> \"%.*s\"", StrPrint(sourcePath), StrPrint(objectPath));
-				CliArgList args = EMPTY;
+				CliArgs args = EMPTY;
 				AddArg(&args, CLANG_COMPILE);
 				AddArgStr(&args, CLI_QUOTED_ARG, sourcePath);
 				AddArgStr(&args, CLANG_OUTPUT_FILE, objectPath);
@@ -170,7 +170,7 @@ int main(int argc, const char* argv[])
 		
 		// Link
 		{
-			CliArgList args = EMPTY;
+			CliArgs args = EMPTY;
 			AddArgList(&args, &commonArgs);
 			for (u64 oIndex = 0; oIndex < objectFiles.length; oIndex++)
 			{
@@ -202,7 +202,7 @@ int main(int argc, const char* argv[])
 			CreateAndWriteFile(StrLit("main.mm"), StrLit("\n#include \"../main.cpp\"\n"), true);
 		}
 		
-		CliArgList commonArgs = EMPTY;
+		CliArgs commonArgs = EMPTY;
 		AddArg(&commonArgs, CLANG_FULL_FILE_PATHS);
 		AddArgNt(&commonArgs, CLANG_DEFINE, DEBUG_BUILD ? "DEBUG_BUILD=1" : "DEBUG_BUILD=0");
 		AddArgNt(&commonArgs, CLANG_DEFINE, "TARGET_IS_OSX=1");
@@ -228,7 +228,7 @@ int main(int argc, const char* argv[])
 			if (REBUILD_IMGUI || !DoesFileExist(objectPath) || StrExactEquals(sourcePath, StrLit("main.mm")))
 			{
 				PrintLine("Compiling \"%.*s\" -> \"%.*s\"", StrPrint(sourcePath), StrPrint(objectPath));
-				CliArgList args = EMPTY;
+				CliArgs args = EMPTY;
 				AddArg(&args, CLANG_COMPILE);
 				AddArgStr(&args, CLI_QUOTED_ARG, sourcePath);
 				AddArgStr(&args, CLANG_OUTPUT_FILE, objectPath);
@@ -245,7 +245,7 @@ int main(int argc, const char* argv[])
 		
 		// Link
 		{
-			CliArgList args = EMPTY;
+			CliArgs args = EMPTY;
 			AddArgList(&args, &commonArgs);
 			for (u64 oIndex = 0; oIndex < objectFiles.length; oIndex++)
 			{
@@ -282,7 +282,7 @@ int main(int argc, const char* argv[])
 	// +--------------------------------------------------------------+
 	#if RUN_AFTER_BUILD
 	{
-		CliArgList args = EMPTY;
+		CliArgs args = EMPTY;
 		Str executableName = (BUILDING_ON_WINDOWS ? StrLit("imgui.exe") : StrLit("./imgui"));
 		PrintLine("\n[Running %.*s]", StrPrint(executableName));
 		RunCliProgram(executableName, "", &args);
@@ -383,7 +383,7 @@ void DownloadGlfwAndCompileIfNeeded()
 		AddStrLit(&glfwSourceFiles, "../glfw/src/x11_window.c");
 		AddStrLit(&glfwSourceFiles, "../glfw/src/glx_context.c");
 		
-		CliArgList commonArgs = EMPTY;
+		CliArgs commonArgs = EMPTY;
 		AddArg(&commonArgs, CLANG_FULL_FILE_PATHS);
 		AddArgNt(&commonArgs, CLANG_OPTIMIZATION_LEVEL, DEBUG_BUILD ? "0" : "2");
 		IF_DEBUG(AddArgNt(&commonArgs, CLANG_DEBUG_INFO, "dwarf-4"));
@@ -398,7 +398,7 @@ void DownloadGlfwAndCompileIfNeeded()
 			Str objectPath = JoinStrings2(GetFileNamePart(sourcePath, false), StrLit(".o"));
 			
 			PrintLine("Compiling \"%.*s\" -> \"%.*s\"", StrPrint(sourcePath), StrPrint(objectPath));
-			CliArgList args = EMPTY;
+			CliArgs args = EMPTY;
 			AddArg(&args, CLANG_COMPILE);
 			AddArgStr(&args, CLI_QUOTED_ARG, sourcePath);
 			AddArgStr(&args, CLANG_OUTPUT_FILE, objectPath);
@@ -412,7 +412,7 @@ void DownloadGlfwAndCompileIfNeeded()
 		
 		// Link
 		{
-			CliArgList args = EMPTY;
+			CliArgs args = EMPTY;
 			AddArgList(&args, &commonArgs);
 			for (u64 oIndex = 0; oIndex < glfwObjectFiles.length; oIndex++)
 			{

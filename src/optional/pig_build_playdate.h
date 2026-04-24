@@ -49,7 +49,7 @@ Str GetPlaydateSdkPath()
 	return result;
 }
 
-void FillPlaydateFlags(CliArgList* compilerFlags, CliArgList* linkerFlags, Str playdateSdkDir, Str playdateSdkDir_C_API)
+void FillPlaydateFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str playdateSdkDir, Str playdateSdkDir_C_API)
 {
 	// +====================================+
 	// | cl_PlaydateSimulatorCompilerFlags  |

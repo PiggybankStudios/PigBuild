@@ -101,7 +101,7 @@ UnzipResult UnzipEntireArchiveInto(Str archiveFilePath, Str folderToExtractInArc
 	}
 	else if (StrExactStartsWith(subfinalExtension, StrLit(".tar")))
 	{
-		CliArgList args = EMPTY;
+		CliArgs args = EMPTY;
 		AddArg(&args, "--extract");
 		AddArgStr(&args, "--file=\"[VAL]\"", archiveFilePath);
 		AddArgStr(&args, "-C \"[VAL]\"", outputFolderPath);

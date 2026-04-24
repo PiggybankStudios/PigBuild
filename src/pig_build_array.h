@@ -11,6 +11,8 @@ Description:
 	** to the generic API here. Since the generated API has proper pointer types
 	** the compiler will enforce correct types being passed and the casts to (void*)
 	** and back are relatively safe.
+	**
+	** NOTE: Items are zeroed when added to the array, they are not zeroed when removed
 */
 
 #ifndef _PIG_BUILD_ARRAY_H
@@ -100,6 +102,7 @@ void RemoveItemsArray(u64 itemSize, u64 itemAlignment, u64* lengthPntr, u64* all
 //  };
 //  void         FreeArray_u64(Array_u64* arrayPntr) { ... }
 //  void        EmptyArray_u64(Array_u64* arrayPntr) { ... }
+//  void         GrowArray_u64(Array_u64* arrayPntr, u64 lengthNeeded) { ... }
 //  u64*  InsertItemsArray_u64(Array_u64* arrayPntr, u64 insertIndex, u64 numItems) { ... }
 //  u64*   InsertItemArray_u64(Array_u64* arrayPntr, u64 insertIndex) { ... }
 //  u64*     AddItemsArray_u64(Array_u64* arrayPntr, u64 numItems) { ... }
@@ -113,6 +116,10 @@ void RemoveItemsArray(u64 itemSize, u64 itemAlignment, u64* lengthPntr, u64* all
 //  void   RemoveItemArray_u64(Array_u64* arrayPntr, u64 removeIndex) { ... }
 //  void     PopItemsArray_u64(Array_u64* arrayPntr, u64 numItems) { ... }
 //  void      PopItemArray_u64(Array_u64* arrayPntr) { ... }
+//  u64*    FirstItemArray_u64(Array_u64* arrayPntr) { ... }
+//  u64*     LastItemArray_u64(Array_u64* arrayPntr) { ... }
+//  u64    FirstValueArray_u64(Array_u64* arrayPntr) { ... }
+//  u64     LastValueArray_u64(Array_u64* arrayPntr) { ... }
 //
 #define TYPED_ARRAY(structName, elemType, itemsAlias)                                                                                                                                                                                                                                                                                    \
 struct structName                                                                                                                                                                                                                                                                                                                        \
@@ -123,6 +130,7 @@ struct structName                                                               
 };                                                                                                                                                                                                                                                                                                                                       \
 void              Free##structName(struct structName* arrayPntr) {  FreeArray(&arrayPntr->length, &arrayPntr->allocLength, (void**)&arrayPntr->items); }                                                                                                                                                                                 \
 void             Empty##structName(struct structName* arrayPntr) { EmptyArray(&arrayPntr->length, &arrayPntr->allocLength, (void**)&arrayPntr->items); }                                                                                                                                                                                 \
+void              Grow##structName(struct structName* arrayPntr, u64 lengthNeeded) { GrowArrayToAtLeast(sizeof(elemType), _Alignof(elemType), &arrayPntr->length, &arrayPntr->allocLength, (void**)&arrayPntr->items, lengthNeeded); }                                                                                                   \
 elemType*  InsertItems##structName(struct structName* arrayPntr, u64 insertIndex, u64 numItems)  { return (elemType*)InsertItemsArray(sizeof(elemType), _Alignof(elemType), &arrayPntr->length, &arrayPntr->allocLength, (void**)&arrayPntr->items, insertIndex,       numItems); }                                                      \
 elemType*   InsertItem##structName(struct structName* arrayPntr, u64 insertIndex)                { return (elemType*)InsertItemsArray(sizeof(elemType), _Alignof(elemType), &arrayPntr->length, &arrayPntr->allocLength, (void**)&arrayPntr->items, insertIndex,              1); }                                                      \
 elemType*     AddItems##structName(struct structName* arrayPntr, u64 numItems)                   { return (elemType*)InsertItemsArray(sizeof(elemType), _Alignof(elemType), &arrayPntr->length, &arrayPntr->allocLength, (void**)&arrayPntr->items, arrayPntr->length, numItems); }                                                      \
@@ -136,9 +144,17 @@ void       RemoveItems##structName(struct structName* arrayPntr, u64 removeIndex
 void        RemoveItem##structName(struct structName* arrayPntr, u64 removeIndex)               { Assert(arrayPntr->length >= 1);        RemoveItemsArray(sizeof(elemType), _Alignof(elemType), &arrayPntr->length, &arrayPntr->allocLength, (void**)&arrayPntr->items, removeIndex,                       1); }                         \
 void          PopItems##structName(struct structName* arrayPntr, u64 numItems)                  { Assert(arrayPntr->length >= numItems); RemoveItemsArray(sizeof(elemType), _Alignof(elemType), &arrayPntr->length, &arrayPntr->allocLength, (void**)&arrayPntr->items, arrayPntr->length-numItems, numItems); }                         \
 void           PopItem##structName(struct structName* arrayPntr)                                { Assert(arrayPntr->length >= 1);        RemoveItemsArray(sizeof(elemType), _Alignof(elemType), &arrayPntr->length, &arrayPntr->allocLength, (void**)&arrayPntr->items, arrayPntr->length-1,               1); }                         \
+elemType*    FirstItem##structName(struct structName* arrayPntr) { Assert(arrayPntr->length >= 1); return &arrayPntr->items[0];                   }                                                                                                                                                                                      \
+elemType*     LastItem##structName(struct structName* arrayPntr) { Assert(arrayPntr->length >= 1); return &arrayPntr->items[arrayPntr->length-1]; }                                                                                                                                                                                      \
+elemType    FirstValue##structName(struct structName* arrayPntr) { Assert(arrayPntr->length >= 1); return  arrayPntr->items[0];                   }                                                                                                                                                                                      \
+elemType     LastValue##structName(struct structName* arrayPntr) { Assert(arrayPntr->length >= 1); return  arrayPntr->items[arrayPntr->length-1]; }                                                                                                                                                                                      \
 /* This comes at the end so the semicolon after the macro invocation is required */                                                                                                                                                                                                                                                      \
 typedef struct structName structName
 
+TYPED_ARRAY(Array_int,     int, values);
+TYPED_ARRAY(Array_long,   long, values);
+TYPED_ARRAY(Array_char,   char, values);
+TYPED_ARRAY(Array_bool,   bool, values);
 TYPED_ARRAY(Array_u8,       u8, values);
 TYPED_ARRAY(Array_u16,     u16, values);
 TYPED_ARRAY(Array_u32,     u32, values);
@@ -150,5 +166,6 @@ TYPED_ARRAY(Array_i64,     i64, values);
 TYPED_ARRAY(Array_r32,     r32, values);
 TYPED_ARRAY(Array_r64,     r64, values);
 TYPED_ARRAY(Array_pntrs, void*, pntrs);
+TYPED_ARRAY(Array_CStr,  char*, values);
 
 #endif //  _PIG_BUILD_ARRAY_H

@@ -20,7 +20,7 @@ Description:
 // +--------------------------------------------------------------+
 // |                        RunCliProgram                         |
 // +--------------------------------------------------------------+
-int RunCliProgramTagArray(Str programPath, StrArray* tagsListPntr, const CliArgList* args)
+int RunCliProgramTagArray(Str programPath, StrArray* tagsListPntr, const CliArgs* args)
 {
 	// PrintLine("Joining/filtering %llu arguments against %llu tags for \"%.*s\"", args->numArgs, (tagsListPntr != nullptr) ? tagsListPntr->length : 0ULL, StrPrint(programPath));
 	Str joinedArgs = FilterAndJoinCliArgsList(programPath, args, tagsListPntr);
@@ -33,7 +33,7 @@ int RunCliProgramTagArray(Str programPath, StrArray* tagsListPntr, const CliArgL
 	free(joinedArgs.chars);
 	return resultCode;
 }
-int RunCliProgram(Str programPath, const char* tagsListStr, const CliArgList* args)
+int RunCliProgram(Str programPath, const char* tagsListStr, const CliArgs* args)
 {
 	StrArray tagArray = EMPTY;
 	SplitTagsListStr(MakeStrNt(tagsListStr), &tagArray);
@@ -46,7 +46,7 @@ int RunCliProgram(Str programPath, const char* tagsListStr, const CliArgList* ar
 	FreeStrArray(&tagArray);
 	return result;
 }
-void RunCliProgramTagArrayAndExitOnFailure(Str programPath, StrArray* tagsListPntr, const CliArgList* args, Str errorMessage)
+void RunCliProgramTagArrayAndExitOnFailure(Str programPath, StrArray* tagsListPntr, const CliArgs* args, Str errorMessage)
 {
 	int statusCode = RunCliProgramTagArray(programPath, tagsListPntr, args);
 	if (statusCode != 0)
@@ -60,7 +60,7 @@ void RunCliProgramTagArrayAndExitOnFailure(Str programPath, StrArray* tagsListPn
 		exit(statusCode);
 	}
 }
-void RunCliProgramAndExitOnFailure(Str programPath, const char* tagListStr, const CliArgList* args, Str errorMessage)
+void RunCliProgramAndExitOnFailure(Str programPath, const char* tagListStr, const CliArgs* args, Str errorMessage)
 {
 	StrArray tagArray = EMPTY;
 	SplitTagsListStr(MakeStrNt(tagListStr), &tagArray);
@@ -350,7 +350,7 @@ void ParseAndApplyEnvironmentVariables(Str environmentVars)
 //TODO: This should be renamed, it only runs the batch file if the environment file doesn't exist!
 void RunBatchFileAndApplyDumpedEnvironment(Str batchFilePath, Str environmentFilePath, bool skipRunningIfFileExists)
 {
-	CliArgList cmd = EMPTY;
+	CliArgs cmd = EMPTY;
 	AddArgStr(&cmd, CLI_QUOTED_ARG, environmentFilePath);
 	Str fixedBatchFilePath = CopyStr(batchFilePath);
 	FixPathSlashes(fixedBatchFilePath, PATH_SEP_CHAR);

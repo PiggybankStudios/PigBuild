@@ -5,7 +5,8 @@ Date:   06\20\2025
 Description:
 	** StrArray (aka Array_Str) is TYPED_ARRAY (see pig_build_array.h) of Str (see pig_build_str.h)
 	** with some extra logic on top to copy the strings when they are added and free
-	** them when they are removed
+	** them when they are removed. Also function names like AddStr are slightly shorter
+	** than they would be directly generated from TYPED_ARRAY
 */
 
 #ifndef _PIG_BUILD_STR_ARRAY_H
@@ -15,6 +16,9 @@ Description:
 #include "pig_build_array.h"
 #include "pig_build_str.h"
 
+// The true name of the struct is Array_Str but
+// In order for our wrapper functions below to not conflict with the generated API
+// function names, we make the real name of the array Array_Str and make an alias "StrArray"
 TYPED_ARRAY(Array_Str, Str, strings);
 typedef Array_Str StrArray;
 
@@ -31,8 +35,7 @@ void EmptyStrArray(StrArray* array)
 
 Str* AddStr(StrArray* array, Str newString)
 {
-	Str* result = AddItemArray_Str(array);
-	*result = CopyStr(newString);
+	Str* result = AddValueArray_Str(array, CopyStr(newString));
 	return result;
 }
 #define AddStrLit(arrayPntr, strLit)     AddStr((arrayPntr), StrLit(strLit))
@@ -68,6 +71,13 @@ void RemoveStrAtIndex(StrArray* array, u64 index)
 	Assert(index < array->length);
 	FreeStr(&array->strings[index]);
 	RemoveItemArray_Str(array, index);
+}
+
+void PopStr(StrArray* array)
+{
+	Assert(array->length >= 1);
+	FreeStr(&array->strings[array->length-1]);
+	PopItemArray_Str(array);
 }
 
 u64 FindStr(const StrArray* array, Str targetStr)

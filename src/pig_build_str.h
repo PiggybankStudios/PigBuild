@@ -244,6 +244,7 @@ Str StrInsert(Str targetStr, u64 insertIndex, Str insertStr)
 
 //TODO: RemoveLeadingStr, RemoveLeadingChars
 //TODO: RemoveTrailingStr, RemoveTrailingChars
+//TODO: FormatStr
 
 // +--------------------------------------------------------------+
 // |                      File Path Helpers                       |
