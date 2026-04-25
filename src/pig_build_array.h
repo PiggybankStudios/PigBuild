@@ -15,10 +15,49 @@ Description:
 	** NOTE: Items are zeroed when added to the array, they are not zeroed when removed
 */
 
+// Example:
+//  TYPED_ARRAY(Array_u64, u64, values);
+//          |
+//      Generates
+//          |
+//          v
+//  typedef struct Array_u64 Array_u64;
+//  struct Array_u64
+//  {
+//  	u64 length;
+//  	u64 allocLength;
+//  	union { u64* items; u64* values; void* pntr; };
+//  };
+//  void         FreeArray_u64(Array_u64* arrayPntr) { ... }
+//  void        EmptyArray_u64(Array_u64* arrayPntr) { ... }
+//  void         GrowArray_u64(Array_u64* arrayPntr, u64 lengthNeeded) { ... }
+//  u64*  InsertItemsArray_u64(Array_u64* arrayPntr, u64 insertIndex, u64 numItems) { ... }
+//  u64*   InsertItemArray_u64(Array_u64* arrayPntr, u64 insertIndex) { ... }
+//  u64*     AddItemsArray_u64(Array_u64* arrayPntr, u64 numItems) { ... }
+//  u64*      AddItemArray_u64(Array_u64* arrayPntr) { ... }
+//  u64* InsertValuesArray_u64(Array_u64* arrayPntr, u64 insertIndex, u64 numItems, const u64* valuesPntr) { ... }
+//  u64*  InsertValueArray_u64(Array_u64* arrayPntr, u64 insertIndex, u64 value) { ... }
+//  u64*    AddValuesArray_u64(Array_u64* arrayPntr, u64 numItems, const u64* valuesPntr) { ... }
+//  u64*     AddValueArray_u64(Array_u64* arrayPntr, u64 value) { ... }
+//  u64*       AppendArray_u64(Array_u64* destArray, const Array_u64* srcArray) { ... }
+//  void  RemoveItemsArray_u64(Array_u64* arrayPntr, u64 removeIndex, u64 numItems) { ... }
+//  void   RemoveItemArray_u64(Array_u64* arrayPntr, u64 removeIndex) { ... }
+//  void     PopItemsArray_u64(Array_u64* arrayPntr, u64 numItems) { ... }
+//  void      PopItemArray_u64(Array_u64* arrayPntr) { ... }
+//  u64*    FirstItemArray_u64(Array_u64* arrayPntr) { ... }
+//  u64*     LastItemArray_u64(Array_u64* arrayPntr) { ... }
+//  u64    FirstValueArray_u64(Array_u64* arrayPntr) { ... }
+//  u64     LastValueArray_u64(Array_u64* arrayPntr) { ... }
+
 #ifndef _PIG_BUILD_ARRAY_H
 #define _PIG_BUILD_ARRAY_H
 
 #include "pig_build_base.h"
+
+//TODO: SortArray
+//TODO: ReverseArray
+//TODO: FindValueArray
+//TODO: IndexOfItemArray
 
 #define ARRAY_MIN_NUM_ITEMS 8
 #define ARRAY_GROWTH_RATE   2 //double size every time we grow
@@ -91,36 +130,6 @@ void RemoveItemsArray(u64 itemSize, u64 itemAlignment, u64* lengthPntr, u64* all
 
 // Use this macro to create new typed arrays with a particular element type.
 // This generates the struct and the API to add and remove elements from the array.
-//
-// For example, TYPED_ARRAY(Array_u64, u64, values) generates:
-//  typedef struct Array_u64 Array_u64;
-//  struct Array_u64
-//  {
-//  	u64 length;
-//  	u64 allocLength;
-//  	union { u64* items; u64* values; void* pntr; };
-//  };
-//  void         FreeArray_u64(Array_u64* arrayPntr) { ... }
-//  void        EmptyArray_u64(Array_u64* arrayPntr) { ... }
-//  void         GrowArray_u64(Array_u64* arrayPntr, u64 lengthNeeded) { ... }
-//  u64*  InsertItemsArray_u64(Array_u64* arrayPntr, u64 insertIndex, u64 numItems) { ... }
-//  u64*   InsertItemArray_u64(Array_u64* arrayPntr, u64 insertIndex) { ... }
-//  u64*     AddItemsArray_u64(Array_u64* arrayPntr, u64 numItems) { ... }
-//  u64*      AddItemArray_u64(Array_u64* arrayPntr) { ... }
-//  u64* InsertValuesArray_u64(Array_u64* arrayPntr, u64 insertIndex, u64 numItems, const u64* valuesPntr) { ... }
-//  u64*  InsertValueArray_u64(Array_u64* arrayPntr, u64 insertIndex, u64 value) { ... }
-//  u64*    AddValuesArray_u64(Array_u64* arrayPntr, u64 numItems, const u64* valuesPntr) { ... }
-//  u64*     AddValueArray_u64(Array_u64* arrayPntr, u64 value) { ... }
-//  u64*       AppendArray_u64(Array_u64* destArray, const Array_u64* srcArray) { ... }
-//  void  RemoveItemsArray_u64(Array_u64* arrayPntr, u64 removeIndex, u64 numItems) { ... }
-//  void   RemoveItemArray_u64(Array_u64* arrayPntr, u64 removeIndex) { ... }
-//  void     PopItemsArray_u64(Array_u64* arrayPntr, u64 numItems) { ... }
-//  void      PopItemArray_u64(Array_u64* arrayPntr) { ... }
-//  u64*    FirstItemArray_u64(Array_u64* arrayPntr) { ... }
-//  u64*     LastItemArray_u64(Array_u64* arrayPntr) { ... }
-//  u64    FirstValueArray_u64(Array_u64* arrayPntr) { ... }
-//  u64     LastValueArray_u64(Array_u64* arrayPntr) { ... }
-//
 #define TYPED_ARRAY(structName, elemType, itemsAlias)                                                                                                                                                                                                                                                                                    \
 struct structName                                                                                                                                                                                                                                                                                                                        \
 {                                                                                                                                                                                                                                                                                                                                        \
