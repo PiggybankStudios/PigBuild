@@ -66,7 +66,16 @@ struct ListLink
 
 void FreeList(u64 linkSize, u64 linkAlignment, u64* lengthPntr, ListLink** firstPntr, ListLink** lastPntr)
 {
-	//TODO: Implement me!
+	ListLink* link = *firstPntr;
+	while (link != nullptr)
+	{
+		ListLink* next = link->next;
+		free(link);
+		link = next;
+	}
+	*lengthPntr = 0;
+	*firstPntr = nullptr;
+	*lastPntr = nullptr;
 }
 
 ListLink* GetItemAtIndexList(u64 length, ListLink* first, ListLink* last, u64 index)

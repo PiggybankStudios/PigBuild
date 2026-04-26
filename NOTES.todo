@@ -18,6 +18,8 @@
 	[X] TAG_X macros? Maybe T_X for brevity? Should we add leading "|" for ultimate brevity?
 	[?] Remove T_UNIX tag?
 	[?] Rename Str_Empty_Const to something shorter?
+	(!) Test the List implementation
+	[!] Add StrBuilder struct to make it easy to build up a string in steps
 	[!] How do we do _Alignof in a cross-compiler cross-language safe way?
 	[!] Add functions to "pig_build_file.h" for "mkdir", "rmdir" and "chdir"
 	[!] Do our shell scripts handle spaces in the parent directory names? Can we make them handle it properly? (mostly include folder for compiling the build_script.c)
