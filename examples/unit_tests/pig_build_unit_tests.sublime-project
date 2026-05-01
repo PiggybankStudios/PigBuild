@@ -1,0 +1,71 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+		},
+		{
+			"path": "../../src",
+			"name": "Pig Build (src)",
+		},
+		{
+			"path": "../../shell",
+			"name": "Pig Build (shell)",
+		}
+	],
+	"settings":
+	{
+		"build_options":
+		[
+		],
+		"custom_constants":
+		[
+			"EMPTY",
+			"GB",
+			"MB",
+			"PIG_BUILD_ENABLE_LIB_CURL",
+			"Str_Empty",
+			"Str_Empty_Const",
+			"kB",
+		],
+		"custom_functions":
+		[
+			"#define CopyStrLit(stringLiteral)",
+			"#define IsEmptyStr(string)",
+			"#define IsEmptyStrPntr(stringPntr)",
+			"#define MakeStr(length, pntr)",
+			"#define MakeStrNt(nullTermPntr)",
+			"#define MakeStr_Const(lengthValue, pntrValue)",
+			"#define StrLit(stringLiteral)",
+			"#define StrLitLength(stringLiteral)",
+			"#define StrLit_Const(stringLiteral)",
+			"#define StrPrint(string)",
+			"Str AllocStr(u64 length)",
+			"Str CopyStr(Str strToCopy)",
+			"Str CopyStrNt(const char* strToCopyNt)",
+			"Str EscapeString(Str unescapedString)",
+			"Str FilterAndJoinCliArgsList(Str prefix, const CliArgList* list, StrArray* tagsListPntr)",
+			"Str GetFileNamePart(Str fullPath, bool includeExtension, bool includeSubExtensions)",
+			"Str GetPathPartAtIndex(Str fileOrFolderPath, u64 index)",
+			"Str JoinPaths(Str leftPath, Str rightPath)",
+			"bool DoesFileExist(Str path)",
+			"bool DoesFileOrFolderExist(Str path, bool* isFolderOut)",
+			"bool DoesFolderExist(Str path)",
+			"bool DoesPathExist(Str path)",
+			"u64 CountPathParts(Str fileOrFolderPath)",
+			"void DownloadAndExtractArchive(Str url, Str archiveFilePath, u64 expectedArchiveSize, u64 expectedArchiveHash, Str outputFolderPath, Str archiveDirToExtract)",
+			"void DownloadFromUrl(Str url, Str filePath)",
+			"void DownloadFromUrlAndCheck(Str url, Str filePath, u64 expectedSize, u64 expectedHash)",
+			"void FreeStr(Str* strPntr)",
+			"void UnzipEntireArchiveInto(Str archiveFilePath, Str outputFolderPath)",
+		],
+		"custom_globals":
+		[
+		],
+		"custom_types":
+		[
+			"Str",
+			"UnzipResult",
+		],
+	},
+}

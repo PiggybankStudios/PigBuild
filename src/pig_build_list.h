@@ -37,6 +37,8 @@ Description:
 //  ListLink_u64* GetLinkList_u64(u64* itemPntr) { ... }
 //  u64*         NextItemList_u64(u64* itemPntr) { ... }
 //  u64*         PrevItemList_u64(u64* itemPntr) { ... }
+//  void        FirstItemList_u64(List_u64* list) { ... }
+//  void         LastItemList_u64(List_u64* list) { ... }
 //  void             FreeList_u64(List_u64* list) { ... }
 //  u64*   GetItemAtIndexList_u64(List_u64* list, u64 index) { ... }
 //  u64*       InsertItemList_u64(List_u64* list, u64 insertIndex) { ... }
@@ -176,6 +178,8 @@ struct structName                                                               
 linkStructName*     GetLink##structName(elemType* itemPntr)                                       { return (linkStructName*)(((u8*)itemPntr) - MEMBER_OFFSET(linkStructName, item)); }                                                                                                                                                                     \
 elemType*          NextItem##structName(elemType* itemPntr)                                       { linkStructName* wrapper = GetLink##structName(itemPntr); return (wrapper->next != nullptr) ? &wrapper->next->item : nullptr; }                                                                                                                         \
 elemType*          PrevItem##structName(elemType* itemPntr)                                       { linkStructName* wrapper = GetLink##structName(itemPntr); return (wrapper->prev != nullptr) ? &wrapper->prev->item : nullptr; }                                                                                                                         \
+elemType*         FirstItem##structName(struct structName* list)                                  { return (list->first != nullptr) ? &list->first->item : nullptr; }                                                                                                                                                                                      \
+elemType*          LastItem##structName(struct structName* list)                                  { return (list->last != nullptr) ? &list->last->item : nullptr; }                                                                                                                                                                                        \
 void                   Free##structName(struct structName* list)                                  { FreeList(sizeof(linkStructName), _Alignof(linkStructName), &list->length, (ListLink**)&list->first, (ListLink**)&list->last); }                                                                                                                        \
 elemType*    GetItemAtIndex##structName(struct structName* list, u64 index)                       { linkStructName* itemLink = (linkStructName*)GetItemAtIndexList(list->length, &list->first->header, &list->last->header, index); return (itemLink != nullptr) ? &itemLink->item : nullptr; }                                                            \
 elemType*        InsertItem##structName(struct structName* list, u64 insertIndex)                 { return (elemType*)InsertItemList(sizeof(linkStructName), _Alignof(linkStructName), MEMBER_OFFSET(linkStructName, item), &list->length, (ListLink**)&list->first, (ListLink**)&list->last,  insertIndex); }                                             \

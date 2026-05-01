@@ -42,6 +42,8 @@ void RemoveStrList(StrList* list, Str* strPntr)
 }
 
 StrListLink* GetStrListLink(Str* listStrPntr) { return GetLinkList_Str(listStrPntr); }
+#define FirstStrList(listPntr) FirstItemList_Str(listPntr)
+#define LastStrList(listPntr)  LastItemList_Str(listPntr)
 Str* NextStr(Str* listStrPntr) { return NextItemList_Str(listStrPntr); }
 Str* PrevStr(Str* listStrPntr) { return PrevItemList_Str(listStrPntr); }
 
