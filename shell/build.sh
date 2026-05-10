@@ -32,6 +32,7 @@ BUILD_SH_FOLDER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # If someone runs this script directly from the pig_build/shell/ folder,
 # assume they want to build the project two directories up.
 if [ "$(pwd)" = "$BUILD_SH_FOLDER" ]; then
+	echo "build.sh was run directly from pig_build/shell/ folder. Moving up to build project in two folders above..."
     cd ../..
 fi
 # We take the current working directory as the project that we want to build
