@@ -73,7 +73,7 @@ fi
 
 compile_builder() {
     rm -fr builder builder_hash.txt builder.dSYM
-	echo "Compiling build_script.c..."
+	echo "[Compiling build_script.c...]"
 	if ! clang "${compiler_flags[@]}"; then
 		echo "Failed to compile build_script.c into builder!"
 		exit 1
@@ -90,7 +90,7 @@ builder_exit_code=0
 ./builder "$@" || builder_exit_code=$?
 
 if [ $builder_exit_code -eq 42 ]; then
-	echo "Recompile requested"
+	echo "[Recompile requested]"
 	compile_builder
 	./builder "$@"
 fi

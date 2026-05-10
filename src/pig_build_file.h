@@ -2,6 +2,18 @@
 File:   pig_build_file.h
 Author: Taylor Robbins
 Date:   03\21\2026
+Description:
+	** Contains wrappers around platform specific file system functions (like CreateFileA and fopen).
+	** Thie file doesn't contain file path manipulation functions. Those are mostly
+	** just string manipulation so they live in pig_build_str.h. The one exception is GetFullPath
+	**
+	** NOTE: These functions are not all fully tested and some functions are missing
+	**       implementations for certain platforms. This file is provided for convenience
+	**       and supports as many features as I've had time to implement and test
+	**       but you are welcome to use any C or C++ library to abstract file operations
+	**       or use the standard library's file functions directly. Some parts of
+	**       Pig Build depend on these functions and would need to get updated to use
+	**       whatever library or functions you want to replace this with.
 */
 
 #ifndef _PIG_BUILD_FILE_H
