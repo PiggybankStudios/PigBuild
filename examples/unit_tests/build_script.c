@@ -10,7 +10,7 @@ Description:
 #define PIG_BUILD_FOLDER_PATH "../../.."
 #include "pig_build.h"
 
-#include "tests_matcher.c"
+#include "tests_scan.c"
 #include "tests_str_list.c"
 
 int main(int argc, const char* argv[])
@@ -23,7 +23,7 @@ int main(int argc, const char* argv[])
 	bool isMsvcInitialized = WasMsvcDevBatchRun();
 	
 	// RunTests_StrList();
-	RunTests_Matcher();
+	RunTests_Scan();
 	
 	return 0;
 }
