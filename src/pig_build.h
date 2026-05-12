@@ -16,6 +16,7 @@ Description:
 #include "pig_build_str.h"
 #include "pig_build_str_array.h"
 #include "pig_build_str_list.h"
+#include "pig_build_matcher.h"
 #include "pig_build_file.h"
 #include "pig_build_hash.h"
 #include "pig_build_misc.h"
