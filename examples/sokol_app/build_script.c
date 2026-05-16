@@ -27,16 +27,27 @@ int main(int argc, char* argv[])
 {
 	RecompileIfNeeded(nullptr);
 	Str pigBuildFolder = StrLit(PIG_BUILD_ROOT);
+	IF_WINDOWS(bool isMsvcInitialized = WasMsvcDevBatchRun());
 	
 	DownloadSokolIfNeeded();
 	CrossCompileShaderIfNeeded();
 	
 	CliArgs args = EMPTY;
+	CliArgs linkerArgs = EMPTY;
 	
 	// +==============================+
 	// |     MSVC Compiler Flags      |
 	// +==============================+
 	AddTaggedArgNt(&args, T_MSVC_CL, CLI_QUOTED_ARG, "[ROOT]/main.c");
+	AddTaggedArg(&args, T_MSVC_CL, CL_FULL_FILE_PATHS);
+	AddTaggedArg(&args, T_MSVC_CL, CL_NO_LOGO);
+	AddTaggedArg(&linkerArgs, T_MSVC_CL, LINK_DISABLE_INCREMENTAL);
+	AddTaggedArgNt(&args, T_MSVC_CL, CL_LANG_VERSION, "clatest"); //Use latest C language spec features
+	AddTaggedArgNt(&args, T_MSVC_CL, CL_EXPERIMENTAL, "c11atomics"); //Enables _Atomic types
+	AddTaggedArgNt(&args, T_MSVC_CL, CL_INCLUDE_DIR, ".");
+	AddTaggedArgNt(&args, T_MSVC_CL, CL_INCLUDE_DIR, "[ROOT]");
+	AddTaggedArgNt(&args, T_MSVC_CL, CL_INCLUDE_DIR, "[ROOT]/sokol");
+	AddTaggedArgNt(&args, T_MSVC_CL, CL_BINARY_FILE, "sokol_triangle.exe");
 	
 	// +==============================+
 	// |     Clang Compiler Flags     |
@@ -72,7 +83,15 @@ int main(int argc, char* argv[])
 	AddTaggedArgNt(&args, T_CLANG T_OSX, CLANG_FRAMEWORK, "Metal");
 	AddTaggedArgNt(&args, T_CLANG T_OSX, CLANG_FRAMEWORK, "MetalKit");
 	
-	#if BUILDING_ON_LINUX
+	#if BUILDING_ON_WINDOWS
+	{
+		InitializeMsvcIf(pigBuildFolder, &isMsvcInitialized);
+		PrintLine("Buiding sokol_triangle.exe for WINDOWS!");
+		RunCliProgramAndExitOnFailure(StrLit("cl"), T_MSVC_CL T_WINDOWS, &args, StrLit("Failed to build sokol_triangle.exe!"));
+		AssertFileExist(StrLit("sokol_triangle.exe"), true);
+		PrintLine("Successfully built sokol_triangle.exe for WINDOWS!");
+	}
+	#elif BUILDING_ON_LINUX
 	{
 		PrintLine("Buiding sokol_triangle for LINUX!");
 		RunCliProgramAndExitOnFailure(StrLit("clang"), T_CLANG T_LINUX, &args, StrLit("Failed to build sokol_triangle!"));
@@ -108,7 +127,9 @@ int main(int argc, char* argv[])
 }
 
 
-#if BUILDING_ON_LINUX
+#if BUILDING_ON_WINDOWS
+#define SHDC_BIN_PATH "..\\sokol_tools\\bin\\win32\\sokol-shdc.exe"
+#elif BUILDING_ON_LINUX
 #define SHDC_BIN_PATH "../sokol_tools/bin/linux/sokol-shdc"
 #elif BUILDING_ON_OSX_ARM
 #define SHDC_BIN_PATH  "../sokol_tools/bin/osx_arm64/sokol-shdc"

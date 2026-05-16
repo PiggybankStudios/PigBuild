@@ -26,10 +26,19 @@ Description:
 #error Unknown TARGET!
 #endif
 
-#if TARGET_IS_OSX
+#if TARGET_IS_WINDOWS
+#define SOKOL_D3D11
+// #define SOKOL_GLCORE
+// #define SOKOL_WGPU
+// #define SOKOL_VULKAN
+#elif TARGET_IS_OSX
 #define SOKOL_METAL
+// #define SOKOL_GLCORE
 #elif TARGET_IS_LINUX
 #define SOKOL_GLCORE
+// #define SOKOL_GLES3
+// #define SOKOL_WGPU
+// #define SOKOL_VULKAN
 #else
 #error main.c needs to be updated to support the current platform sokol_gfx.h choice!
 #endif
@@ -54,7 +63,7 @@ static struct
 	sg_pass_action pass_action;
 } state;
 
-void Appinit()
+void Appinit(void)
 {
 	sg_setup(&(sg_desc){
 		.environment = sglue_environment(),
@@ -95,7 +104,7 @@ void Appinit()
 	};
 }
 
-void AppFrame()
+void AppFrame(void)
 {
 	sg_begin_pass(&(sg_pass){ .action = state.pass_action, .swapchain = sglue_swapchain() });
 	sg_apply_pipeline(state.pip);
@@ -105,7 +114,7 @@ void AppFrame()
 	sg_commit();
 }
 
-void AppCleanup()
+void AppCleanup(void)
 {
 	sg_shutdown();
 }
