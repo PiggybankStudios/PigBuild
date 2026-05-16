@@ -337,6 +337,7 @@
 			"#define IF_LANG_CPP(...)",
 			"#define IF_LINUX(...)",
 			"#define IF_OSX(...)",
+			"#define IF_RELEASE(...)",
 			"#define IF_WINDOWS(...)",
 			"#define INIT(type)",
 			"#define IsEmptyStr(string)",

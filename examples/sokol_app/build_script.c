@@ -9,6 +9,7 @@ Description:
 	** 4. Produces a "sokol_triangle(.exe)" in the build folder that can be run
 */
 
+#define PIG_BUILD_PRINT_SYS_CMDS 0
 #include "pig_build.h"
 
 #define DEBUG_BUILD      1
@@ -16,8 +17,10 @@ Description:
 
 #if DEBUG_BUILD
 #define IF_DEBUG(...) __VA_ARGS__
+#define IF_RELEASE(...) //nothing
 #else
 #define IF_DEBUG(...) //nothing
+#define IF_RELEASE(...) __VA_ARGS__
 #endif
 
 void DownloadSokolIfNeeded();
@@ -33,7 +36,6 @@ int main(int argc, char* argv[])
 	CrossCompileShaderIfNeeded();
 	
 	CliArgs args = EMPTY;
-	CliArgs linkerArgs = EMPTY;
 	
 	// +==============================+
 	// |     MSVC Compiler Flags      |
@@ -41,13 +43,15 @@ int main(int argc, char* argv[])
 	AddTaggedArgNt(&args, T_MSVC_CL, CLI_QUOTED_ARG, "[ROOT]/main.c");
 	AddTaggedArg(&args, T_MSVC_CL, CL_FULL_FILE_PATHS);
 	AddTaggedArg(&args, T_MSVC_CL, CL_NO_LOGO);
-	AddTaggedArg(&linkerArgs, T_MSVC_CL, LINK_DISABLE_INCREMENTAL);
 	AddTaggedArgNt(&args, T_MSVC_CL, CL_LANG_VERSION, "clatest"); //Use latest C language spec features
 	AddTaggedArgNt(&args, T_MSVC_CL, CL_EXPERIMENTAL, "c11atomics"); //Enables _Atomic types
 	AddTaggedArgNt(&args, T_MSVC_CL, CL_INCLUDE_DIR, ".");
 	AddTaggedArgNt(&args, T_MSVC_CL, CL_INCLUDE_DIR, "[ROOT]");
 	AddTaggedArgNt(&args, T_MSVC_CL, CL_INCLUDE_DIR, "[ROOT]/sokol");
 	AddTaggedArgNt(&args, T_MSVC_CL, CL_BINARY_FILE, "sokol_triangle.exe");
+	AddTaggedArgNt(&args, T_MSVC_CL, CL_PDB_FILE, "sokol_triangle.pdb");
+	IF_DEBUG(AddTaggedArg(&args, T_MSVC_CL, CL_DEBUG_INFO));
+	AddTaggedArgNt(&args, T_MSVC_CL, CL_OPTIMIZATION_LEVEL, DEBUG_BUILD ? "d" : "2");
 	
 	// +==============================+
 	// |     Clang Compiler Flags     |
@@ -82,6 +86,9 @@ int main(int argc, char* argv[])
 	AddTaggedArgNt(&args, T_CLANG T_OSX, CLANG_FRAMEWORK, "CoreFoundation");
 	AddTaggedArgNt(&args, T_CLANG T_OSX, CLANG_FRAMEWORK, "Metal");
 	AddTaggedArgNt(&args, T_CLANG T_OSX, CLANG_FRAMEWORK, "MetalKit");
+	
+	AddTaggedArg(&args, T_MSVC_CL, CL_LINK);
+	AddTaggedArg(&args, T_MSVC_CL, LINK_DISABLE_INCREMENTAL);
 	
 	#if BUILDING_ON_WINDOWS
 	{
