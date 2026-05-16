@@ -13,6 +13,8 @@
 				"examples/*/imgui",
 				"examples/*/glfw",
 				"examples/*/raylib",
+				"examples/*/sokol",
+				"examples/*/sokol_tools",
 			],
 		},
 		{

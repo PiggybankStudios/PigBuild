@@ -52,6 +52,32 @@ Date:   03\21\2026
 #define LANGUAGE_IS_CPP 0
 #endif
 
+#if BUILDING_ON_WINDOWS
+#define IF_WINDOWS(...) __VA_ARGS__
+#else
+#define IF_WINDOWS(...) //nothing
+#endif
+#if BUILDING_ON_LINUX
+#define IF_LINUX(...) __VA_ARGS__
+#else
+#define IF_LINUX(...) //nothing
+#endif
+#if BUILDING_ON_OSX
+#define IF_OSX(...) __VA_ARGS__
+#else
+#define IF_OSX(...) //nothing
+#endif
+#if LANGUAGE_IS_C
+#define IF_LANG_C(...) __VA_ARGS__
+#else
+#define IF_LANG_C(...) //nothing
+#endif
+#if LANGUAGE_IS_CPP
+#define IF_LANG_CPP(...) __VA_ARGS__
+#else
+#define IF_LANG_CPP(...) //nothing
+#endif
+
 // +--------------------------------------------------------------+
 // |                  Standard Library Includes                   |
 // +--------------------------------------------------------------+

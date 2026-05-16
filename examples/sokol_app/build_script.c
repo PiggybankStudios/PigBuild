@@ -3,27 +3,21 @@ File:   build_script.c
 Author: Taylor Robbins
 Date:   05\16\2026
 Description: 
-	** None
+	** 1. Downloads sokol from github (and sokol-tools-bin)
+	** 2. Runs sokol-shdc(.exe) on basic_shader.glsl to produce basic_shader.glsl.h
+	** 3. Compiles the main.c for the current platform (supports OSX and Linux)
+	** 4. Produces a "sokol_triangle(.exe)" in the build folder that can be run
 */
 
 #include "pig_build.h"
 
-#define DEBUG_BUILD 1
+#define DEBUG_BUILD      1
+#define RUN_AFTER_BUILD  0
 
 #if DEBUG_BUILD
 #define IF_DEBUG(...) __VA_ARGS__
 #else
 #define IF_DEBUG(...) //nothing
-#endif
-#if BUILDING_ON_WINDOWS
-#define IF_WINDOWS(...) __VA_ARGS__
-#else
-#define IF_WINDOWS(...) //nothing
-#endif
-#if BUILDING_ON_OSX
-#define IF_OSX(...) __VA_ARGS__
-#else
-#define IF_OSX(...) //nothing
 #endif
 
 void DownloadSokolIfNeeded();
@@ -40,6 +34,11 @@ int main(int argc, char* argv[])
 	CliArgs args = EMPTY;
 	
 	// +==============================+
+	// |     MSVC Compiler Flags      |
+	// +==============================+
+	AddTaggedArgNt(&args, T_MSVC_CL, CLI_QUOTED_ARG, "[ROOT]/main.c");
+	
+	// +==============================+
 	// |     Clang Compiler Flags     |
 	// +==============================+
 	AddTaggedArg(&args, T_CLANG, CLANG_FULL_FILE_PATHS);
@@ -50,7 +49,18 @@ int main(int argc, char* argv[])
 	AddTaggedArgNt(&args, T_CLANG, CLANG_INCLUDE_DIR, ".");
 	AddTaggedArgNt(&args, T_CLANG, CLANG_INCLUDE_DIR, "[ROOT]");
 	AddTaggedArgNt(&args, T_CLANG, CLANG_INCLUDE_DIR, "[ROOT]/sokol");
-	AddTaggedArgNt(&args, T_CLANG, CLANG_OUTPUT_FILE, "sokol_example");
+	AddTaggedArgNt(&args, T_CLANG, CLANG_OUTPUT_FILE, "sokol_triangle");
+	AddTaggedArgNt(&args, T_CLANG T_OSX "==false", CLI_QUOTED_ARG, "[ROOT]/main.c");
+	AddTaggedArgNt(&args, T_CLANG T_OSX "==true", CLI_QUOTED_ARG, "main.m");
+	
+	// +==============================+
+	// |     Linux Compiler Flags     |
+	// +==============================+
+	AddTaggedArgNt(&args, T_CLANG T_LINUX, CLANG_SYSTEM_LIBRARY, "m");
+	AddTaggedArgNt(&args, T_CLANG T_LINUX, CLANG_SYSTEM_LIBRARY, "GL");
+	AddTaggedArgNt(&args, T_CLANG T_LINUX, CLANG_SYSTEM_LIBRARY, "X11");
+	AddTaggedArgNt(&args, T_CLANG T_LINUX, CLANG_SYSTEM_LIBRARY, "Xi");
+	AddTaggedArgNt(&args, T_CLANG T_LINUX, CLANG_SYSTEM_LIBRARY, "Xcursor");
 	
 	// +==============================+
 	// |      OSX Compiler Flags      |
@@ -61,27 +71,49 @@ int main(int argc, char* argv[])
 	AddTaggedArgNt(&args, T_CLANG T_OSX, CLANG_FRAMEWORK, "CoreFoundation");
 	AddTaggedArgNt(&args, T_CLANG T_OSX, CLANG_FRAMEWORK, "Metal");
 	AddTaggedArgNt(&args, T_CLANG T_OSX, CLANG_FRAMEWORK, "MetalKit");
-	AddTaggedArgNt(&args, T_CLANG T_OSX, CLI_QUOTED_ARG, "main.m");
 	
-	#if BUILDING_ON_OSX
+	#if BUILDING_ON_LINUX
 	{
-		PrintLine("Buiding sokol_example for OSX!");
+		PrintLine("Buiding sokol_triangle for LINUX!");
+		RunCliProgramAndExitOnFailure(StrLit("clang"), T_CLANG T_LINUX, &args, StrLit("Failed to build sokol_triangle!"));
+		AssertFileExist(StrLit("sokol_triangle"), true);
+		PrintLine("Successfully built sokol_triangle for LINUX!");
+	}
+	#elif BUILDING_ON_OSX
+	{
+		PrintLine("Buiding sokol_triangle for OSX!");
 		//Create an main.m to make the compiler use Objective-C mode
 		if (!DoesFileExist(StrLit("main.m"))) { CreateAndWriteFile(StrLit("main.m"), StrLit("\n#include \"main.c\"\n"), true); }
-		RunCliProgramAndExitOnFailure(StrLit("clang"), T_CLANG T_OSX, &args, StrLit("Failed to build sokol_example!"));
-		AssertFileExist(StrLit("sokol_example"), true);
-		PrintLine("Successfully built sokol_example for OSX!");
+		RunCliProgramAndExitOnFailure(StrLit("clang"), T_CLANG T_OSX, &args, StrLit("Failed to build sokol_triangle!"));
+		AssertFileExist(StrLit("sokol_triangle"), true);
+		PrintLine("Successfully built sokol_triangle for OSX!");
 	}
 	#else
 	#error build_script.c needs to be updated to support the current platform!
+	#endif
+	
+	// +--------------------------------------------------------------+
+	// |                             Run                              |
+	// +--------------------------------------------------------------+
+	#if RUN_AFTER_BUILD
+	{
+		CliArgs args = EMPTY;
+		Str executableName = (BUILDING_ON_WINDOWS ? StrLit("sokol_triangle.exe") : StrLit("./sokol_triangle"));
+		PrintLine("\n[Running %.*s]", StrPrint(executableName));
+		RunCliProgram(executableName, "", &args);
+	}
 	#endif
 	
 	return 0;
 }
 
 
-#if BUILDING_ON_OSX
+#if BUILDING_ON_LINUX
+#define SHDC_BIN_PATH "../sokol_tools/bin/linux/sokol-shdc"
+#elif BUILDING_ON_OSX_ARM
 #define SHDC_BIN_PATH  "../sokol_tools/bin/osx_arm64/sokol-shdc"
+#elif BUILDING_ON_OSX_INTEL
+#define SHDC_BIN_PATH  "../sokol_tools/bin/osx/sokol-shdc"
 #else
 #error build_script.c SHDC_BIN_PATH needs to be updated to support the current platform!
 #endif

@@ -10,13 +10,39 @@ Description:
 	** NOTE: This is based on triangle-sapp.c from sokol-samples
 */
 
-#define SOKOL_IMPL
+#if defined(_WIN32)
+#define TARGET_IS_WINDOWS 1
+#define TARGET_IS_LINUX   0
+#define TARGET_IS_OSX     0
+#elif defined(__APPLE__)
+#define TARGET_IS_WINDOWS 0
+#define TARGET_IS_LINUX   0
+#define TARGET_IS_OSX     1
+#elif defined(__linux__) || defined(__unix__)
+#define TARGET_IS_WINDOWS 0
+#define TARGET_IS_LINUX   1
+#define TARGET_IS_OSX     0
+#else
+#error Unknown TARGET!
+#endif
+
+#if TARGET_IS_OSX
 #define SOKOL_METAL
+#elif TARGET_IS_LINUX
+#define SOKOL_GLCORE
+#else
+#error main.c needs to be updated to support the current platform sokol_gfx.h choice!
+#endif
+
+#define SOKOL_IMPL
 #include "sokol_app.h"
 #include "sokol_gfx.h"
 #include "sokol_log.h"
 #include "sokol_glue.h"
 
+//NOTE: If you want to compile more than one shader implementation
+//      into the same compilation unit, you have to modify the
+//      generated header to resolve static variable name conflicts.
 #define SOKOL_SHDC_IMPL
 #include "basic_shader.glsl.h"
 
