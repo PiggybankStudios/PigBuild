@@ -1,0 +1,37 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+			"folder_exclude_patterns": [
+				"sokol/.github",
+				"sokol/assets",
+				"sokol/bindgen",
+				"sokol/shdgen",
+				"sokol/tests",
+				// "sokol/util",
+				"sokol_tools/fips-files",
+				"sokol_tools/testdata",
+			],
+			"file_exclude_patterns": [
+				"sokol/.editorconfig",
+				"sokol/.gitignore",
+				"sokol/CHANGELOG.md",
+				"sokol/LICENSE",
+				"sokol/fips.yml",
+				"sokol_tools/.gitignore",
+				"sokol_tools/build.zig",
+				"sokol_tools/build.zig.zon",
+				"sokol_tools/LICENSE",
+			],
+		},
+		{
+			"path": "../../src",
+			"name": "Pig Build (src)",
+		},
+		{
+			"path": "../../shell",
+			"name": "Pig Build (shell)",
+		}
+	]
+}

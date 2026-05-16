@@ -24,7 +24,7 @@ Description:
 //  	union
 //  	{
 //  		u64 item;
-//  		u64 itemAlias;
+//  		u64 value;
 //  	};
 //  };
 //  typedef struct List_u64 List_u64;

@@ -220,9 +220,9 @@ u64 MatchMinMax(Scan* scan, ScanSet set, u64 minNumChars, u64 maxNumChars)
 	}
 	return numCharsMatched;
 }
-#define ScanStar(scan, set) ScanMin((scan), (set), 0)
-#define ScanPlus(scan, set) ScanMin((scan), (set), 1)
-#define ScanOpt(scan, set)  ScanMinMax((scan), (set), 0, 1)
+#define ScanZeroOrMore(scan, set) ScanMin((scan), (set), 0)
+#define ScanOneOrMore(scan, set)  ScanMin((scan), (set), 1)
+#define ScanZeroOrOne(scan, set)  ScanMinMax((scan), (set), 0, 1)
 
 bool ScanStr(Scan* scan, Str str, bool caseSensitive)
 {
@@ -244,9 +244,9 @@ bool ScanStr(Scan* scan, Str str, bool caseSensitive)
 bool ScanExactStr(Scan* scan, Str str) { return ScanStr(scan, str, true); }
 bool ScanAnyCaseStr(Scan* scan, Str str) { return ScanStr(scan, str, false); }
 
-u64 ScanWhitespace(Scan* scan)   { return ScanStar(scan, ScanSet_Whitespace);   }
-u64 ScanAlphabetic(Scan* scan)   { return ScanStar(scan, ScanSet_Alphabetic);   }
-u64 ScanNumeric(Scan* scan)      { return ScanStar(scan, ScanSet_Numeric);      }
-u64 ScanAlphaNumeric(Scan* scan) { return ScanStar(scan, ScanSet_AlphaNumeric); }
+u64 ScanWhitespace(Scan* scan)   { return ScanZeroOrMore(scan, ScanSet_Whitespace);   }
+u64 ScanAlphabetic(Scan* scan)   { return ScanZeroOrMore(scan, ScanSet_Alphabetic);   }
+u64 ScanNumeric(Scan* scan)      { return ScanZeroOrMore(scan, ScanSet_Numeric);      }
+u64 ScanAlphaNumeric(Scan* scan) { return ScanZeroOrMore(scan, ScanSet_AlphaNumeric); }
 
 #endif //  _PIG_BUILD_SCAN_H

@@ -402,6 +402,7 @@ void RemoveFile(Str filePath)
 	#endif
 }
 
+//TODO: Add support for Linux/OSX!
 void MyRemoveDirectory(Str folderPath, bool recursive)
 {
 	Str folderPathNt = CopyStr(folderPath);
@@ -409,7 +410,7 @@ void MyRemoveDirectory(Str folderPath, bool recursive)
 	
 	if (!recursive)
 	{
-		int rmResult = rmdir("apk_temp");
+		int rmResult = rmdir(folderPathNt.chars);
 		if (rmResult != 0)
 		{
 			AssertFmt(rmResult == 0, "rmdir(\"%s\") failed: errno=%d", folderPathNt.chars, errno);

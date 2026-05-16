@@ -62,7 +62,7 @@ void RunTests_Scan()
 		while (!m.failed && m.cursor < m.str.length)
 		{
 			ScanMin(&m, ScanSet_Both(ScanSet_Alphabetic, ScanSet_StrLit(",.")), 1);
-			ScanStar(&m, ScanSet_Whitespace);
+			ScanZeroOrMore(&m, ScanSet_Whitespace);
 		}
 		PrintLine("%.*s", StrPrint(regex));
 		PrintScan(&m);

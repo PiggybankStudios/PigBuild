@@ -1,0 +1,4 @@
+build/
+sokol/
+sokol_tools/
+*.sublime-workspace
