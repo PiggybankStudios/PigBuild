@@ -148,6 +148,23 @@ Date:   03\21\2026
 #define mkdir(dirname, permissions) _mkdir(dirname) //permissions are ignored
 #endif
 
+#if BUILDING_ON_WINDOWS
+#define OBJ_EXT ".obj"
+#define DLL_EXT ".dll"
+#define LIB_EXT ".lib"
+#define EXE_EXT ".exe"
+#elif BUILDING_ON_OSX
+#define OBJ_EXT ".o"
+#define DLL_EXT ".dylib"
+#define LIB_EXT ".dylib"
+#define EXE_EXT ""
+#else
+#define OBJ_EXT ".o"
+#define DLL_EXT ".so"
+#define LIB_EXT ".so"
+#define EXE_EXT ""
+#endif
+
 // +--------------------------------------------------------------+
 // |                    stdint.h Type Aliases                     |
 // +--------------------------------------------------------------+

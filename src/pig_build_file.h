@@ -260,7 +260,7 @@ void CreateAndWriteFile(Str filePath, Str contents, bool convertNewLines)
 			FILE_ATTRIBUTE_NORMAL, //Default file attributes
 			0                      //No Template File
 		);
-		Assert(fileHandle != INVALID_HANDLE_VALUE);
+		AssertFmt(fileHandle != INVALID_HANDLE_VALUE, "Failed to CreateAndWriteFile(\"%.*s\", char[%llu], %s)", StrPrint(filePath), contents.length, convertNewLines ? "true" : "false");
 		if (contents.length > 0)
 		{
 			DWORD bytesWritten = 0;

@@ -99,4 +99,79 @@ bool RemoveStr(StrArray* array, Str targetStr, bool ignoreCase)
 	}
 }
 
+// NOTE: The following functions are a bit experimental and may be slightly confusing with their macro
+//       wrappers but they allow you to make StrArrays or add to them in ergonamic ways.
+//
+//       For example:
+//         StrArray sourceFiles = MakeStrArrayVa("main.c", "file.c", "ui.c");
+//         AddStrsVa(&sourceFiles, "helpers.c", "debug.c");
+//
+// NOTE: In order for this to work we need a first argument AND we need a nullptr as the last argument.
+//       The first argument is required for the va_start call (if compiling in C23+ you could omit this).
+//       The nullptr last argument is required so we can discover the number of arguments automatically.
+//       Both requirements are enforced by the macros, so you should call those, not the functions with trailing underscore.
+//
+// NOTE: You cannot have a trailing comma at the end of your strings, and you cannot have nullptr as a value (use "" instead)
+
+StrArray MakeStrArrayVa_(int firstArgument, ...)
+{
+	StrArray result = EMPTY;
+	va_list args;
+	va_start(args, firstArgument); //omitting second argument here is available after C23
+	while (true)
+	{
+		const char* nextStr = va_arg(args, const char*);
+		if (nextStr == nullptr) { break; }
+		AddStrNt(&result, nextStr);
+	}
+	va_end(args);
+	return result;
+}
+#define MakeStrArrayVa(...) MakeStrArrayVa_(0, ##__VA_ARGS__, (const char*)0)
+
+void AddStrsVa_(StrArray* array, ...)
+{
+	va_list args;
+	va_start(args, array);
+	while (true)
+	{
+		const char* nextStr = va_arg(args, const char*);
+		if (nextStr == nullptr) { break; }
+		AddStrNt(array, nextStr);
+	}
+	va_end(args);
+}
+#define AddStrsVa(arrayPntr, ...) AddStrsVa_((arrayPntr), ##__VA_ARGS__, (const char*)0)
+
+#define STR_VA_ARGS_SENTINEL MakeStr(UINT64_MAX, nullptr)
+StrArray MakeStrArrayVaStr_(int firstArgument, ...)
+{
+	StrArray result = EMPTY;
+	va_list args;
+	va_start(args, firstArgument); //omitting second argument here is available after C23
+	while (true)
+	{
+		Str nextStr = va_arg(args, Str);
+		if (nextStr.length == UINT64_MAX) { break; }
+		AddStr(&result, nextStr);
+	}
+	va_end(args);
+	return result;
+}
+#define MakeStrArrayVaStr(...) MakeStrArrayVaStr_(0, ##__VA_ARGS__, STR_VA_ARGS_SENTINEL)
+
+void AddStrsVaStr_(StrArray* array, ...)
+{
+	va_list args;
+	va_start(args, array);
+	while (true)
+	{
+		Str nextStr = va_arg(args, Str);
+		if (nextStr.length == UINT64_MAX) { break; }
+		AddStr(array, nextStr);
+	}
+	va_end(args);
+}
+#define AddStrsVaStr(arrayPntr, ...) AddStrsVaStr_((arrayPntr), ##__VA_ARGS__, STR_VA_ARGS_SENTINEL)
+
 #endif //  _PIG_BUILD_STR_ARRAY_H

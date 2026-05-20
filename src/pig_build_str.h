@@ -358,23 +358,6 @@ Str GetFileExtPart(Str fullPath, bool includeSubExtensions)
 	if (periodIndex < fullPath.length) { return StrSliceFrom(fullPath, periodIndex); }
 	else { return StrSliceFrom(fullPath, fullPath.length); }
 }
-Str RemovePathExtension(Str fullPath, bool includeSubExtensions)
-{
-	u64 periodIndex = fullPath.length;
-	for (u64 cIndex = 0; cIndex < fullPath.length; cIndex++)
-	{
-		char character = fullPath.chars[cIndex];
-		if (IsSlash(character)) { periodIndex = fullPath.length; }
-		else if (character == '.' && (!includeSubExtensions || periodIndex >= fullPath.length)) { periodIndex = cIndex; }
-	}
-	return StrSlice(fullPath, 0, periodIndex);
-}
-Str AddSuffixToFileName(Str filePath, Str suffix)
-{
-	Str fileExtension = GetFileExtPart(filePath, true);
-	Str fileDirAndName = RemovePathExtension(filePath, true);
-	return JoinStrings3(fileDirAndName, suffix, fileExtension);
-}
 
 u64 CountPathParts(Str fileOrFolderPath)
 {
@@ -447,6 +430,38 @@ Str JoinPaths(Str leftPath, Str rightPath)
 {
 	if (leftPath.length == 0 || rightPath.length == 0 || HasTrailingSlash(leftPath) || IsSlash(rightPath.chars[0])) { return JoinStrings2(leftPath, rightPath); }
 	else { return JoinStrings3(leftPath, StrLit("/"), rightPath); }
+}
+#define JoinPathsLit(leftPath, rightPathStrLiteral) JoinPaths((leftPath), StrLit(rightPathStrLiteral))
+#define JoinPathsNt(leftPath, rightPathNullTerm)    JoinPaths((leftPath), MakeStrNt(rightPathNullTerm))
+
+Str RemovePathExtension(Str path, bool removeSubExtensions)
+{
+	Str extensionPart = GetFileExtPart(path, removeSubExtensions);
+	return StrSlice(path, 0, path.length - extensionPart.length);
+}
+Str ChangePathExtension(Str path, Str newExtension, bool replaceSubExtensions)
+{
+	Str pathNoExt = RemovePathExtension(path, replaceSubExtensions);
+	return JoinStrings2(pathNoExt, newExtension);
+}
+Str ChangePathFolder(Str path, Str newFolder)
+{
+	Str fileNameWithExt = GetFileNamePart(path, true);
+	return JoinPaths(newFolder, fileNameWithExt);
+}
+Str ChangePathFolderAndExtension(Str path, Str newFolder, Str newExtension, bool replaceSubExtensions)
+{
+	Str pathChangedFolder = ChangePathFolder(path, newFolder);
+	Str finalPath = ChangePathExtension(pathChangedFolder, newExtension, replaceSubExtensions);
+	FreeStr(&pathChangedFolder);
+	return finalPath;
+}
+
+Str AddSuffixToFileName(Str filePath, Str suffix)
+{
+	Str fileExtension = GetFileExtPart(filePath, true);
+	Str fileDirAndName = RemovePathExtension(filePath, true);
+	return JoinStrings3(fileDirAndName, suffix, fileExtension);
 }
 
 // +--------------------------------------------------------------+

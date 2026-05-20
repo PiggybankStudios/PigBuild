@@ -82,6 +82,11 @@ struct CliArgs
 	Array_CliArg array;
 };
 
+Str ResolveRootTo(Str path, Str rootPath)
+{
+	return StrReplace(path, StrLit(CLI_ROOT_DIR), rootPath);
+}
+
 CliArg* AddTaggedArgStr(CliArgs* args, const char* includeExcludeTagsStr, const char* formatStrNt, Str valueStr)
 {
 	CliArg* newArg = AddItemArray_CliArg(&args->array);

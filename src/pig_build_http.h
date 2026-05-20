@@ -73,30 +73,34 @@ void DownloadFromUrl(Str url, Str filePath)
 
 void DownloadFromUrlAndCheck(Str url, Str filePath, u64 expectedSize, u64 expectedHash)
 {
-	DownloadFromUrl(url, filePath);
-	EnsureFileSizeAndHash(filePath, expectedSize, expectedHash);
+	Str filePathResolved = ResolveRootTo(filePath, StrLit(".."));
+	DownloadFromUrl(url, filePathResolved);
+	EnsureFileSizeAndHash(filePathResolved, expectedSize, expectedHash);
+	FreeStr(&filePathResolved);
 }
 
 void DownloadAndExtractArchive(Str url, Str archiveFilePath, u64 expectedArchiveSize, u64 expectedArchiveHash, Str outputFolderPath, Str archiveDirToExtract)
 {
-	Str tempPath = AddSuffixToFileName(archiveFilePath, StrLit("_TEMP"));
-	DownloadFromUrlAndCheck(url, tempPath, expectedArchiveSize, expectedArchiveHash);
-	CopyFileToPath(tempPath, archiveFilePath, true);
-	RemoveFile(tempPath);
+	Str archiveFileResolved = ResolveRootTo(archiveFilePath, StrLit(".."));
+	Str outputFolderResolved = ResolveRootTo(outputFolderPath, StrLit(".."));
 	
-	if (!DoesFolderExist(outputFolderPath))
 	{
-		Str outputFolderPathNt = CopyStr(outputFolderPath);
-		mkdir(outputFolderPathNt.chars, FOLDER_PERMISSIONS);
-		FreeStr(&outputFolderPathNt);
+		Str tempPath = AddSuffixToFileName(archiveFileResolved, StrLit("_TEMP"));
+		DownloadFromUrlAndCheck(url, tempPath, expectedArchiveSize, expectedArchiveHash);
+		CopyFileToPath(tempPath, archiveFileResolved, true);
+		RemoveFile(tempPath);
 	}
 	
-	UnzipResult unzipResult = UnzipEntireArchiveInto(archiveFilePath, archiveDirToExtract, outputFolderPath);
+	if (!DoesFolderExist(outputFolderResolved)) { mkdir(outputFolderResolved.chars, FOLDER_PERMISSIONS); }
+	
+	UnzipResult unzipResult = UnzipEntireArchiveInto(archiveFileResolved, archiveDirToExtract, outputFolderResolved);
 	if (!unzipResult.success)
 	{
 		PrintLine_E("Failed to unpack archive %.*s, from \"%.*s\"", StrPrint(unzipResult.errorStr), StrPrint(url));
 		exit(6);
 	}
+	FreeStr(&archiveFileResolved);
+	FreeStr(&outputFolderResolved);
 }
 
 #endif //  _PIG_BUILD_HTTP_H
