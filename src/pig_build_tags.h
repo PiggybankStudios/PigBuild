@@ -36,6 +36,7 @@ Description:
 #define T_MSVC_CL         "|cl"
 #define T_MSVC_LINK       "|link"
 #define T_MSVC_CL_OR_LINK "|ClOrLink"
+#define T_MSVC_RC         "|rc"
 #define T_CLANG           "|clang"
 #define T_GCC             "|gcc"
 

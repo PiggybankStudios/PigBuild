@@ -38,11 +38,12 @@ Description:
 #define CL_NO_WARNINGS_AS_ERRORS            "/WX-"
 #define CL_INCLUDE_DIR                      "/I\"[VAL]\"" //Adds an include directory to search in when resolving #includes
 #define CL_DEBUG_INFO                       "/Zi"
+#define CL_DEBUG_INFO_IN_OBJ                "/Z7"
 #define CL_STD_LIB_STATIC                   "/MT"
 #define CL_STD_LIB_DYNAMIC                  "/MD"
 #define CL_STD_LIB_STATIC_DBG               "/MTd"
 #define CL_STD_LIB_DYNAMIC_DBG              "/MDd"
-#define CL_OPTIMIZATION_LEVEL               "/O[VAL]" //t, y
+#define CL_OPTIMIZATION_LEVEL               "/O[VAL]" //t, y, 2, d, b1
 #define CL_INLINE_EXPANSION_LEVEL           "/Ob[VAL]" //0, 1, 2, 3
 #define CL_PRECOMPILE_ONLY                  "/P"
 #define CL_PRECOMPILE_PRESERVE_COMMENTS     "/C"
@@ -104,6 +105,10 @@ Description:
 #define LINK_INCREMENTAL_FILE_NAME     "/ILK:\"[VAL]\""
 #define LINK_IMPORT_LIBRARY_FILE       "/IMPLIB:\"[VAL]\"" //Specify the name of the import library (the .lib that pairs with a .dll)
 #define LINK_DEBUG_INFO_FILE           "/PDB:\"[VAL]\""
+#define LINK_NATVIS_PATH               "/NATVIS:\"[VAL]\""
+#define LINK_NO_EXP                    "/noexp" //TODO: Name this better
+#define LINK_NO_COFF_GRP_INFO          "/nocoffgrpinfo" //TODO: Name this better
+#define LINK_OPT                       "/opt:[VAL]" //TODO: Name this better, Values: ref, icf
 
 // +==============================+
 // |        MSVC RC Flags         |
@@ -142,8 +147,9 @@ Description:
 #define CLANG_fPIC                   "-fPIC" //TODO: Name this better!
 #define CLANG_ENABLE_OBJC_ARC        "-fobjc-arc" // Enables Automatic Reference Counting (ARC) feature in Objective-C
 #define CLANG_STDLIB_FOLDER          "--sysroot \"[VAL]\""
-#define CLANG_M_FLAG                 "-m[VAL]" //TODO: Name this better!
+#define CLANG_M_FLAG                 "-m[VAL]" //TODO: Name this better! Values: cx16, sha
 #define CLANG_TARGET_ARCHITECTURE    "--target=[VAL]"
+#define CLANG_COMPILER_ARG           "-Xclang [VAL]" //TODO: Name this better!
 #define CLANG_LINKER_ARG             "-Xlinker [VAL]" //TODO: Name this better!
 //NOTE: Arguments prefixed with -Wl, are passed along to the linker
 #define CLANG_NO_ENTRYPOINT          "-Wl,--no-entry"
@@ -166,12 +172,26 @@ Description:
 #define CLANG_STACK_PROTECTOR_STRONG "-fstack-protector-strong" //TODO: Better name? Decription?
 #define CLANG_NO_STDLIB_CPP          "-nostdlib++"
 
-#define CLANG_WARNING_SWITCH_MISSING_CASES          "switch" //8 enumeration values not handled in switch: 'ArenaType_None', 'ArenaType_Funcs', 'ArenaType_Generic'...
-#define CLANG_WARNING_UNUSED_FUNCTION               "unused-function" //unused function 'MeowExpandSeed'
-#define CLANG_WARNING_UNUSED_CMD_LINE_ARG           "unused-command-line-argument" //argument unused during compilation: '-L../third_party/_lib_debug'
-#define CLANG_WARNING_SHADOWING                     "shadow" //Warn whenever a local variable or type declaration shadows another variable, parameter, type, class member (in C++), or instance variable (in Objective-C) or whenever a built-in function is shadowed
-#define CLANG_WARNING_MISSING_FALLTHROUGH_IN_SWITCH "implicit-fallthrough" //Must use [[fallthrough]] on a case label that falls through to the next case
-#define CLANG_WARNING_MISSING_FIELD_INITIALIZERS    "missing-field-initializers" //Warn when curly bracket initializers don't contain values for all fields
+#define CLANG_WARNING_UNKNOWN_WARNING_OPTION           "unknown-warning-option" //TODO: What does this warning look like?
+#define CLANG_WARNING_SWITCH_MISSING_CASES             "switch" //8 enumeration values not handled in switch: 'ArenaType_None', 'ArenaType_Funcs', 'ArenaType_Generic'...
+#define CLANG_WARNING_UNUSED_FUNCTION                  "unused-function" //unused function 'MeowExpandSeed'
+#define CLANG_WARNING_UNUSED_PARAMETER                 "unused-parameter" //TODO: What does this warning look like
+#define CLANG_WARNING_UNUSED_VALUE                     "unused-value" //TODO: What does this warning look like
+#define CLANG_WARNING_UNUSED_VARIABLE                  "unused-variable" //TODO: What does this warning look like
+#define CLANG_WARNING_UNUSED_LOCAL_TYPEDEF             "unused-local-typedef" //TODO: What does this warning look like
+#define CLANG_WARNING_UNUSED_BUT_SET_VARIABLE          "unused-but-set-variable" //TODO: What does this warning look like
+#define CLANG_WARNING_UNUSED_CMD_LINE_ARG              "unused-command-line-argument" //argument unused during compilation: '-L../third_party/_lib_debug'
+#define CLANG_WARNING_SHADOWING                        "shadow" //Warn whenever a local variable or type declaration shadows another variable, parameter, type, class member (in C++), or instance variable (in Objective-C) or whenever a built-in function is shadowed
+#define CLANG_WARNING_MISSING_FALLTHROUGH_IN_SWITCH    "implicit-fallthrough" //Must use [[fallthrough]] on a case label that falls through to the next case
+#define CLANG_WARNING_MISSING_FIELD_INITIALIZERS       "missing-field-initializers" //Warn when curly bracket initializers don't contain values for all fields
+#define CLANG_WARNING_MISSING_BRACES                   "missing-braces" //TODO: What does this warning look like?
+#define CLANG_WARNING_WRITABLE_STRINGS                 "writable-strings" //TODO: What does this warning look like?
+#define CLANG_WARNING_DEPRECATED_REGISTER              "deprecated-register" //TODO: What does this warning look like?
+#define CLANG_WARNING_DEPRECATED_DECLARATIONS          "deprecated-declarations" //TODO: What does this warning look like?
+#define CLANG_WARNING_SINGLE_BIT_BITFIELD_CONVERSION   "single-bit-bitfield-constant-conversion" //TODO: What does this warning look like?
+#define CLANG_WARNING_COMPARE_DISTINCT_POINTER_TYPES   "compare-distinct-pointer-types" //TODO: What does this warning look like?
+#define CLANG_WARNING_INITIALIZER_OVERRIDES            "initializer-overrides" //TODO: What does this warning look like?
+#define CLANG_WARNING_INCOMP_PNTR_DISCARDS_QUALIFIERS  "incompatible-pointer-types-discards-qualifiers" //TODO: What does this warning look like?
 
 
 
