@@ -92,7 +92,7 @@ CliArg* AddTaggedArgStr(CliArgs* args, const char* includeExcludeTagsStr, const 
 	CliArg* newArg = AddItemArray_CliArg(&args->array);
 	newArg->format = CopyStrNt(formatStrNt);
 	newArg->value = CopyStr(valueStr);
-	SplitIncludeExcludeTagsListStr(MakeStrNt(includeExcludeTagsStr), &newArg->includeTags, &newArg->excludeTags);
+	SplitTagsIncExcNt(includeExcludeTagsStr, &newArg->includeTags, &newArg->excludeTags);
 	// if (newArg->includeTags.length > 0 || newArg->excludeTags.length > 0)
 	// {
 	// 	PrintLine("\"%.*s\" has %llu include tag%s and %llu exclude tag%s:",

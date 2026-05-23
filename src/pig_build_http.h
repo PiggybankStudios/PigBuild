@@ -65,7 +65,7 @@ void DownloadFromUrl(Str url, Str filePath)
 		AddArgStr(&args, "-o \"[VAL]\"", filePath);
 		AddArg(&args, urlNt.chars);
 		//TODO: Make the error message here much clearer! Is curl not installed? Did the URL return a error code? etc.
-		RunCliProgramAndExitOnFailure(StrLit("curl"), "", &args, StrLit("Failed to download file using \"curl\" CLI tool!"));
+		RunCliProgramAndExitOnFailure(StrLit("curl"), &args, StrLit("Failed to download file using \"curl\" CLI tool!"));
 		AssertFileExist(filePath, false);
 	}
 	#endif

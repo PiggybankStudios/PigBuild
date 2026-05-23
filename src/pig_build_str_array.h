@@ -99,6 +99,67 @@ bool RemoveStr(StrArray* array, Str targetStr, bool ignoreCase)
 	}
 }
 
+Str JoinStrArray(const StrArray* array, Str joinerStr, bool joinersAroundEmptyParts)
+{
+	Str result = Str_Empty_Const;
+	for (u64 sIndex = 0; sIndex < array->length; sIndex++)
+	{
+		if (array->strings[sIndex].length > 0 || joinersAroundEmptyParts)
+		{
+			if (result.length > 0) { result.length += joinerStr.length; }
+			result.length += array->strings[sIndex].length;
+		}
+	}
+	result = AllocStr(result.length);
+	u64 byteIndex = 0;
+	for (u64 sIndex = 0; sIndex < array->length; sIndex++)
+	{
+		if (array->strings[sIndex].length > 0 || joinersAroundEmptyParts)
+		{
+			if (byteIndex > 0)
+			{
+				if (joinerStr.length > 0) { memcpy(&result.bytes[byteIndex], joinerStr.bytes, joinerStr.length); }
+				byteIndex += joinerStr.length;
+			}
+			if (array->strings[sIndex].length > 0) { memcpy(&result.bytes[byteIndex], array->strings[sIndex].bytes, array->strings[sIndex].length); }
+			byteIndex += array->strings[sIndex].length;
+		}
+	}
+	return result;
+}
+
+u64 SplitStrIntoArray(StrArray* arrayOut, bool includeEmptyParts, Str separatorStr, Str joinedStr)
+{
+	u64 numParts = 0;
+	u64 prevSepIndex = 0;
+	for (u64 cIndex = 0; cIndex <= joinedStr.length; cIndex++)
+	{
+		if ((cIndex + separatorStr.length <= joinedStr.length && memcmp(&joinedStr.chars[cIndex], separatorStr.chars, separatorStr.length) == 0) ||
+			cIndex == joinedStr.length)
+		{
+			Str partStr = StrSlice(joinedStr, prevSepIndex, cIndex);
+			if (!IsEmptyStr(partStr) || includeEmptyParts)
+			{
+				if (arrayOut != nullptr) { AddStr(arrayOut, partStr); }
+				numParts++;
+			}
+			prevSepIndex = cIndex + separatorStr.length;
+		}
+	}
+	return numParts;
+}
+#define SplitStrIntoArrayNt(arrayOutPntr, includeEmptyParts, separatorNullTerm, joinedNullTerm) SplitStrIntoArray((arrayOutPntr), (includeEmptyParts), MakeStrNt(separatorNullTerm), MakeStrNt(joinedNullTerm))
+#define SplitStrIntoArrayLit(arrayOutPntr, includeEmptyParts, separatorStrLit, joinedStrLit)    SplitStrIntoArray((arrayOutPntr), (includeEmptyParts), StrLit(separatorStrLit), StrLit(joinedStrLit))
+
+StrArray MakeStrArrayBySplitting(bool includeEmptyParts, Str separatorStr, Str joinedStr)
+{
+	StrArray result = EMPTY;
+	SplitStrIntoArray(&result, includeEmptyParts, separatorStr, joinedStr);
+	return result;
+}
+#define MakeStrArrayBySplittingNt(includeEmptyParts, separatorNullTerm, joinedNullTerm) MakeStrArrayBySplitting((includeEmptyParts), MakeStrNt(separatorNullTerm), MakeStrNt(joinedNullTerm))
+#define MakeStrArrayBySplittingLit(includeEmptyParts, separatorStrLit, joinedStrLit)    MakeStrArrayBySplitting((includeEmptyParts), StrLit(separatorStrLit), StrLit(joinedStrLit))
+
 // NOTE: The following functions are a bit experimental and may be slightly confusing with their macro
 //       wrappers but they allow you to make StrArrays or add to them in ergonamic ways.
 //

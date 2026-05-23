@@ -20,10 +20,10 @@ Description:
 // +--------------------------------------------------------------+
 // |                        RunCliProgram                         |
 // +--------------------------------------------------------------+
-int RunCliProgramTagArray(Str programPath, StrArray* tagsListPntr, const CliArgs* args)
+int RunCliProgramTags(Str programPath, StrArray tagsList, const CliArgs* args)
 {
-	// PrintLine("Joining/filtering %llu arguments against %llu tags for \"%.*s\"", args->numArgs, (tagsListPntr != nullptr) ? tagsListPntr->length : 0ULL, StrPrint(programPath));
-	Str joinedArgs = FilterAndJoinCliArgsList(programPath, args, tagsListPntr);
+	// PrintLine("Joining/filtering %llu arguments against %llu tags for \"%.*s\"", args->numArgs, (tagsList != nullptr) ? tagsList->length : 0ULL, StrPrint(programPath));
+	Str joinedArgs = FilterAndJoinCliArgsList(programPath, args, &tagsList);
 	#if PIG_BUILD_PRINT_SYS_CMDS
 	PrintLine(">> %s", joinedArgs.chars);
 	#endif
@@ -33,22 +33,13 @@ int RunCliProgramTagArray(Str programPath, StrArray* tagsListPntr, const CliArgs
 	free(joinedArgs.chars);
 	return resultCode;
 }
-int RunCliProgram(Str programPath, const char* tagsListStr, const CliArgs* args)
+#define RunCliProgram(programPathStr, argsPntr)                         RunCliProgramTags((programPathStr), SplitTagsLit(""), (argsPntr))
+#define RunCliProgramTagsNt(programPathStr, tagsListNullTerm, argsPntr) RunCliProgramTags((programPathStr), SplitTagsNt(tagsListNullTerm), (argsPntr))
+#define RunCliProgramTagsLit(programPathStr, tagsListStrLit, argsPntr)  RunCliProgramTags((programPathStr), SplitTagsLit(tagsListStrLit),  (argsPntr))
+
+void RunCliProgramAndExitOnFailureTags(Str programPath, StrArray tagsList, const CliArgs* args, Str errorMessage)
 {
-	StrArray tagArray = EMPTY;
-	SplitTagsListStr(MakeStrNt(tagsListStr), &tagArray);
-	// if (tagArray.length > 0)
-	// {
-	// 	PrintLine("%.*s with %llu tag%s:", StrPrint(programPath), tagArray.length, Plural(tagArray.length, "s"));
-	// 	for (u64 tIndex = 0; tIndex < tagArray.length; tIndex++) { PrintLine("\t[%llu] \"%.*s\"", tIndex, StrPrint(tagArray.strings[tIndex])); }
-	// }
-	int result = RunCliProgramTagArray(programPath, &tagArray, args);
-	FreeStrArray(&tagArray);
-	return result;
-}
-void RunCliProgramTagArrayAndExitOnFailure(Str programPath, StrArray* tagsListPntr, const CliArgs* args, Str errorMessage)
-{
-	int statusCode = RunCliProgramTagArray(programPath, tagsListPntr, args);
+	int statusCode = RunCliProgramTags(programPath, tagsList, args);
 	if (statusCode != 0)
 	{
 		Str programNamePart = GetFileNamePart(programPath, true);
@@ -60,13 +51,9 @@ void RunCliProgramTagArrayAndExitOnFailure(Str programPath, StrArray* tagsListPn
 		exit(statusCode);
 	}
 }
-void RunCliProgramAndExitOnFailure(Str programPath, const char* tagListStr, const CliArgs* args, Str errorMessage)
-{
-	StrArray tagArray = EMPTY;
-	SplitTagsListStr(MakeStrNt(tagListStr), &tagArray);
-	RunCliProgramTagArrayAndExitOnFailure(programPath, &tagArray, args, errorMessage);
-	FreeStrArray(&tagArray);
-}
+#define RunCliProgramAndExitOnFailure(programPathStr, argsPntr, errorMessageStr)                         RunCliProgramAndExitOnFailureTags((programPathStr), SplitTagsLit(""), (argsPntr), (errorMessageStr))
+#define RunCliProgramAndExitOnFailureTagsNt(programPathStr, tagsListNullTerm, argsPntr, errorMessageStr) RunCliProgramAndExitOnFailureTags((programPathStr), SplitTagsNt(tagsListNullTerm), (argsPntr), (errorMessageStr))
+#define RunCliProgramAndExitOnFailureTagsLit(programPathStr, tagsListStrLit, argsPntr, errorMessageStr)  RunCliProgramAndExitOnFailureTags((programPathStr), SplitTagsLit(tagsListStrLit),  (argsPntr), (errorMessageStr))
 
 // +--------------------------------------------------------------+
 // |                            Types                             |
@@ -357,7 +344,7 @@ void RunBatchFileAndApplyDumpedEnvironment(Str batchFilePath, Str environmentFil
 	
 	if (!DoesFileExist(environmentFilePath) || !skipRunningIfFileExists)
 	{
-		int statusCode = RunCliProgram(fixedBatchFilePath, "", &cmd);
+		int statusCode = RunCliProgram(fixedBatchFilePath, &cmd);
 		if (statusCode != 0)
 		{
 			PrintLine_E("%.*s failed! Status Code: %d", StrPrint(fixedBatchFilePath), statusCode);

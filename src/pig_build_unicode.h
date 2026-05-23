@@ -162,12 +162,12 @@ Str CodepointToUtf8(u32 codepoint)
 	return result;
 }
 
-u32 Utf8ToCodepoint(Str* strPntr)
+u32 TakeNextUtf8Codepoint(Str* strPntr)
 {
 	NotNull(strPntr);
 	u32 result = 0;
 	u8 codepointByteLength = 0;
-	AssertMsg(strPntr->length > 0, "Empty string passed to Utf8ToCodepoint!");
+	AssertMsg(strPntr->length > 0, "Empty string passed to TakeNextUtf8Codepoint!");
 	
 	const u8* bytePntr = strPntr->bytes;
 	if (bytePntr[0] <= 127) //0xxx xxxx
@@ -213,20 +213,41 @@ u32 Utf8ToCodepoint(Str* strPntr)
 	return result;
 }
 
-Str CodepointsToUtf8Str(u64 numCodepoints, const u32* codepoints)
+Str32 Utf8StrToCodepoints(Str str)
 {
-	Assert(codepoints != nullptr || numCodepoints == 0);
-	Str result = Str_Empty_Const;
-	for (u64 cIndex = 0; cIndex < numCodepoints; cIndex++)
+	Str32 result = Str32_Empty_Const;
+	Str consumeStr = str;
+	while (consumeStr.length > 0)
 	{
-		result.length += (u64)CodepointUtf8Size(codepoints[cIndex]);
+		u32 codepoint = TakeNextUtf8Codepoint(&consumeStr);
+		result.numCodepoints++;
+	}
+	if (result.numCodepoints == 0) { return result; }
+	result = AllocStr32(result.numCodepoints);
+	consumeStr = str;
+	u64 codepointIndex = 0;
+	while (consumeStr.length > 0)
+	{
+		result.codepoints[codepointIndex] = TakeNextUtf8Codepoint(&consumeStr);
+		codepointIndex++;
+	}
+	return result;
+}
+
+Str CodepointsToUtf8Str(Str32 codepointsStr)
+{
+	Assert(codepointsStr.codepoints != nullptr || codepointsStr.numCodepoints == 0);
+	Str result = Str_Empty_Const;
+	for (u64 cIndex = 0; cIndex < codepointsStr.numCodepoints; cIndex++)
+	{
+		result.length += (u64)CodepointUtf8Size(codepointsStr.codepoints[cIndex]);
 	}
 	result = AllocStr(result.length);
 	u64 byteIndex = 0;
-	for (u64 cIndex = 0; cIndex < numCodepoints; cIndex++)
+	for (u64 cIndex = 0; cIndex < codepointsStr.numCodepoints; cIndex++)
 	{
-		Str codepointStr = CodepointToUtf8InBuffer(codepoints[cIndex], &result.bytes[byteIndex]);
-		byteIndex += codepointStr.length;
+		Str utf8Bytes = CodepointToUtf8InBuffer(codepointsStr.codepoints[cIndex], &result.bytes[byteIndex]);
+		byteIndex += utf8Bytes.length;
 	}
 	return result;
 }
@@ -234,13 +255,22 @@ Str CodepointsToUtf8Str(u64 numCodepoints, const u32* codepoints)
 // +--------------------------------------------------------------+
 // |                            UTF-16                            |
 // +--------------------------------------------------------------+
+//returns number of words, not number of bytes
+u8 CodepointUtf16Size(u32 codepoint)
+{
+	if (codepoint < 0x00D800) { return 1; }
+	else if (codepoint < 0x010000) { return 0; }
+	else if (codepoint < 0x10FFFF) { return 2; }
+	else { return 0; }
+}
+
 Str16 CodepointToUtf16InBuffer(u32 codepoint, u16* wordBuffer)
 {
 	Str16 result = MakeStr16(0, wordBuffer);
 	if (codepoint < 0x00D800)
 	{
 		result.words[0] = (u16)codepoint;
-		result.length = 1;
+		result.numWords = 1;
 	}
 	else if (codepoint < 0x010000)
 	{
@@ -250,7 +280,7 @@ Str16 CodepointToUtf16InBuffer(u32 codepoint, u16* wordBuffer)
 	{
 		result.words[0] = 0xD800 | (((codepoint - 0x010000) & 0x0FFC00) >> 10); //high surrogate
 		result.words[0] = 0xDC00 | (((codepoint - 0x010000) & 0x0003FF) >>  0); //low surrogate
-		result.length = 2;
+		result.numWords = 2;
 	}
 	else
 	{
@@ -262,11 +292,11 @@ Str16 CodepointToUtf16InBuffer(u32 codepoint, u16* wordBuffer)
 Str16 CodepointToUtf16(u32 codepoint)
 {
 	Str16 result = AllocStr16(UTF16_MAX_CHAR_SIZE);
-	result.length = 0;
+	result.numWords = 0;
 	if (codepoint < 0x00D800)
 	{
 		result.words[0] = (u16)codepoint;
-		result.length = 1;
+		result.numWords = 1;
 	}
 	else if (codepoint < 0x010000)
 	{
@@ -276,7 +306,7 @@ Str16 CodepointToUtf16(u32 codepoint)
 	{
 		result.words[0] = 0xD800 | (((codepoint - 0x010000) & 0x0FFC00) >> 10); //high surrogate
 		result.words[0] = 0xDC00 | (((codepoint - 0x010000) & 0x0003FF) >>  0); //low surrogate
-		result.length = 2;
+		result.numWords = 2;
 	}
 	else
 	{
@@ -285,12 +315,12 @@ Str16 CodepointToUtf16(u32 codepoint)
 	return result;
 }
 
-u32 Utf16ToCodepoint(Str16* strPntr)
+u32 TakeNextUtf16Codepoint(Str16* strPntr)
 {
 	NotNull(strPntr);
 	u32 result = 0;
 	u8 codepointWordLength = 0;
-	AssertMsg(strPntr->length > 0, "Empty string passed to Utf8ToCodepoint!");
+	AssertMsg(strPntr->numWords > 0, "Empty string passed to TakeNextUtf16Codepoint!");
 	
 	const u16* wordPntr = strPntr->words;
 	if (wordPntr[0] < 0xD800)
@@ -304,7 +334,7 @@ u32 Utf16ToCodepoint(Str16* strPntr)
 	}
 	else if (wordPntr[0] < 0xDC00) //surrogate pairs
 	{
-		AssertFmt(strPntr->length >= 2, "Expected at least one more word in string following: 0x%04X", wordPntr[0]);
+		AssertFmt(strPntr->numWords >= 2, "Expected at least one more word in string following: 0x%04X", wordPntr[0]);
 		AssertFmt(wordPntr[1] >= 0xDC00 && wordPntr[1] < 0xE000, "UTF-16 surrogate pair has invalid second word: 0x%04X 0x%04X", wordPntr[0], wordPntr[1]);
 		result = ((u32)(wordPntr[0] & 0x03FF) << 10) | ((u32)(wordPntr[1] & 0x03FF) << 0);
 		codepointWordLength = 2;
@@ -314,8 +344,92 @@ u32 Utf16ToCodepoint(Str16* strPntr)
 		AssertFmt(wordPntr[0] < 0xDC00, "Invalid word in UTF-16 sequence: 0x%04X", wordPntr[0]);
 	}
 	
-	strPntr->length -= codepointWordLength;
+	strPntr->numWords -= codepointWordLength;
 	strPntr->words += codepointWordLength;
+	return result;
+}
+
+Str32 Utf16StrToCodepoints(Str16 str)
+{
+	Str32 result = Str32_Empty_Const;
+	Str16 consumeStr = str;
+	while (consumeStr.numWords > 0)
+	{
+		u32 codepoint = TakeNextUtf16Codepoint(&consumeStr);
+		result.numCodepoints++;
+	}
+	if (result.numCodepoints == 0) { return result; }
+	result = AllocStr32(result.numCodepoints);
+	consumeStr = str;
+	u64 codepointIndex = 0;
+	while (consumeStr.numWords > 0)
+	{
+		result.codepoints[codepointIndex] = TakeNextUtf16Codepoint(&consumeStr);
+		codepointIndex++;
+	}
+	return result;
+}
+
+Str16 CodepointsToUtf16Str(Str32 codepointsStr)
+{
+	Assert(codepointsStr.codepoints != nullptr || codepointsStr.numCodepoints == 0);
+	Str16 result = Str16_Empty_Const;
+	for (u64 cIndex = 0; cIndex < codepointsStr.numCodepoints; cIndex++)
+	{
+		result.numWords += (u64)CodepointUtf16Size(codepointsStr.codepoints[cIndex]);
+	}
+	result = AllocStr16(result.numWords);
+	u64 wordIndex = 0;
+	for (u64 cIndex = 0; cIndex < codepointsStr.numCodepoints; cIndex++)
+	{
+		Str16 utf16Words = CodepointToUtf16InBuffer(codepointsStr.codepoints[cIndex], &result.words[wordIndex]);
+		wordIndex += utf16Words.numWords;
+	}
+	return result;
+}
+
+// +--------------------------------------------------------------+
+// |               Convert Between UTF-8 and UTF-16               |
+// +--------------------------------------------------------------+
+Str16 Utf8ToUtf16Str(Str str)
+{
+	Str16 result = Str16_Empty_Const;
+	Str consumeStr = str;
+	while (consumeStr.length > 0)
+	{
+		u32 codepoint = TakeNextUtf8Codepoint(&consumeStr);
+		result.numWords += CodepointUtf16Size(codepoint);
+	}
+	if (result.numWords == 0) { return result; }
+	result = AllocStr16(result.numWords);
+	consumeStr = str;
+	u64 wordIndex = 0;
+	while (consumeStr.length > 0)
+	{
+		u32 codepoint = TakeNextUtf8Codepoint(&consumeStr);
+		wordIndex += CodepointToUtf16InBuffer(codepoint, &result.words[wordIndex]).numWords;
+	}
+	return result;
+}
+
+Str Utf16ToUtf8Str(Str16 wideStr)
+{
+	Str result = Str_Empty_Const;
+	Str16 consumeStr = wideStr;
+	while (consumeStr.numWords > 0)
+	{
+		u32 codepoint = TakeNextUtf16Codepoint(&consumeStr);
+		result.length += CodepointUtf8Size(codepoint);
+	}
+	if (result.length == 0) { return result; }
+	result = AllocStr(result.length);
+	consumeStr = wideStr;
+	u64 byteIndex = 0;
+	while (consumeStr.numWords > 0)
+	{
+		u32 codepoint = TakeNextUtf16Codepoint(&consumeStr);
+		byteIndex += CodepointToUtf8InBuffer(codepoint, &result.bytes[byteIndex]).length;
+	}
 	return result;
 }
 

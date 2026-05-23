@@ -30,7 +30,8 @@ Description:
 #include "pig_build_str.h"
 #include "pig_build_str_array.h"
 
-#define TAG_SEP_CHAR '|'
+#define TAG_SEP_CHAR     '|'
+#define TAG_SEP_CHAR_STR "|"
 
 // CLI Executables
 #define T_MSVC_CL         "|cl"
@@ -63,43 +64,35 @@ Description:
 #define T_PROGRAM         "|Program" //.exe or extensionless
 #define T_SHADER          "|Shader" //Usually this is compiling a shdc output to .o/.obj
 
-void SplitTagsListStr(Str tagsListStr, StrArray* tagArrayPntr)
+StrArray SplitTags(Str tagsListStr)
 {
-	u64 lastCommaIndex = 0;
-	for (u64 cIndex = 0; cIndex <= tagsListStr.length; cIndex++)
-	{
-		if (cIndex == tagsListStr.length || tagsListStr.chars[cIndex] == ',' || tagsListStr.chars[cIndex] == '&' || tagsListStr.chars[cIndex] == '|')
-		{
-			Str tagStr = StrSlice(tagsListStr, lastCommaIndex, cIndex);
-			TrimWhitespace(tagStr);
-			if (tagStr.length > 0) { AddStr(tagArrayPntr, tagStr); }
-			lastCommaIndex = cIndex+1;
-		}
-	}
+	StrArray result = MakeStrArrayBySplitting(false, StrLit(TAG_SEP_CHAR_STR), tagsListStr);
+	return result;
 }
+#define SplitTagsNt(tagsListNullTerm) SplitTags(MakeStrNt(tagsListNullTerm))
+#define SplitTagsLit(tagsListStrLit)  SplitTags(StrLit(tagsListStrLit))
 
-void SplitIncludeExcludeTagsListStr(Str tagsListStr, StrArray* includeArrayPntr, StrArray* excludeArrayPntr)
+void SplitTagsIncExc(Str tagsListStr, StrArray* includeArrayPntr, StrArray* excludeArrayPntr)
 {
-	u64 lastCommaIndex = 0;
-	for (u64 cIndex = 0; cIndex <= tagsListStr.length; cIndex++)
+	StrArray splitParts = SplitTags(tagsListStr);
+	for (u64 tIndex = 0; tIndex < splitParts.length; tIndex++)
 	{
-		if (cIndex == tagsListStr.length || tagsListStr.chars[cIndex] == ',' || tagsListStr.chars[cIndex] == '&' || tagsListStr.chars[cIndex] == '|')
+		Str tagStr = TrimWhitespace(splitParts.strings[tIndex]);
+		if (!IsEmptyStr(tagStr))
 		{
-			Str tagStr = StrSlice(tagsListStr, lastCommaIndex, cIndex);
-			TrimWhitespace(tagStr);
-			if (tagStr.length > 0)
-			{
-				Str equalsTrueStr = StrLit("==true");
-				Str equalsFalseStr = StrLit("==false");
-				if (tagStr.chars[cIndex] == '!') { AddStr(excludeArrayPntr, StrSliceFrom(tagStr, 1)); }
-				else if (StrAnyCaseEndsWith(tagStr, equalsFalseStr)) { AddStr(excludeArrayPntr, StrSlice(tagStr, 0, tagStr.length - equalsFalseStr.length)); }
-				else if (StrAnyCaseEndsWith(tagStr, equalsTrueStr)) { AddStr(includeArrayPntr, StrSlice(tagStr, 0, tagStr.length - equalsTrueStr.length)); }
-				else { AddStr(includeArrayPntr, tagStr); }
-			}
-			lastCommaIndex = cIndex+1;
+			const Str equalsTrueStr  = StrLit_Const("==true");
+			const Str equalsFalseStr = StrLit_Const("==false");
+			if (StrExactStartsWith(tagStr, StrLit("!"))) { AddStr(excludeArrayPntr, StrSliceFrom(tagStr, 1)); }
+			else if (StrAnyCaseEndsWith(tagStr, equalsFalseStr)) { AddStr(excludeArrayPntr, StrSlice(tagStr, 0, tagStr.length - equalsFalseStr.length)); }
+			else if (StrAnyCaseEndsWith(tagStr, equalsTrueStr))  { AddStr(includeArrayPntr, StrSlice(tagStr, 0, tagStr.length -  equalsTrueStr.length)); }
+			else { AddStr(includeArrayPntr, tagStr); }
 		}
+		
 	}
+	FreeStrArray(&splitParts);
 }
+#define SplitTagsIncExcNt(tagsListNullTerm, includeArrayPntr, excludeArrayPntr) SplitTagsIncExc(MakeStrNt(tagsListNullTerm), (includeArrayPntr), (excludeArrayPntr))
+#define SplitTagsIncExcLit(tagsListStrLit, includeArrayPntr, excludeArrayPntr)  SplitTagsIncExc(StrLit(tagsListStrLit),      (includeArrayPntr), (excludeArrayPntr))
 
 bool DoTagsMatch(const StrArray* tagsListPntr, const StrArray* includeTags, const StrArray* excludeTags)
 {
@@ -147,5 +140,11 @@ Str* AddTag(StrArray* array, const char* newStringWithLeadingSepChar)
 	if (tagStr.length >= 1 && tagStr.chars[0] == '|') { tagStr = StrSliceFrom(tagStr, 1); }
 	return AddStr(array, tagStr);
 }
+void AddTags(StrArray* array, Str tagsListStr)
+{
+	SplitStrIntoArray(array, false, StrLit("|"), tagsListStr);
+}
+#define AddTagsNt(arrayPntr, tagsListNullTerm) AddTags((arrayPntr), MakeStrNt(tagsListNullTerm))
+#define AddTagsLit(arrayPntr, tagsListStrLit)  AddTags((arrayPntr), StrLit(tagsListStrLit))
 
 #endif //  _PIG_BUILD_TAGS_H

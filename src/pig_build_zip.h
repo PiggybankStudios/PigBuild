@@ -118,7 +118,7 @@ UnzipResult UnzipEntireArchiveInto(Str archiveFilePath, Str folderToExtractInArc
 		}
 		
 		// RunCliProgramAndExitOnFailure(StrLit("tar"), "", &args, StrLit("Failed to unpack .tar file with \"tar\" CLI tool. Is it not installed? Is the file corrupt?"));
-		int tarReturnCode = RunCliProgram(StrLit("tar"), "", &args);
+		int tarReturnCode = RunCliProgram(StrLit("tar"), &args);
 		if (tarReturnCode != 0)
 		{
 			result.errorStr = StrLit("Failed to unpack .tar file with \"tar\" CLI tool. Is it not installed? Is the file corrupt?");
