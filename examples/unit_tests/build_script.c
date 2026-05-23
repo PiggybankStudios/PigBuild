@@ -12,6 +12,7 @@ Description:
 
 #include "tests_scan.c"
 #include "tests_str_list.c"
+#include "tests_unicode.c"
 
 int main(int argc, const char* argv[])
 {
@@ -23,7 +24,8 @@ int main(int argc, const char* argv[])
 	bool isMsvcInitialized = WasMsvcDevBatchRun();
 	
 	// RunTests_StrList();
-	RunTests_Scan();
+	// RunTests_Scan();
+	RunTests_Unicode();
 	
 	return 0;
 }

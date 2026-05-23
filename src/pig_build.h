@@ -14,6 +14,7 @@ Description:
 #include "pig_build_array.h"
 #include "pig_build_list.h"
 #include "pig_build_str.h"
+#include "pig_build_unicode.h"
 #include "pig_build_str_array.h"
 #include "pig_build_str_list.h"
 #include "pig_build_scan.h"

@@ -16,6 +16,20 @@ struct Str
 	union { void* pntr; char* chars; u8* bytes; };
 };
 
+typedef struct Str16 Str16;
+struct Str16
+{
+	u64 length; //in words (2x byte count)
+	union { void* pntr; u16* words; u8* bytes; };
+};
+
+typedef struct Str32 Str32;
+struct Str32
+{
+	u64 length; //in codepoints (4x byte count)
+	union { void* pntr; u32* codepoints; u8* bytes; };
+};
+
 // +--------------------------------------------------------------+
 // |                         Str Macros                           |
 // +--------------------------------------------------------------+
@@ -26,13 +40,18 @@ struct Str
 //   name = Str_Empty;
 // Depending on which version of C/C++ you are compiling with and on which compiler this distinction may be more or less enforced
 #if LANGUAGE_IS_C
-#define MakeStr_Const(lengthValue, pntrValue) { .length=(lengthValue), .pntr=(void*)(pntrValue) }
+#define MakeStr_Const(lengthValue, pntrValue)   { .length=(lengthValue), .pntr=(void*)(pntrValue) }
+#define MakeStr16_Const(lengthValue, pntrValue) { .length=(lengthValue), .pntr=(void*)(pntrValue) }
 #else
-#define MakeStr_Const(lengthValue, pntrValue) { (lengthValue), (void*)(pntrValue) }
+#define MakeStr_Const(lengthValue, pntrValue)   { (lengthValue), (void*)(pntrValue) }
+#define MakeStr16_Const(lengthValue, pntrValue) { (lengthValue), (void*)(pntrValue) }
 #endif
 #define MakeStr(length, pntr) INIT(Str)MakeStr_Const((length), (pntr))
-#define Str_Empty_Const MakeStr_Const(0, nullptr)
-#define Str_Empty       MakeStr(0, nullptr)
+#define MakeStr16(length, pntr) INIT(Str16)MakeStr_Const((length), (pntr))
+#define Str_Empty_Const   MakeStr_Const(0, nullptr)
+#define Str16_Empty_Const MakeStr16_Const(0, nullptr)
+#define Str_Empty         MakeStr(0, nullptr)
+#define Str16_Empty       MakeStr16(0, nullptr)
 
 #define StrLitLength(stringLiteral) ((sizeof(stringLiteral) / sizeof((stringLiteral)[0])) - sizeof((stringLiteral)[0]))
 #define StrLit_Const(stringLiteral) MakeStr_Const(StrLitLength(CheckStrLit(stringLiteral)), (stringLiteral))
@@ -42,6 +61,7 @@ struct Str
 //NOTE: This is meant to be used when formatting Str using any printf like functions
 //      Use the format specifier %.*s and then this macro in the var-args
 #define StrPrint(string)   (int)(string).length, (string).chars
+#define Str16Print(string) (int)(string).length, (string).words
 
 #define IsEmptyStr(string) ((string).length == 0)
 #define IsEmptyStrPntr(stringPntr) ((stringPntr) == nullptr || (stringPntr)->length == 0)
@@ -56,6 +76,13 @@ void FreeStr(Str* strPntr)
 	free(strPntr->chars);
 	memset(strPntr, 0x00, sizeof(Str));
 }
+void FreeStr16(Str16* strPntr)
+{
+	Assert(strPntr->length == 0 || strPntr->words != nullptr);
+	if (strPntr->words == nullptr) { memset(strPntr, 0x00, sizeof(Str16)); return; }
+	free(strPntr->words);
+	memset(strPntr, 0x00, sizeof(Str16));
+}
 Str CopyStr(Str strToCopy)
 {
 	Str result = Str_Empty_Const;
@@ -64,6 +91,16 @@ Str CopyStr(Str strToCopy)
 	NotNull(result.chars);
 	if (strToCopy.length > 0) { memcpy(result.chars, strToCopy.chars, strToCopy.length); }
 	result.chars[result.length] = '\0';
+	return result;
+}
+Str16 CopyStr16(Str16 strToCopy)
+{
+	Str16 result = Str16_Empty_Const;
+	result.length = strToCopy.length;
+	result.words = (u16*)malloc(sizeof(u16) * (strToCopy.length + 1));
+	NotNull(result.words);
+	if (strToCopy.length > 0) { memcpy(result.words, strToCopy.words, sizeof(u16) * (strToCopy.length)); }
+	result.words[result.length] = 0x0000;
 	return result;
 }
 Str CopyStrNt(const char* strToCopyNt)
@@ -79,6 +116,16 @@ Str AllocStr(u64 length)
 	NotNull(result.chars);
 	if (length > 0) { memset(result.chars, 0x00, length); }
 	result.chars[result.length] = '\0';
+	return result;
+}
+Str16 AllocStr16(u64 length)
+{
+	Str16 result = Str16_Empty_Const;
+	result.length = length;
+	result.words = (u16*)malloc(sizeof(u16) * (length + 1));
+	NotNull(result.words);
+	if (length > 0) { memset(result.words, 0x00, sizeof(u16) * length); }
+	result.words[result.length] = 0x0000;
 	return result;
 }
 
