@@ -45,16 +45,19 @@ Description:
 // +--------------------------------------------------------------+
 // We have this string inside a bunch of #defines in places like pig_build_cli_flags.h
 // This allows us to replace that part of the argument string with an actual value, adding escaping if the argument is in quotes
-#define CLI_VAL_STR             "[VAL]"
-#define CLI_UNQUOTED_ARG        "[VAL]"
-#define CLI_SINGLE_QUOTED_ARG   "\'[VAL]\'"
-#define CLI_QUOTED_ARG          "\"[VAL]\""
+#define CLI_VAL_STR                   "[VAL]"
+#define CLI_UNQUOTED_ARG              "[VAL]"
+#define CLI_SINGLE_QUOTED_ARG         "\'[VAL]\'"
+#define CLI_QUOTED_ARG                "\"[VAL]\""
+#define CLI_PIPE_OUTPUT_TO_FILE       "> \"[VAL]\""
+#define CLI_ROOT_DIR                  "[ROOT]"
 #if BUILDING_ON_WINDOWS
-#define CLI_PIPE_OUTPUT_TO_FILE "> \"[VAL]\""
+#define CLI_DISABLE_STDOUT            "> NUL"
+#define CLI_DISABLE_STDOUT_AND_STDERR "> NUL 2> NUL"
 #else
-#define CLI_PIPE_OUTPUT_TO_FILE "| \"[VAL]\""
+#define CLI_DISABLE_STDOUT            "> /dev/null"
+#define CLI_DISABLE_STDOUT_AND_STDERR "1&2> /dev/null" //TODO: Fix this
 #endif
-#define CLI_ROOT_DIR            "[ROOT]"
 
 //When running a program on Linux/OSX/etc. we have to specify we want to run a program out of the current working directory with "./"
 #if BUILDING_ON_WINDOWS

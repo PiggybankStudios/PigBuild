@@ -63,17 +63,17 @@ void RecompileIfNeeded(StrArray buildScriptDependencies)
 		}
 		if (!dependenciesContainPigBuildSrc)
 		{
-			PrintLine("Adding %s to dependencies", PIG_BUILD_FOLDER_PATH "/src");
+			// PrintLine("Adding %s to dependencies", PIG_BUILD_FOLDER_PATH "/src");
 			AddStr(&dependencies, StrLit(PIG_BUILD_FOLDER_PATH "/src"));
 		}
 		if (!dependenciesContainPigBuildSrcOptional)
 		{
-			PrintLine("Adding %s to dependencies", PIG_BUILD_FOLDER_PATH "/src/optional");
+			// PrintLine("Adding %s to dependencies", PIG_BUILD_FOLDER_PATH "/src/optional");
 			AddStr(&dependencies, StrLit(PIG_BUILD_FOLDER_PATH "/src/optional"));
 		}
 		if (!dependenciesContainPigBuildSrcThirdParty)
 		{
-			PrintLine("Adding %s to dependencies", PIG_BUILD_FOLDER_PATH "/src/third_party");
+			// PrintLine("Adding %s to dependencies", PIG_BUILD_FOLDER_PATH "/src/third_party");
 			AddStr(&dependencies, StrLit(PIG_BUILD_FOLDER_PATH "/src/third_party"));
 		}
 	}
