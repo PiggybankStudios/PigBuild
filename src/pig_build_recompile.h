@@ -38,44 +38,44 @@ Description:
 // Call this function at the top of your build_scropt.c main function.
 // If the source code for build_script.c changes OR if any of the helper files in the build_script/ folder
 // change then your builder will be re-compiled (this function will call exit(REBUILD_EXIT_CODE);)
-void RecompileIfNeeded(StrArray* buildScriptSourceFolders)
+void RecompileIfNeeded(StrArray buildScriptDependencies)
 {
-	StrArray localBuildScriptSourceFolders = EMPTY;
-	if (buildScriptSourceFolders == nullptr) { buildScriptSourceFolders = &localBuildScriptSourceFolders; }
+	StrArray dependencies = EMPTY;
+	AddStrArray(&dependencies, &buildScriptDependencies);
 	
 	// For convenience we are going to add pig_build/src and it's subfolders automatically if the build_script didn't mention them
-	bool sourceFoldersContainPigBuildSrc = false;
-	bool sourceFoldersContainPigBuildSrcOptional = false;
-	bool sourceFoldersContainPigBuildSrcThirdParty = false;
-	for (u64 fIndex = 0; fIndex < buildScriptSourceFolders->length; fIndex++)
+	Str pigBuildFullPath = GetFullPath(StrLit(PIG_BUILD_FOLDER_PATH), '/');
+	if (DoesFolderExist(pigBuildFullPath))
 	{
-		if (StrAnyCaseEquals(buildScriptSourceFolders->strings[fIndex], StrLit(PIG_BUILD_FOLDER_PATH "/src")))
+		bool dependenciesContainPigBuildSrc = false;
+		bool dependenciesContainPigBuildSrcOptional = false;
+		bool dependenciesContainPigBuildSrcThirdParty = false;
+		for (u64 fIndex = 0; fIndex < dependencies.length; fIndex++)
 		{
-			sourceFoldersContainPigBuildSrc = true;
+			if (DoesFolderExist(dependencies.strings[fIndex]))
+			{
+				Str dependencyFullPath = GetFullPath(dependencies.strings[fIndex], '/');
+				if (StrAnyCaseEquals(dependencyFullPath, JoinPathsLit(pigBuildFullPath, "/src"))) { dependenciesContainPigBuildSrc = true; }
+				if (StrAnyCaseEquals(dependencyFullPath, JoinPathsLit(pigBuildFullPath, "/src/optional"))) { dependenciesContainPigBuildSrcOptional = true; }
+				if (StrAnyCaseEquals(dependencyFullPath, JoinPathsLit(pigBuildFullPath, "/src/third_party"))) { dependenciesContainPigBuildSrcThirdParty = true; }
+				FreeStr(&dependencyFullPath);
+			}
 		}
-		if (StrAnyCaseEquals(buildScriptSourceFolders->strings[fIndex], StrLit(PIG_BUILD_FOLDER_PATH "/src/optional")))
+		if (!dependenciesContainPigBuildSrc)
 		{
-			sourceFoldersContainPigBuildSrcOptional = true;
+			PrintLine("Adding %s to dependencies", PIG_BUILD_FOLDER_PATH "/src");
+			AddStr(&dependencies, StrLit(PIG_BUILD_FOLDER_PATH "/src"));
 		}
-		if (StrAnyCaseEquals(buildScriptSourceFolders->strings[fIndex], StrLit(PIG_BUILD_FOLDER_PATH "/src/third_party")))
+		if (!dependenciesContainPigBuildSrcOptional)
 		{
-			sourceFoldersContainPigBuildSrcThirdParty = true;
+			PrintLine("Adding %s to dependencies", PIG_BUILD_FOLDER_PATH "/src/optional");
+			AddStr(&dependencies, StrLit(PIG_BUILD_FOLDER_PATH "/src/optional"));
 		}
-	}
-	if (!sourceFoldersContainPigBuildSrc)
-	{
-		// PrintLine("Adding %s to buildScriptSourceFolders", PIG_BUILD_FOLDER_PATH "/src");
-		AddStr(buildScriptSourceFolders, StrLit(PIG_BUILD_FOLDER_PATH "/src"));
-	}
-	if (!sourceFoldersContainPigBuildSrcOptional)
-	{
-		// PrintLine("Adding %s to buildScriptSourceFolders", PIG_BUILD_FOLDER_PATH "/src/optional");
-		AddStr(buildScriptSourceFolders, StrLit(PIG_BUILD_FOLDER_PATH "/src/optional"));
-	}
-	if (!sourceFoldersContainPigBuildSrcThirdParty)
-	{
-		// PrintLine("Adding %s to buildScriptSourceFolders", PIG_BUILD_FOLDER_PATH "/src/third_party");
-		AddStr(buildScriptSourceFolders, StrLit(PIG_BUILD_FOLDER_PATH "/src/third_party"));
+		if (!dependenciesContainPigBuildSrcThirdParty)
+		{
+			PrintLine("Adding %s to dependencies", PIG_BUILD_FOLDER_PATH "/src/third_party");
+			AddStr(&dependencies, StrLit(PIG_BUILD_FOLDER_PATH "/src/third_party"));
+		}
 	}
 	
 	Str buildScriptFilePath = StrLit_Const(BUILD_SCRIPT_SOURCE_PATH);
@@ -87,26 +87,42 @@ void RecompileIfNeeded(StrArray* buildScriptSourceFolders)
 	}
 	u64 buildScriptHash = FnvHash(buildScriptContents.chars, buildScriptContents.length, FNV_HASH_BASE_U64);
 	free(buildScriptContents.chars);
-	for (u64 fIndex = 0; fIndex < buildScriptSourceFolders->length; fIndex++)
+	for (u64 fIndex = 0; fIndex < dependencies.length; fIndex++)
 	{
-		FileIter fileIter = StartFileIter(buildScriptSourceFolders->strings[fIndex]);
-		Str fileIterPath = Str_Empty_Const;
-		bool fileIterIsFolder = false;
-		while (StepFileIter(&fileIter, &fileIterPath, &fileIterIsFolder))
+		Str folderOrFilePath = dependencies.strings[fIndex];
+		if (DoesFolderExist(folderOrFilePath))
 		{
-			//TODO: We should probably only hash files that have extensions like ".c" or ".h" or ".cpp" or etc.
-			if (!fileIterIsFolder)
+			FileIter fileIter = StartFileIter(folderOrFilePath);
+			Str fileIterPath = Str_Empty_Const;
+			bool fileIterIsFolder = false;
+			while (StepFileIter(&fileIter, &fileIterPath, &fileIterIsFolder))
 			{
-				Str buildSystemFileContents = Str_Empty_Const;
-				if (!TryReadFile(fileIterPath, &buildSystemFileContents))
+				//TODO: We should probably only hash files that have extensions like ".c" or ".h" or ".cpp" or etc.
+				if (!fileIterIsFolder)
 				{
-					PrintLine("Failed to read build system file contents to check if it's changed. Looking at \"%.*s\"", StrPrint(fileIterPath));
-					exit(REBUILD_EXIT_CODE);
+					Str sourceFileContents = Str_Empty_Const;
+					if (!TryReadFile(fileIterPath, &sourceFileContents))
+					{
+						PrintLine("Failed to read build system file contents to check if it's changed. Looking at \"%.*s\"", StrPrint(fileIterPath));
+						exit(REBUILD_EXIT_CODE);
+					}
+					buildScriptHash = FnvHash(sourceFileContents.chars, sourceFileContents.length, buildScriptHash);
+					free(sourceFileContents.chars);
 				}
-				buildScriptHash = FnvHash(buildSystemFileContents.chars, buildSystemFileContents.length, buildScriptHash);
-				free(buildSystemFileContents.chars);
 			}
 		}
+		else if (DoesFileExist(folderOrFilePath))
+		{
+			Str sourceFileContents = Str_Empty_Const;
+			if (!TryReadFile(folderOrFilePath, &sourceFileContents))
+			{
+				PrintLine("Failed to read build system file contents to check if it's changed. Looking at \"%.*s\"", StrPrint(folderOrFilePath));
+				exit(REBUILD_EXIT_CODE);
+			}
+			buildScriptHash = FnvHash(sourceFileContents.chars, sourceFileContents.length, buildScriptHash);
+			free(sourceFileContents.chars);
+		}
+		else { PrintLine_E("WARNING: A folder or file passed to RecompileIfNeeded doesn't exist: \"%.*s\"", StrPrint(folderOrFilePath)); }
 	}
 	
 	Str buildHashFilePath = StrLit_Const(BUILD_SCRIPT_HASH_PATH);

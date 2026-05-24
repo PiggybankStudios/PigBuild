@@ -22,6 +22,15 @@ Description:
 TYPED_ARRAY(Array_Str, Str, strings);
 typedef Array_Str StrArray;
 
+#if LANGUAGE_IS_C
+#define MakeStrArray_Const(lengthValue, allocLengthValue, stringsValue) { .length=(lengthValue), .allocLength=(allocLengthValue), .strings=(stringsValue) }
+#else
+#define MakeStrArray_Const(lengthValue, allocLengthValue, stringsValue) { (lengthValue), (allocLengthValue), (stringsValue) }
+#endif
+#define MakeStrArray(length, allocLength, strings) INIT(StrArray)MakeStrArray_Const((length), (allocLength), (strings))
+#define StrArray_Empty_Const MakeStrArray_Const(0, 0, nullptr)
+#define StrArray_Empty       MakeStrArray(0, 0, nullptr)
+
 void FreeStrArray(StrArray* array)
 {
 	for (u64 sIndex = 0; sIndex < array->length; sIndex++) { FreeStr(&array->strings[sIndex]); }
