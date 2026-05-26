@@ -1,0 +1,26 @@
+// raddbg 0.9.24 project file
+
+recent_file: path: "../../src/pig_build_array.h"
+recent_file: path: "../../src/pig_build_str_array.h"
+recent_file: path: "build_script.c"
+recent_file: path: "d:/os/obj/amd64fre/minkernel/crts/ucrt/src/appcrt/startup/mt/objfre/amd64/minkernel/crts/ucrt/src/appcrt/startup/abort.cpp"
+recent_file: path: "../../src/pig_build_str.h"
+recent_file: path: "d:/os/obj/amd64fre/minkernel/crts/ucrt/src/appcrt/string/mt/objfre/amd64/minkernel/crts/ucrt/src/appcrt/string/strnlen.cpp"
+recent_file: path: "../../../../../../Program Files (x86)/Windows Kits/10/include/10.0.26100.0/ucrt/stdio.h"
+recent_file: path: "d:/os/obj/amd64fre/minkernel/crts/ucrt/src/appcrt/stdio/mt/objfre/amd64/minkernel/crts/ucrt/src/appcrt/stdio/output.cpp"
+target:
+{
+  executable: "build/builder.exe"
+  working_directory: "build/"
+  enabled: 1
+}
+debug_info:
+{
+  path: "C:/gamedev/projects/PigCore/pig_build/examples/b_incremental_builds/build/builder.pdb"
+  timestamp: 66215748085048
+}
+breakpoint:
+{
+  source_location: "build_script.c:163:1"
+  hit_count: 1
+}
