@@ -17,21 +17,29 @@ Date:   03\21\2026
 // +--------------------------------------------------------------+
 #if defined(_WIN32)
 #define BUILDING_ON_WINDOWS 1
+#define BUILDING_ON_NAME "WINDOWS"
 #else
 #define BUILDING_ON_WINDOWS 0
 #endif
 
 #if defined(__linux__) || defined(__unix__)
 #define BUILDING_ON_LINUX 1
+#define BUILDING_ON_NAME "LINUX"
 #else
 #define BUILDING_ON_LINUX 0
 #endif
 
 #ifdef __APPLE__
 #define BUILDING_ON_OSX 1
+#define BUILDING_ON_NAME "OSX"
 #else
 #define BUILDING_ON_OSX 0
 #endif
+
+#ifndef BUILDING_ON_NAME
+#define BUILDING_ON_NAME "UNKNOWN"
+#endif
+
 
 #if !BUILDING_ON_OSX
 #define BUILDING_ON_OSX_ARM   0
