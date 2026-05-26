@@ -44,9 +44,12 @@ void RecompileIfNeeded(StrArray buildScriptDependencies)
 	AddStrArray(&dependencies, &buildScriptDependencies);
 	
 	// For convenience we are going to add pig_build/src and it's subfolders automatically if the build_script didn't mention them
-	Str pigBuildFullPath = GetFullPath(StrLit(PIG_BUILD_FOLDER_PATH), '/');
+	Str pigBuildFullPath = GetFullPath(StrLit(PIG_BUILD_ROOT), '/');
 	if (DoesFolderExist(pigBuildFullPath))
 	{
+		Str srcFolderPath = JoinPathsLit(pigBuildFullPath, "/src");
+		Str optionalFolderPath = JoinPathsLit(pigBuildFullPath, "/optional");
+		Str thirdPartyFolderPath = JoinPathsLit(pigBuildFullPath, "/third_party");
 		bool dependenciesContainPigBuildSrc = false;
 		bool dependenciesContainPigBuildSrcOptional = false;
 		bool dependenciesContainPigBuildSrcThirdParty = false;
@@ -55,26 +58,26 @@ void RecompileIfNeeded(StrArray buildScriptDependencies)
 			if (DoesFolderExist(dependencies.strings[fIndex]))
 			{
 				Str dependencyFullPath = GetFullPath(dependencies.strings[fIndex], '/');
-				if (StrAnyCaseEquals(dependencyFullPath, JoinPathsLit(pigBuildFullPath, "/src"))) { dependenciesContainPigBuildSrc = true; }
-				if (StrAnyCaseEquals(dependencyFullPath, JoinPathsLit(pigBuildFullPath, "/src/optional"))) { dependenciesContainPigBuildSrcOptional = true; }
-				if (StrAnyCaseEquals(dependencyFullPath, JoinPathsLit(pigBuildFullPath, "/src/third_party"))) { dependenciesContainPigBuildSrcThirdParty = true; }
+				if (StrAnyCaseEquals(dependencyFullPath, srcFolderPath)) { dependenciesContainPigBuildSrc = true; }
+				if (StrAnyCaseEquals(dependencyFullPath, optionalFolderPath)) { dependenciesContainPigBuildSrcOptional = true; }
+				if (StrAnyCaseEquals(dependencyFullPath, thirdPartyFolderPath)) { dependenciesContainPigBuildSrcThirdParty = true; }
 				FreeStr(&dependencyFullPath);
 			}
 		}
 		if (!dependenciesContainPigBuildSrc)
 		{
-			// PrintLine("Adding %s to dependencies", PIG_BUILD_FOLDER_PATH "/src");
-			AddStr(&dependencies, StrLit(PIG_BUILD_FOLDER_PATH "/src"));
+			// PrintLine("Adding %.*s to dependencies", StrPrint(srcFolderPath));
+			AddStr(&dependencies, StrLit(PIG_BUILD_ROOT "/src"));
 		}
 		if (!dependenciesContainPigBuildSrcOptional)
 		{
-			// PrintLine("Adding %s to dependencies", PIG_BUILD_FOLDER_PATH "/src/optional");
-			AddStr(&dependencies, StrLit(PIG_BUILD_FOLDER_PATH "/src/optional"));
+			// PrintLine("Adding %.*s to dependencies", StrPrint(optionalFolderPath));
+			AddStr(&dependencies, StrLit(PIG_BUILD_ROOT "/src/optional"));
 		}
 		if (!dependenciesContainPigBuildSrcThirdParty)
 		{
-			// PrintLine("Adding %s to dependencies", PIG_BUILD_FOLDER_PATH "/src/third_party");
-			AddStr(&dependencies, StrLit(PIG_BUILD_FOLDER_PATH "/src/third_party"));
+			// PrintLine("Adding %.*s to dependencies", StrPrint(thirdPartyFolderPath));
+			AddStr(&dependencies, StrLit(PIG_BUILD_ROOT "/src/third_party"));
 		}
 	}
 	

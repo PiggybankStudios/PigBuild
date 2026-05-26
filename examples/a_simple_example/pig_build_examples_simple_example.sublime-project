@@ -1,0 +1,42 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+		},
+		{
+			"path": "../../src",
+			"name": "Pig Build (src)",
+		},
+		{
+			"path": "../../shell",
+			"name": "Pig Build (shell)",
+		}
+	],
+	"settings":
+	{
+		"build_options":
+		[
+		],
+		"custom_constants":
+		[
+		],
+		"custom_functions":
+		[
+			"Str AddSuffixToFileName(Str filePath, Str suffix)",
+			"Str GetDirectoryPart(Str fullPath, bool includeTrailingSlash)",
+			"Str GetFileExtPart(Str fullPath, bool includeSubExtensions)",
+			"Str GetFileNamePart(Str fullPath, bool includeExtension)",
+			"Str RemovePathExtension(Str fullPath, bool includeSubExtensions)",
+			"u64 CountPathParts(Str fileOrFolderPath)",
+			"void DownloadDependencies()",
+		],
+		"custom_globals":
+		[
+		],
+		"custom_types":
+		[
+			"CliArgs",
+		],
+	},
+}

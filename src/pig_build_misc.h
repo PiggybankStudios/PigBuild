@@ -23,7 +23,7 @@ Description:
 int RunCliProgramTags(Str programPath, StrArray tagsList, const CliArgs* args)
 {
 	// PrintLine("Joining/filtering %llu arguments against %llu tags for \"%.*s\"", args->numArgs, (tagsList != nullptr) ? tagsList->length : 0ULL, StrPrint(programPath));
-	Str joinedArgs = FilterAndJoinCliArgsList(programPath, args, &tagsList);
+	Str joinedArgs = (args != nullptr) ? FilterAndJoinCliArgsList(programPath, args, &tagsList) : programPath;
 	#if PIG_BUILD_PRINT_SYS_CMDS
 	PrintLine(">> %s", joinedArgs.chars);
 	#endif
