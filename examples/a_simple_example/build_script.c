@@ -17,7 +17,7 @@ Description:
 
 // If you have Windows Subsystem for Linux (WSL) installed on Windows, and clang
 // installed inside, then you can enable this to compile for Linux using WSL
-#define CROSS_COMPILE_WITH_WSL   1
+#define CROSS_COMPILE_WITH_WSL   0
 
 // +--------------------------------------------------------------+
 // |                            Build                             |

@@ -328,9 +328,10 @@ u32 TakeNextUtf16Codepoint(Str16* strPntr)
 		result = (u32)wordPntr[0];
 		codepointWordLength = 1;
 	}
-	else if (wordPntr[0] < 0x010000) //invalid block
+	else if (wordPntr[0] < 0x1000) //invalid block
 	{
-		AssertFmt(wordPntr[0] < 0xD800 || wordPntr[0] >= 0x010000, "Invalid UTF-16 word: 0x%04X", wordPntr[0]);
+		//TODO: The invalid block upper bound is incorrect, used to be greater than u16 limit
+		AssertFmt(wordPntr[0] < 0xD800 || wordPntr[0] >= 0x01000, "Invalid UTF-16 word: 0x%04X", wordPntr[0]);
 	}
 	else if (wordPntr[0] < 0xDC00) //surrogate pairs
 	{

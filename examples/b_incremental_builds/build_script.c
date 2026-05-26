@@ -102,19 +102,28 @@ void WalkDependencies(BuildFile* file)
 int main(int argc, char* argv[])
 {
 	RecompileIfNeeded(StrArray_Empty);
-	bool isMsvcInitialized = WasMsvcDevBatchRun();
+	IF_WINDOWS(bool isMsvcInitialized = WasMsvcDevBatchRun());
 	
 	Str exeName = StrLit("game" EXE_EXT);
+	Str compilerName = BUILDING_ON_WINDOWS ? StrLit("cl") : StrLit("clang");
+	Str linkerName = BUILDING_ON_WINDOWS ? StrLit("link") : StrLit("clang");
+	bool usingMsvc = BUILDING_ON_WINDOWS;
 	
 	CliArgs commonCompilerArgs = EMPTY;
-	AddArg(&commonCompilerArgs, CL_NO_LOGO);
-	AddArg(&commonCompilerArgs, CL_FULL_FILE_PATHS);
-	AddArgNt(&commonCompilerArgs, CL_INCLUDE_DIR, "[ROOT]/include");
-	AddArg(&commonCompilerArgs, CL_COMPILE);
+	AddTaggedArg(&commonCompilerArgs,   "cl",    CL_NO_LOGO);
+	AddTaggedArg(&commonCompilerArgs,   "cl",    CL_FULL_FILE_PATHS);
+	AddTaggedArg(&commonCompilerArgs,   "clang", CLANG_FULL_FILE_PATHS);
+	AddTaggedArgNt(&commonCompilerArgs, "cl",    CL_INCLUDE_DIR,    "[ROOT]/include");
+	AddTaggedArgNt(&commonCompilerArgs, "clang", CLANG_INCLUDE_DIR, "[ROOT]/include");
+	AddTaggedArg(&commonCompilerArgs,   "cl",    CL_COMPILE);
+	AddTaggedArg(&commonCompilerArgs,   "clang", CLANG_COMPILE);
 	
 	CliArgs commonLinkerArgs = EMPTY;
-	AddArg(&commonLinkerArgs, LINK_NO_LOGO);
-	AddArgStr(&commonLinkerArgs, LINK_OUTPUT_FILE, exeName);
+	AddTaggedArg(&commonLinkerArgs,    "link",  LINK_NO_LOGO);
+	AddTaggedArgStr(&commonLinkerArgs, "link",  LINK_OUTPUT_FILE, exeName);
+	AddTaggedArgStr(&commonLinkerArgs, "clang", CLANG_OUTPUT_FILE, exeName);
+	AddTaggedArg(&commonLinkerArgs,    "clang", CLANG_FULL_FILE_PATHS);
+	AddTaggedArgNt(&commonLinkerArgs,  "clang", CLANG_INCLUDE_DIR, "[ROOT]/include");
 	
 	Array_BuildFile files = EMPTY;
 	
@@ -239,16 +248,21 @@ int main(int argc, char* argv[])
 		{
 			if (!file->objExists || file->hasChanged || file->hasDependentChanged)
 			{
-				InitializeMsvcIf(StrLit(PIG_BUILD_ROOT), &isMsvcInitialized);
+				IF_WINDOWS(InitializeMsvcIf(StrLit(PIG_BUILD_ROOT), &isMsvcInitialized));
 				PrintLine("[%sompiling \"%.*s\"...]", file->objExists ? "Rec" : "C", StrPrint(file->fileName));
 				
 				CliArgs args = EMPTY;
 				AddArgList(&args, &commonCompilerArgs);
 				AddArgStr(&args, CLI_QUOTED_ARG, file->path);
-				AddArgStr(&args, CL_OBJ_FILE, file->objPath);
+				AddTaggedArgStr(&args, "cl", CL_OBJ_FILE, file->objPath);
+				AddTaggedArgStr(&args, "clang", CLANG_OUTPUT_FILE, file->objPath);
 				
-				RemoveFile(file->objPath);
-				RunCliProgramAndExitOnFailure(StrLit("cl"), &args, FormatStr("Failed to compile \"%.*s\"", StrPrint(file->fileName)));
+				StrArray tags = EMPTY;
+				AddStr(&tags, compilerName);
+				AddStrLit(&tags, "compiling");
+				AddStrLit(&tags, BUILDING_ON_NAME);
+				
+				RunCliProgramAndExitOnFailureTags(compilerName, tags, &args, FormatStr("Failed to compile \"%.*s\"", StrPrint(file->fileName)));
 				AssertFileExist(file->objPath, true);
 				
 				CreateAndWriteFile(file->hashPath, FormatStr("0x%08llX", file->newHash), true);
@@ -260,7 +274,7 @@ int main(int argc, char* argv[])
 	
 	if (!DoesFileExist(exeName) || anyObjectsCompiled)
 	{
-		InitializeMsvcIf(StrLit(PIG_BUILD_ROOT), &isMsvcInitialized);
+		IF_WINDOWS(InitializeMsvcIf(StrLit(PIG_BUILD_ROOT), &isMsvcInitialized));
 		PrintLine("[%sinking \"%.*s\"...]", DoesFileExist(exeName) ? "Rel" : "L", StrPrint(exeName));
 		
 		CliArgs args = EMPTY;
@@ -270,7 +284,13 @@ int main(int argc, char* argv[])
 			BuildFile* file = &files.files[fIndex];
 			if (!file->isHeader) { AddArgStr(&args, CLI_QUOTED_ARG, file->objPath); }
 		}
-		RunCliProgramAndExitOnFailure(StrLit("link"), &args, FormatStr("Failed to link \"%.*s\"", StrPrint(exeName)));
+		
+		StrArray tags = EMPTY;
+		AddStr(&tags, compilerName);
+		AddStrLit(&tags, "linking");
+		AddStrLit(&tags, BUILDING_ON_NAME);
+		
+		RunCliProgramAndExitOnFailureTags(linkerName, tags, &args, FormatStr("Failed to link \"%.*s\"", StrPrint(exeName)));
 		AssertFileExist(exeName, true);
 	}
 	else

@@ -12,6 +12,8 @@ Date:   05\25\2026
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
+#include <math.h>
 
 typedef uint8_t  u8;
 typedef uint16_t u16;
