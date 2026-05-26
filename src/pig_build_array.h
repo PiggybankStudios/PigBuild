@@ -122,7 +122,7 @@ void RemoveItemsArray(u64 itemSize, u64 itemAlignment, u64* lengthPntr, u64* all
 	Assert(*lengthPntr <= *allocLengthPntr);
 	Assert(removeIndex + numItems <= *lengthPntr);
 	if (numItems == 0) { return; }
-	u8* bytePntr = (u8*)itemsPntr;
+	u8* bytePntr = (u8*)*itemsPntr;
 	u8* removePntr = bytePntr + (itemSize * removeIndex);
 	if (removeIndex + numItems < *lengthPntr) { memmove(removePntr, removePntr + (itemSize * numItems), itemSize * (*lengthPntr - (removeIndex + numItems))); }
 	*lengthPntr -= numItems;
