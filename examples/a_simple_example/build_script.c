@@ -3,8 +3,8 @@ File:   build_script.c
 Author: Taylor Robbins
 Date:   05\25\2026
 Description: 
-	** This is a basic build script. It compiles a single .c file into an executable
-	** for Windows, Linux, and Mac
+	** This is a basic build script. It compiles a single .c file into an
+	** executable for Windows, Linux, and Mac
 */
 
 //Enable this to have all calls to RunCliProgram printed to the debug output
@@ -34,7 +34,7 @@ void Build(Str routingPrefix, Str compiler, Str exeName, bool windowsShell)
 	
 	// NOTE: See "pig_build_cli_flags.h" for these compiler flag #defines
 	CliArgs args = EMPTY;
-	args.pathSepChar = windowsShell ? '\\' :'/';
+	args.pathSepChar = windowsShell ? '\\' : '/';
 	AddArgNt(&args, CLI_QUOTED_ARG, "[ROOT]/main.c");
 	AddArgStr(&args, isMsvcCompiler ? CL_OBJ_FILE        : CLANG_OUTPUT_FILE, exeName);
 	AddArg(&args,    isMsvcCompiler ? CL_FULL_FILE_PATHS : CLANG_FULL_FILE_PATHS);
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 	WriteLine("=========Build Script=========\n");
 	
 	bool buildingForWindows = (BUILDING_ON_WINDOWS && !CROSS_COMPILE_WITH_WSL);
-	bool crossCompiling = (BUILDING_ON_WINDOWS && CROSS_COMPILE_WITH_WSL);
+	bool crossCompiling     = (BUILDING_ON_WINDOWS &&  CROSS_COMPILE_WITH_WSL);
 	Str exeName = MakeStrNt(buildingForWindows ? "hello_world.exe" : "hello_world");
 	Str wslPrefix = crossCompiling ? StrLit("wsl ") : Str_Empty;
 	Str compiler = buildingForWindows ? StrLit("cl") : StrLit("clang");
