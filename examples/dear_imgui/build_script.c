@@ -32,7 +32,7 @@ void DownloadGlfwAndCompileIfNeeded();
 
 int main(int argc, const char* argv[])
 {
-	RecompileIfNeeded(nullptr);
+	RecompileIfNeeded(StrArray_Empty);
 	bool isMsvcInitialized = WasMsvcDevBatchRun();
 	Str pigBuildFolder = StrLit(PIG_BUILD_FOLDER_PATH);
 	
@@ -220,8 +220,8 @@ int main(int argc, const char* argv[])
 		for (u64 fIndex = 0; fIndex < sourceFiles.length; fIndex++)
 		{
 			Str sourcePath = sourceFiles.strings[fIndex];
-			Str sourceExt = GetFileExtPart(sourcePath);
-			Str objectPath = JoinStrings2(GetFileNamePart(sourcePath, false), StrLit(".o"), false);
+			Str sourceExt = GetFileExtPart(sourcePath, false);
+			Str objectPath = JoinStrings2(GetFileNamePart(sourcePath, false), StrLit(".o"));
 			
 			// Rudamentary incremental build, only compile main.mm unconditionally,
 			// all the imgui source files should never change so we only compile them if the object file doesn't already exist
@@ -236,7 +236,7 @@ int main(int argc, const char* argv[])
 				
 				StrArray tags = EMPTY;
 				AddStr(&tags, sourceExt);
-				RunCliProgramTagArrayAndExitOnFailure(StrLit("clang"), &tags, &args, StrLit("Failed to compile source file!"));
+				RunCliProgramAndExitOnFailureTags(StrLit("clang"), tags, &args, StrLit("Failed to compile source file!"));
 				AssertFileExist(objectPath, true);
 			}
 			
@@ -267,7 +267,7 @@ int main(int argc, const char* argv[])
 			AddArgNt(&args, CLANG_SYSTEM_LIBRARY, "stdc++"); //Eliminates undefined references to stuff like "__cxa_guard_acquire"
 			AddArgNt(&args, CLANG_RPATH_DIR, ".");
 			
-			RunCliProgramAndExitOnFailure(StrLit("clang"), "", &args, StrLit("Failed to build imgui_demo!"));
+			RunCliProgramAndExitOnFailure(StrLit("clang"), &args, StrLit("Failed to build imgui_demo!"));
 			AssertFileExist(StrLit("imgui_demo"), true);
 			
 			CopyFileToFolder(StrLit("../glfw/lib-arm64/libglfw.3.dylib"), StrLit("."), true);

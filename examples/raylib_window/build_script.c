@@ -23,7 +23,7 @@
 
 int main(int argc, const char* argv[])
 {
-	RecompileIfNeeded(nullptr);
+	RecompileIfNeeded(StrArray_Empty);
 	Str pigBuildFolder = StrLit(PIG_BUILD_FOLDER_PATH);
 	bool isMsvcInitialized = WasMsvcDevBatchRun();
 	
@@ -167,10 +167,11 @@ int main(int argc, const char* argv[])
 		AddArgNt(&args, CLANG_SYSTEM_LIBRARY, "glfw.3");
 		// AddArg(&args, "-Wl,-force_load,./../raylib/lib/libraylib.a"); //TODO: It seems like the static version of Raylib still links with the dynamic version of GLFW??
 		// AddArg(&args, "-Wl,-force_load,./../glfw/lib-arm64/libglfw3.a");
-		AddArgNt(&args, CLANG_RPATH_DIR, "."); //Add the current folder to RPATH so the .dylibs can be found when the program is run from this folder
+		AddArgStr(&args, CLANG_RPATH_DIR, GetFullPath(StrLit("."), '/')); //Add the current folder to RPATH so the .dylibs can be found when the program is run from this folder
 		AddArgNt(&args, CLANG_SYSTEM_LIBRARY, "stdc++"); //Eliminates undefined references to stuff like "__cxa_guard_acquire"
+		AddArgNt(&args, CLANG_M_FLAG, "windows");
 		
-		RunCliProgramAndExitOnFailure(StrLit("clang"), "", &args, StrLit("Failed to build raylib_window!"));
+		RunCliProgramAndExitOnFailure(StrLit("clang"), &args, StrLit("Failed to build raylib_window!"));
 		AssertFileExist(StrLit("raylib_window"), true);
 		
 		//Copy the .dylibs to the build folder so they can be found when the program is run from here (in conjunction with RPATH above)
