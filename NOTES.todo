@@ -9,6 +9,10 @@
 	[ ] Example that: Builds one thing without any targets or multiple compilers or whatever. Maybe there is a custom asset pipeline that does some work and bakes into .exe and whatever. What does it look like to have a configuration space for my build system?
 	[ ] Shell equivalent functions maybe could be a good "onboarding" type thing. In a GETTING_STARTED.md? Or a "examples/simple" folder
 
+# MacOS Notes
+	[ ] https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html#//apple_ref/doc/uid/10000123i-CH101-SW1
+	[ ] 
+
 # TODO List
 	[X] Move all the `tools/` files to a separate `build_system/` folder
 	[X] Change that folder into it's own git repository

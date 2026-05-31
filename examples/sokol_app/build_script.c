@@ -28,7 +28,7 @@ void CrossCompileShaderIfNeeded();
 
 int main(int argc, char* argv[])
 {
-	RecompileIfNeeded(nullptr);
+	RecompileIfNeeded(StrArray_Empty);
 	Str pigBuildFolder = StrLit(PIG_BUILD_ROOT);
 	IF_WINDOWS(bool isMsvcInitialized = WasMsvcDevBatchRun());
 	
@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
 		PrintLine("Buiding sokol_triangle for OSX!");
 		//Create an main.m to make the compiler use Objective-C mode
 		if (!DoesFileExist(StrLit("main.m"))) { CreateAndWriteFile(StrLit("main.m"), StrLit("\n#include \"main.c\"\n"), true); }
-		RunCliProgramAndExitOnFailure(StrLit("clang"), T_CLANG T_OSX, &args, StrLit("Failed to build sokol_triangle!"));
+		RunCliProgramAndExitOnFailureTagsLit(StrLit("clang"), T_CLANG T_OSX, &args, StrLit("Failed to build sokol_triangle!"));
 		AssertFileExist(StrLit("sokol_triangle"), true);
 		PrintLine("Successfully built sokol_triangle for OSX!");
 	}
@@ -190,7 +190,7 @@ void DownloadSokolIfNeeded()
 		CliArgs chmodArgs = EMPTY;
 		AddArg(&chmodArgs, "+x");
 		AddArgNt(&chmodArgs, CLI_QUOTED_ARG, SHDC_BIN_PATH);
-		RunCliProgramAndExitOnFailure(StrLit("chmod"), "", &chmodArgs, StrLit("Failed to make sokol-shdc executable!"));
+		RunCliProgramAndExitOnFailure(StrLit("chmod"), &chmodArgs, StrLit("Failed to make sokol-shdc executable!"));
 		#endif
 	}
 }
@@ -227,7 +227,7 @@ void CrossCompileShaderIfNeeded()
 		AddArgStr(&shdcArgs, SHDC_INPUT, shaderSrcPath);
 		AddArgStr(&shdcArgs, SHDC_OUTPUT, shaderHeaderPath);
 		
-		RunCliProgramAndExitOnFailure(StrLit(SHDC_BIN_PATH), "", &shdcArgs, StrLit("Failed to cross-compile basic_shader.glsl using sokol-shdc!"));
+		RunCliProgramAndExitOnFailure(StrLit(SHDC_BIN_PATH), &shdcArgs, StrLit("Failed to cross-compile basic_shader.glsl using sokol-shdc!"));
 		AssertFileExist(StrLit("basic_shader.glsl.h"), true);
 		
 		PrintLine("Successfully cross-compiled %.*s!", StrPrint(shaderFileName));
