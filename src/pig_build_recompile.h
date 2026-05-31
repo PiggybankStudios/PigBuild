@@ -21,14 +21,22 @@ Description:
 // NOTE: If you want to change any of these #defines, make sure you change them in build.sh and build.bat
 // If we exit(REBUILD_EXIT_CODE) then the shell script will re-compile and re-run us
 #define REBUILD_EXIT_CODE 42
+#ifndef BUILD_SCRIPT_EXE_NAME
 #if BUILDING_ON_WINDOWS
 #define BUILD_SCRIPT_EXE_NAME      "builder.exe"
 #else
 #define BUILD_SCRIPT_EXE_NAME      "builder"
 #endif
+#endif
+#ifndef BUILD_SCRIPT_HASH_PATH
 #define BUILD_SCRIPT_HASH_PATH "builder_hash.txt"
+#endif
+#ifndef BUILD_SCRIPT_SOURCE_NAME
 #define BUILD_SCRIPT_SOURCE_NAME "build_script.c"
+#endif
+#ifndef BUILD_SCRIPT_SOURCE_PATH
 #define BUILD_SCRIPT_SOURCE_PATH "../" BUILD_SCRIPT_SOURCE_NAME
+#endif
 #define PIG_BUILD_FOLDER_NAME "pig_build"
 #ifndef PIG_BUILD_FOLDER_PATH
 #define PIG_BUILD_FOLDER_PATH "../" PIG_BUILD_FOLDER_NAME
