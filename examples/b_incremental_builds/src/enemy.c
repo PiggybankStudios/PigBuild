@@ -7,4 +7,3 @@ Description:
 */
 
 #include "enemy.h"
-

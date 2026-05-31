@@ -70,7 +70,7 @@ void CalculateHash(BuildFile* file)
 	}
 }
 
-void WalkDependencies(BuildFile* file)
+void FindIncludeLines(BuildFile* file)
 {
 	Str sourceCode = ReadEntireFile(file->path);
 	LineParser parser = NewLineParser(sourceCode);
@@ -97,6 +97,81 @@ void WalkDependencies(BuildFile* file)
 		// PrintLine("\t%.*s has no #include lines in %llu lines", StrPrint(file->fileName), lineIndex);
 	}
 	FreeStr(&sourceCode);
+}
+
+void FindSourceFilesInFolder(Array_BuildFile* files, Str folder, bool recursive)
+{
+	FileIter iter = StartFileIter(folder);
+	Str iterPath = Str_Empty_Const;
+	bool iterIsFolder = false;
+	while (StepFileIter(&iter, &iterPath, &iterIsFolder))
+	{
+		if (iterIsFolder)
+		{
+			if (recursive)
+			{
+				FindSourceFilesInFolder(files, iterPath, recursive);
+			}
+		}
+		else
+		{
+			if (StrAnyCaseEndsWith(iterPath, StrLit(".h")) ||
+				StrAnyCaseEndsWith(iterPath, StrLit(".c")))
+			{
+				BuildFile* file = AddItemArray_BuildFile(files);
+				file->isHeader = StrAnyCaseEndsWith(iterPath, StrLit(".h"));
+				file->path = GetFullPath(iterPath, '/');
+				file->fileName = GetFileNamePart(file->path, /*includeExtension=*/true);
+				if (!file->isHeader)
+				{
+					file->objPath = ChangePathExtension(file->fileName, StrLit(OBJ_EXT), /*replaceSubExtensions=*/false);
+					file->objExists = DoesFileExist(file->objPath);
+				}
+				// PrintLine("Found %s \"%.*s\"", file->isHeader ? "header" : "source", StrPrint(file->fileName));
+				CalculateHash(file); //fills out hashPath, prevHash, newHash, and hasChanged
+				FindIncludeLines(file); //fills out directDependencies
+			}
+		}
+	}
+}
+
+bool CheckIfDependencyChanged(Array_BuildFile* files, BuildFile* file)
+{
+	bool result = false;
+	StrArray toWalkList = EMPTY;
+	StrArray walkedList = EMPTY;
+	AddStrArray(&toWalkList, &file->directDependencies);
+	
+	while (toWalkList.length > 0 && !result)
+	{
+		Str nextFileName = CopyStr(toWalkList.strings[0]);
+		RemoveStrAtIndex(&toWalkList, 0);
+		BuildFile* walkFile = TryFindFile(files, nextFileName);
+		if (walkFile != nullptr)
+		{
+			if (walkFile->hasChanged)
+			{
+				PrintLine("Changes in \"%.*s\" mean that \"%.*s\" needs to recompile!", StrPrint(nextFileName), StrPrint(file->fileName));
+				result = true;
+				break;
+			}
+			for (u64 dIndex = 0; dIndex < walkFile->directDependencies.length; dIndex++)
+			{
+				Str walkFileDep = walkFile->directDependencies.strings[dIndex];
+				if (!ContainsStr(&toWalkList, walkFileDep, true) && !ContainsStr(&walkedList, walkFileDep, true))
+				{
+					AddStr(&toWalkList, walkFileDep);
+				}
+			}
+		}
+		else { PrintLine_E("Couldn't find \"%.*s\"", StrPrint(nextFileName)); }
+		FreeStr(&nextFileName);
+	}
+	
+	FreeStrArray(&toWalkList);
+	FreeStrArray(&walkedList);
+	
+	return result;
 }
 
 int main(int argc, char* argv[])
@@ -126,99 +201,24 @@ int main(int argc, char* argv[])
 	AddTaggedArgNt(&commonLinkerArgs,  "clang", CLANG_INCLUDE_DIR, "[ROOT]/include");
 	
 	Array_BuildFile files = EMPTY;
+	FindSourceFilesInFolder(&files, StrLit("../include"), /*recursive=*/false);
+	FindSourceFilesInFolder(&files, StrLit("../src"), /*recursive=*/false);
 	
-	{
-		FileIter iter = StartFileIter(StrLit("../include"));
-		Str iterPath = Str_Empty_Const;
-		bool iterIsFolder = false;
-		while (StepFileIter(&iter, &iterPath, &iterIsFolder))
-		{
-			if (!iterIsFolder && StrAnyCaseEndsWith(iterPath, StrLit(".h")))
-			{
-				BuildFile* file = AddItemArray_BuildFile(&files);
-				file->isHeader = true;
-				file->path = GetFullPath(iterPath, '/');
-				file->fileName = GetFileNamePart(file->path, /*includeExtension=*/true);
-				// PrintLine("Found header \"%.*s\"", StrPrint(file->fileName));
-				CalculateHash(file);
-				WalkDependencies(file);
-			}
-		}
-	}
-	
-	{
-		FileIter iter = StartFileIter(StrLit("../src"));
-		Str iterPath = Str_Empty_Const;
-		bool iterIsFolder = false;
-		while (StepFileIter(&iter, &iterPath, &iterIsFolder))
-		{
-			if (!iterIsFolder && StrAnyCaseEndsWith(iterPath, StrLit(".c")))
-			{
-				BuildFile* file = AddItemArray_BuildFile(&files);
-				file->isHeader = false;
-				file->path = GetFullPath(iterPath, '/');
-				file->fileName = GetFileNamePart(file->path, /*includeExtension=*/true);
-				file->objPath = ChangePathExtension(file->fileName, StrLit(OBJ_EXT), /*replaceSubExtensions=*/false);
-				file->objExists = DoesFileExist(file->objPath);
-				// PrintLine("Found source \"%.*s\"", StrPrint(file->fileName));
-				CalculateHash(file);
-				WalkDependencies(file);
-			}
-		}
-	}
-	
-	WriteLine_E("[Walking dependencies...]");
+	WriteLine_E("[Checking dependencies...]");
 	for (u64 fIndex = 0; fIndex < files.length; fIndex++)
 	{
 		BuildFile* file = &files.files[fIndex];
 		if (!file->isHeader && !file->hasChanged && file->objExists)
 		{
-			StrArray walkList = EMPTY;
-			StrArray walkedList = EMPTY;
-			for (u64 dIndex = 0; dIndex < file->directDependencies.length; dIndex++)
-			{
-				AddStr(&walkList, file->directDependencies.strings[dIndex]);
-			}
-			
-			file->hasDependentChanged = false;
-			while (walkList.length > 0 && !file->hasDependentChanged)
-			{
-				Str nextFileName = CopyStr(walkList.strings[0]);
-				RemoveStrAtIndex(&walkList, 0);
-				BuildFile* walkFile = TryFindFile(&files, nextFileName);
-				if (walkFile != nullptr)
-				{
-					if (walkFile->hasChanged)
-					{
-						PrintLine("Changes in \"%.*s\" mean that \"%.*s\" needs to recompile!", StrPrint(nextFileName), StrPrint(file->fileName));
-						file->hasDependentChanged = true;
-						break;
-					}
-					for (u64 dIndex = 0; dIndex < walkFile->directDependencies.length; dIndex++)
-					{
-						Str walkFileDep = walkFile->directDependencies.strings[dIndex];
-						if (!ContainsStr(&walkList, walkFileDep, true) && !ContainsStr(&walkedList, walkFileDep, true))
-						{
-							AddStr(&walkList, walkFileDep);
-						}
-					}
-				}
-				else { PrintLine_E("Couldn't find \"%.*s\"", StrPrint(nextFileName)); }
-				FreeStr(&nextFileName);
-			}
-			
-			FreeStrArray(&walkList);
-			FreeStrArray(&walkedList);
-			
+			file->hasDependentChanged = CheckIfDependencyChanged(&files, file);
 			// if (!file->hasDependentChanged) { PrintLine("Don't need to compile \"%.*s\"", StrPrint(file->fileName)); }
 		}
-		
 	}
 	
-	// Remove all objects that had a change or dependenct change
-	// That way they continue to get compiled even if we mark all
-	// the dependents as "up-to-date" in subsequent compile attempts
-	WriteLine_E("[Deleting objects...]");
+	// Remove all objects for files that need to get recompiled. This ensures we
+	// continue recompiling them even if we exit this build attempt early
+	// (if there are build errors in one of the files)
+	bool numFilesThatNeedToBeCompiled = 0;
 	for (u64 fIndex = 0; fIndex < files.length; fIndex++)
 	{
 		BuildFile* file = &files.files[fIndex];
@@ -226,53 +226,56 @@ int main(int argc, char* argv[])
 		{
 			if (!file->objExists || file->hasChanged || file->hasDependentChanged)
 			{
+				if (numFilesThatNeedToBeCompiled == 0) { WriteLine_E("[Deleting objects...]"); }
+				numFilesThatNeedToBeCompiled++;
+				
 				if (DoesFileExist(file->objPath)) { RemoveFile(file->objPath); }
 				if (DoesFileExist(file->hashPath)) { RemoveFile(file->hashPath); }
 			}
 		}
 	}
 	
-	WriteLine_E("[Compiling objects...]");
-	bool anyObjectsCompiled = false;
-	for (u64 fIndex = 0; fIndex < files.length; fIndex++)
+	if (numFilesThatNeedToBeCompiled > 0)
 	{
-		BuildFile* file = &files.files[fIndex];
-		if (file->isHeader)
+		WriteLine_E("[Compiling objects...]");
+		for (u64 fIndex = 0; fIndex < files.length; fIndex++)
 		{
-			if (file->hasChanged || !DoesFileExist(file->hashPath))
+			BuildFile* file = &files.files[fIndex];
+			if (file->isHeader)
 			{
-				CreateAndWriteFile(file->hashPath, FormatStr("0x%08llX", file->newHash), true);
+				if (file->hasChanged || !DoesFileExist(file->hashPath))
+				{
+					CreateAndWriteFile(file->hashPath, FormatStr("0x%08llX", file->newHash), true);
+				}
 			}
-		}
-		else
-		{
-			if (!file->objExists || file->hasChanged || file->hasDependentChanged)
+			else
 			{
-				IF_WINDOWS(InitializeMsvcIf(StrLit(PIG_BUILD_ROOT), &isMsvcInitialized));
-				PrintLine("[%sompiling \"%.*s\"...]", file->objExists ? "Rec" : "C", StrPrint(file->fileName));
-				
-				CliArgs args = EMPTY;
-				AddArgList(&args, &commonCompilerArgs);
-				AddArgStr(&args, CLI_QUOTED_ARG, file->path);
-				AddTaggedArgStr(&args, "cl", CL_OBJ_FILE, file->objPath);
-				AddTaggedArgStr(&args, "clang", CLANG_OUTPUT_FILE, file->objPath);
-				
-				StrArray tags = EMPTY;
-				AddStr(&tags, compilerName);
-				AddStrLit(&tags, "compiling");
-				AddStrLit(&tags, BUILDING_ON_NAME);
-				
-				RunCliProgramAndExitOnFailureTags(compilerName, tags, &args, FormatStr("Failed to compile \"%.*s\"", StrPrint(file->fileName)));
-				AssertFileExist(file->objPath, true);
-				
-				CreateAndWriteFile(file->hashPath, FormatStr("0x%08llX", file->newHash), true);
-				
-				anyObjectsCompiled = true;
+				if (!file->objExists || file->hasChanged || file->hasDependentChanged)
+				{
+					IF_WINDOWS(InitializeMsvcIf(StrLit(PIG_BUILD_ROOT), &isMsvcInitialized));
+					PrintLine("[%sompiling \"%.*s\"...]", file->objExists ? "Rec" : "C", StrPrint(file->fileName));
+					
+					CliArgs args = EMPTY;
+					AddArgList(&args, &commonCompilerArgs);
+					AddArgStr(&args, CLI_QUOTED_ARG, file->path);
+					AddTaggedArgStr(&args, "cl", CL_OBJ_FILE, file->objPath);
+					AddTaggedArgStr(&args, "clang", CLANG_OUTPUT_FILE, file->objPath);
+					
+					StrArray tags = EMPTY;
+					AddStr(&tags, compilerName);
+					AddStrLit(&tags, "compiling");
+					AddStrLit(&tags, BUILDING_ON_NAME);
+					
+					RunCliProgramAndExitOnFailureTags(compilerName, tags, &args, FormatStr("Failed to compile \"%.*s\"", StrPrint(file->fileName)));
+					AssertFileExist(file->objPath, true);
+					
+					CreateAndWriteFile(file->hashPath, FormatStr("0x%08llX", file->newHash), true);
+				}
 			}
 		}
 	}
 	
-	if (!DoesFileExist(exeName) || anyObjectsCompiled)
+	if (!DoesFileExist(exeName) || numFilesThatNeedToBeCompiled > 0)
 	{
 		IF_WINDOWS(InitializeMsvcIf(StrLit(PIG_BUILD_ROOT), &isMsvcInitialized));
 		PrintLine("[%sinking \"%.*s\"...]", DoesFileExist(exeName) ? "Rel" : "L", StrPrint(exeName));
