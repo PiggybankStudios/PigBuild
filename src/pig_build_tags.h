@@ -43,6 +43,7 @@ Description:
 
 // Target Platforms
 #define T_WINDOWS         "|Windows"
+#define T_NOT_WINDOWS     "|Windows==false"
 #define T_LINUX           "|Linux"
 #define T_OSX             "|OSX"
 #define T_UNIX            "|Unix" // basically (LINUX or OSX)
