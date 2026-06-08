@@ -17,17 +17,18 @@ Description:
 void DownloadSokolIfNeeded();
 void CrossCompileShaderIfNeeded();
 
-int main(int argc, char** argv[])
+int main(int argc, char* argv[])
 {
 	RecompileIfNeeded(StrArray_Empty);
 	Str pigBuildFolder = StrLit(PIG_BUILD_ROOT);
 	IF_WINDOWS(bool isMsvcInitialized = WasMsvcDevBatchRun());
 	Str executableName = StrLit("builder_gui" EXE_EXT);
+	Str localFolderPrefix = BUILDING_ON_WINDOWS ? StrLit("") : StrLit("./");
 	
 	if (DoesFileExist(executableName))
 	{
 		WriteLine("[Running GUI...]");
-		int exitCode = RunCliProgram(executableName, nullptr);
+		int exitCode = RunCliProgram(JoinStrings2(localFolderPrefix, executableName), nullptr);
 		if (exitCode == 0) { return 0; }
 		else if (exitCode == REBUILD_EXIT_CODE)
 		{
@@ -76,8 +77,8 @@ int main(int argc, char** argv[])
 	AddTaggedArgNt(&args, T_CLANG, CLANG_INCLUDE_DIR, PIG_BUILD_ROOT "/src");
 	AddTaggedArgNt(&args, T_CLANG, CLANG_DEFINE, "PIG_BUILD_ROOT=\"" PIG_BUILD_ROOT "\"");
 	AddTaggedArgStr(&args, T_CLANG, CLANG_OUTPUT_FILE, executableName);
-	AddTaggedArgNt(&args, T_CLANG T_OSX "==false", CLI_QUOTED_ARG, "[ROOT]/main.c");
-	AddTaggedArgNt(&args, T_CLANG T_OSX "==true", CLI_QUOTED_ARG, "main.m");
+	AddTaggedArgNt(&args, T_CLANG, CLI_QUOTED_ARG, "[ROOT]/build_gui.c");
+	// AddTaggedArgNt(&args, T_CLANG T_OSX "==true", CLI_QUOTED_ARG, "main.m");
 	
 	// +==============================+
 	// |     Linux Compiler Flags     |
@@ -135,7 +136,7 @@ int main(int argc, char** argv[])
 	{
 		CliArgs args = EMPTY;
 		WriteLine("\n[Running GUI...]");
-		RunCliProgram(executableName, nullptr);
+		RunCliProgram(JoinStrings2(localFolderPrefix, executableName), nullptr);
 	}
 	
 	return 0;

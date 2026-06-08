@@ -213,9 +213,9 @@ u32 TakeNextUtf8Codepoint(Str* strPntr)
 	return result;
 }
 
-Str32 Utf8StrToCodepoints(Str str)
+StrFull Utf8StrToCodepoints(Str str)
 {
-	Str32 result = Str32_Empty_Const;
+	StrFull result = StrFull_Empty_Const;
 	Str consumeStr = str;
 	while (consumeStr.length > 0)
 	{
@@ -223,7 +223,7 @@ Str32 Utf8StrToCodepoints(Str str)
 		result.numCodepoints++;
 	}
 	if (result.numCodepoints == 0) { return result; }
-	result = AllocStr32(result.numCodepoints);
+	result = AllocStrFull(result.numCodepoints);
 	consumeStr = str;
 	u64 codepointIndex = 0;
 	while (consumeStr.length > 0)
@@ -234,7 +234,7 @@ Str32 Utf8StrToCodepoints(Str str)
 	return result;
 }
 
-Str CodepointsToUtf8Str(Str32 codepointsStr)
+Str CodepointsToUtf8Str(StrFull codepointsStr)
 {
 	Assert(codepointsStr.codepoints != nullptr || codepointsStr.numCodepoints == 0);
 	Str result = Str_Empty_Const;
@@ -350,9 +350,9 @@ u32 TakeNextUtf16Codepoint(Str16* strPntr)
 	return result;
 }
 
-Str32 Utf16StrToCodepoints(Str16 str)
+StrFull Utf16StrToCodepoints(Str16 str)
 {
-	Str32 result = Str32_Empty_Const;
+	StrFull result = StrFull_Empty_Const;
 	Str16 consumeStr = str;
 	while (consumeStr.numWords > 0)
 	{
@@ -360,7 +360,7 @@ Str32 Utf16StrToCodepoints(Str16 str)
 		result.numCodepoints++;
 	}
 	if (result.numCodepoints == 0) { return result; }
-	result = AllocStr32(result.numCodepoints);
+	result = AllocStrFull(result.numCodepoints);
 	consumeStr = str;
 	u64 codepointIndex = 0;
 	while (consumeStr.numWords > 0)
@@ -371,7 +371,7 @@ Str32 Utf16StrToCodepoints(Str16 str)
 	return result;
 }
 
-Str16 CodepointsToUtf16Str(Str32 codepointsStr)
+Str16 CodepointsToUtf16Str(StrFull codepointsStr)
 {
 	Assert(codepointsStr.codepoints != nullptr || codepointsStr.numCodepoints == 0);
 	Str16 result = Str16_Empty_Const;

@@ -23,8 +23,10 @@ struct Str16
 	union { u16* words; void* pntr; u8* bytes; };
 };
 
-typedef struct Str32 Str32;
-struct Str32
+//TODO: MacTypes.h defines Str32 as an array of 32 chars. We should choose a different name for this if we don't want to conflict
+//      For now we don't really need StrFull in any places where we #include <MacTypes.h> so we'll just remove it if we see the __MACTYPES__ #define
+typedef struct StrFull StrFull;
+struct StrFull
 {
 	union { u64 length; u64 numCodepoints; }; //(4x byte count)
 	union { u32* codepoints; void* pntr; u8* bytes; };
@@ -40,24 +42,24 @@ struct Str32
 //   name = Str_Empty;
 // Depending on which version of C/C++ you are compiling with and on which compiler this distinction may be more or less enforced
 #if LANGUAGE_IS_C
-#define MakeStr_Const(lengthValue, pntrValue)          { .length=(lengthValue),               .pntr=(void*)(pntrValue) }
-#define MakeStr16_Const(numWordsValue, pntrValue)      { .numWords=(numWordsValue),           .pntr=(void*)(pntrValue) }
-#define MakeStr32_Const(numCodepointsValue, pntrValue) { .numCodepoints=(numCodepointsValue), .pntr=(void*)(pntrValue) }
+#define MakeStr_Const(lengthValue, pntrValue)            { .length=(lengthValue),               .pntr=(void*)(pntrValue) }
+#define MakeStr16_Const(numWordsValue, pntrValue)        { .numWords=(numWordsValue),           .pntr=(void*)(pntrValue) }
+#define MakeStrFull_Const(numCodepointsValue, pntrValue) { .numCodepoints=(numCodepointsValue), .pntr=(void*)(pntrValue) }
 #else
-#define MakeStr_Const(lengthValue, pntrValue)          { (lengthValue),        (void*)(pntrValue) }
-#define MakeStr16_Const(numWordsValue, pntrValue)      { (numWordsValue),      (void*)(pntrValue) }
-#define MakeStr32_Const(numCodepointsValue, pntrValue) { (numCodepointsValue), (void*)(pntrValue) }
+#define MakeStr_Const(lengthValue, pntrValue)            { (lengthValue),        (void*)(pntrValue) }
+#define MakeStr16_Const(numWordsValue, pntrValue)        { (numWordsValue),      (void*)(pntrValue) }
+#define MakeStrFull_Const(numCodepointsValue, pntrValue) { (numCodepointsValue), (void*)(pntrValue) }
 #endif
-#define MakeStr(length, pntr)          INIT(Str)MakeStr_Const((length), (pntr))
-#define MakeStr16(numWords, pntr)      INIT(Str16)MakeStr16_Const((numWords), (pntr))
-#define MakeStr32(numCodepoints, pntr) INIT(Str32)MakeStr32_Const((numCodepoints), (pntr))
+#define MakeStr(length, pntr)            INIT(Str)MakeStr_Const((length), (pntr))
+#define MakeStr16(numWords, pntr)        INIT(Str16)MakeStr16_Const((numWords), (pntr))
+#define MakeStrFull(numCodepoints, pntr) INIT(StrFull)MakeStrFull_Const((numCodepoints), (pntr))
 
-#define Str_Empty_Const     MakeStr_Const(0, nullptr)
-#define Str16_Empty_Const MakeStr16_Const(0, nullptr)
-#define Str32_Empty_Const MakeStr32_Const(0, nullptr)
-#define Str_Empty                 MakeStr(0, nullptr)
-#define Str16_Empty             MakeStr16(0, nullptr)
-#define Str32_Empty             MakeStr32(0, nullptr)
+#define Str_Empty_Const         MakeStr_Const(0, nullptr)
+#define Str16_Empty_Const     MakeStr16_Const(0, nullptr)
+#define StrFull_Empty_Const MakeStrFull_Const(0, nullptr)
+#define Str_Empty                     MakeStr(0, nullptr)
+#define Str16_Empty                 MakeStr16(0, nullptr)
+#define StrFull_Empty             MakeStrFull(0, nullptr)
 
 #define StrLitLength(stringLiteral)       ((sizeof(stringLiteral) / sizeof((stringLiteral)[0])) - sizeof((stringLiteral)[0]))
 #define Str16LitLength(wideStringLiteral) ((sizeof(wideStringLiteral) / sizeof((wideStringLiteral)[0])) - sizeof((wideStringLiteral)[0]))
@@ -74,10 +76,10 @@ struct Str32
 
 #define IsEmptyStr(string)           ((string).length == 0)
 #define IsEmptyStr16(string)         ((string).numWords == 0)
-#define IsEmptyStr32(string)         ((string).numCodepoints == 0)
+#define IsEmptyStrFull(string)         ((string).numCodepoints == 0)
 #define IsEmptyStrPntr(stringPntr)   ((stringPntr) == nullptr || (stringPntr)->length == 0)
 #define IsEmptyStr16Pntr(stringPntr) ((stringPntr) == nullptr || (stringPntr)->numWords == 0)
-#define IsEmptyStr32Pntr(stringPntr) ((stringPntr) == nullptr || (stringPntr)->numCodepoints == 0)
+#define IsEmptyStrFullPntr(stringPntr) ((stringPntr) == nullptr || (stringPntr)->numCodepoints == 0)
 
 // +--------------------------------------------------------------+
 // |                     Basic Str Functions                      |
@@ -96,12 +98,12 @@ void FreeStr16(Str16* strPntr)
 	free(strPntr->words);
 	memset(strPntr, 0x00, sizeof(Str16));
 }
-void FreeStr32(Str32* strPntr)
+void FreeStrFull(StrFull* strPntr)
 {
 	Assert(strPntr->numCodepoints == 0 || strPntr->codepoints != nullptr);
-	if (strPntr->codepoints == nullptr) { memset(strPntr, 0x00, sizeof(Str32)); return; }
+	if (strPntr->codepoints == nullptr) { memset(strPntr, 0x00, sizeof(StrFull)); return; }
 	free(strPntr->codepoints);
-	memset(strPntr, 0x00, sizeof(Str32));
+	memset(strPntr, 0x00, sizeof(StrFull));
 }
 Str CopyStr(Str strToCopy)
 {
@@ -123,9 +125,9 @@ Str16 CopyStr16(Str16 strToCopy)
 	result.words[result.numWords] = 0x0000;
 	return result;
 }
-Str32 CopyStr32(Str32 strToCopy)
+StrFull CopyStrFull(StrFull strToCopy)
 {
-	Str32 result = Str32_Empty_Const;
+	StrFull result = StrFull_Empty_Const;
 	result.numCodepoints = strToCopy.numCodepoints;
 	result.codepoints = (u32*)malloc(sizeof(u32) * (strToCopy.numCodepoints + 1));
 	NotNull(result.codepoints);
@@ -158,9 +160,9 @@ Str16 AllocStr16(u64 numWords)
 	result.words[result.numWords] = 0x0000;
 	return result;
 }
-Str32 AllocStr32(u64 numCodepoints)
+StrFull AllocStrFull(u64 numCodepoints)
 {
-	Str32 result = Str32_Empty_Const;
+	StrFull result = StrFull_Empty_Const;
 	result.numCodepoints = numCodepoints;
 	result.codepoints = (u32*)malloc(sizeof(u32) * (numCodepoints + 1));
 	NotNull(result.codepoints);
