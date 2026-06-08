@@ -25,7 +25,7 @@ Str GetOrcaSdkPath()
 	CliArgs cmd = EMPTY;
 	AddArg(&cmd, "sdk-path");
 	AddArgNt(&cmd, CLI_PIPE_OUTPUT_TO_FILE, FILENAME_ORCA_SDK_PATH);
-	int statusCode = RunCliProgram(StrLit("orca"), "", &cmd);
+	int statusCode = RunCliProgram(StrLit("orca"), &cmd);
 	if (statusCode != 0)
 	{
 		PrintLine_E("Failed to run \"orca sdk-path\"! Status code: %d", statusCode);

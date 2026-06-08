@@ -50,8 +50,10 @@ Description:
 #define T_NOT_WASM       T_WASM "==false"
 #define T_NOT_EMSCRIPTEN T_USE_EMSCRIPTEN "==false"
 
-void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreThirdPartyPath)
+void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCorePath)
 {
+	Str pigCoreThirdPartyPath = JoinPaths(pigCorePath, StrLit("third_party"));
+	
 	// +--------------------------------------------------------------+
 	// |                        Compiler Flags                        |
 	// +--------------------------------------------------------------+
@@ -251,32 +253,32 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreT
 	// +==============================+
 	// |   Flags for Building Tracy   |
 	// +==============================+
-	AddTaggedArgNt(compilerFlags, T_MSVC_CL T_TRACY, CL_INCLUDE_DIR,    "[ROOT]/third_party/tracy");
-	AddTaggedArgNt(compilerFlags, T_CLANG   T_TRACY, CLANG_INCLUDE_DIR, "[ROOT]/third_party/tracy");
-	AddTaggedArgNt(compilerFlags, T_MSVC_CL T_TRACY, CL_DEFINE, "TRACY_ENABLE");
-	AddTaggedArgNt(compilerFlags, T_MSVC_CL T_TRACY, CL_DEFINE, "TRACY_EXPORTS");
-	AddTaggedArgNt(compilerFlags, T_CLANG   T_TRACY, CLANG_DEFINE, "TRACY_ENABLE");
-	AddTaggedArgNt(compilerFlags, T_CLANG   T_TRACY, CLANG_DEFINE, "TRACY_EXPORTS");
-	AddTaggedArgNt(compilerFlags, T_MSVC_CL T_TRACY, CL_CONFIGURE_EXCEPTION_HANDLING, "s"); //enable stack-unwinding
-	AddTaggedArgNt(compilerFlags, T_MSVC_CL T_TRACY, CL_CONFIGURE_EXCEPTION_HANDLING, "c"); //extern "C" functions don't through exceptions
-	AddTaggedArgNt(compilerFlags, T_CLANG   T_TRACY, CLANG_DISABLE_WARNING, CLANG_WARNING_SHADOWING); // declaration shadows a local variable
-	AddTaggedArgNt(compilerFlags, T_CLANG   T_TRACY, CLANG_DISABLE_WARNING, CLANG_WARNING_MISSING_FIELD_INITIALIZERS); // missing field 'extra' initializer
-	AddTaggedArgNt(compilerFlags, T_CLANG   T_TRACY, CLANG_DISABLE_WARNING, CLANG_WARNING_MISSING_FALLTHROUGH_IN_SWITCH); // unannotated fall-through between switch labels
-	AddTaggedArgNt(compilerFlags, T_MSVC_CL T_TRACY T_DUMP_ASSEMBLY, CL_ASSEMB_LISTING_FILE, "tracy.asm");
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_TRACY, CL_INCLUDE_DIR,    JoinPaths(pigCoreThirdPartyPath, StrLit("tracy")));
+	AddTaggedArgStr(compilerFlags, T_CLANG   T_TRACY, CLANG_INCLUDE_DIR, JoinPaths(pigCoreThirdPartyPath, StrLit("tracy")));
+	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_TRACY, CL_DEFINE, "TRACY_ENABLE");
+	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_TRACY, CL_DEFINE, "TRACY_EXPORTS");
+	AddTaggedArgNt(compilerFlags,  T_CLANG   T_TRACY, CLANG_DEFINE, "TRACY_ENABLE");
+	AddTaggedArgNt(compilerFlags,  T_CLANG   T_TRACY, CLANG_DEFINE, "TRACY_EXPORTS");
+	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_TRACY, CL_CONFIGURE_EXCEPTION_HANDLING, "s"); //enable stack-unwinding
+	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_TRACY, CL_CONFIGURE_EXCEPTION_HANDLING, "c"); //extern "C" functions don't through exceptions
+	AddTaggedArgNt(compilerFlags,  T_CLANG   T_TRACY, CLANG_DISABLE_WARNING, CLANG_WARNING_SHADOWING); // declaration shadows a local variable
+	AddTaggedArgNt(compilerFlags,  T_CLANG   T_TRACY, CLANG_DISABLE_WARNING, CLANG_WARNING_MISSING_FIELD_INITIALIZERS); // missing field 'extra' initializer
+	AddTaggedArgNt(compilerFlags,  T_CLANG   T_TRACY, CLANG_DISABLE_WARNING, CLANG_WARNING_MISSING_FALLTHROUGH_IN_SWITCH); // unannotated fall-through between switch labels
+	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_TRACY T_DUMP_ASSEMBLY, CL_ASSEMB_LISTING_FILE, "tracy.asm");
 	
 	// +===============================+
 	// | Flags for Building Dear ImGui |
 	// +===============================+
-	AddTaggedArgNt(compilerFlags, T_MSVC_CL T_DEAR_IMGUI, CL_INCLUDE_DIR,    "[ROOT]/third_party/imgui");
-	AddTaggedArgNt(compilerFlags, T_CLANG   T_DEAR_IMGUI, CLANG_INCLUDE_DIR, "[ROOT]/third_party/imgui");
-	AddTaggedArgNt(compilerFlags, T_MSVC_CL T_DEAR_IMGUI T_DUMP_ASSEMBLY, CL_ASSEMB_LISTING_FILE, "imgui.asm");
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEAR_IMGUI, CL_INCLUDE_DIR,    JoinPaths(pigCoreThirdPartyPath, StrLit("imgui")));
+	AddTaggedArgStr(compilerFlags, T_CLANG   T_DEAR_IMGUI, CLANG_INCLUDE_DIR, JoinPaths(pigCoreThirdPartyPath, StrLit("imgui")));
+	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_DEAR_IMGUI T_DUMP_ASSEMBLY, CL_ASSEMB_LISTING_FILE, "imgui.asm");
 	
 	// +===============================+
 	// | Flags for Building PhysX_capi |
 	// +===============================+
-	AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PHYSX, CL_INCLUDE_DIR,    "[ROOT]/third_party/physx");
-	AddTaggedArgNt(compilerFlags, T_CLANG   T_PHYSX, CLANG_INCLUDE_DIR, "[ROOT]/third_party/physx");
-	AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PHYSX T_DUMP_ASSEMBLY, CL_ASSEMB_LISTING_FILE, "physx.asm");
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_PHYSX, CL_INCLUDE_DIR,    JoinPaths(pigCoreThirdPartyPath, StrLit("physx")));
+	AddTaggedArgStr(compilerFlags, T_CLANG   T_PHYSX, CLANG_INCLUDE_DIR, JoinPaths(pigCoreThirdPartyPath, StrLit("physx")));
+	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_PHYSX T_DUMP_ASSEMBLY, CL_ASSEMB_LISTING_FILE, "physx.asm");
 	
 	// +==============================+
 	// |       clang_WasmFlags        |
