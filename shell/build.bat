@@ -56,14 +56,14 @@ if not exist builder.exe (
 )
 
 REM Run the builder.exe and save the exit code so we can handle if it requests a rebuild
-builder.exe %*
+.\builder.exe %*
 set "builder_exit_code=!ERRORLEVEL!"
 
 if "!ERRORLEVEL!"=="42" (
 	echo [Recompile requested]
 	CALL :CompileBuilder
 	if "!ERRORLEVEL!" NEQ "0" goto :Done
-	builder.exe %*
+	.\builder.exe %*
 )
 
 :Done
