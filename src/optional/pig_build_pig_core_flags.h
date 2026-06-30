@@ -52,7 +52,7 @@ Description:
 
 void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCorePath)
 {
-	Str pigCoreThirdPartyPath = JoinPaths(pigCorePath, StrLit("third_party"));
+	Str pigCoreThirdPartyPath = JoinPaths(pigCorePath, StrLit("src/third_party"));
 	
 	// +--------------------------------------------------------------+
 	// |                        Compiler Flags                        |
@@ -181,10 +181,10 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	// +==============================+
 	// |     Library Directories      |
 	// +==============================+
-	AddTaggedArgNt(linkerFlags,  T_MSVC_CL T_DEBUG_BUILD,        LINK_LIBRARY_DIR, "[ROOT]/third_party/_lib_debug");
-	AddTaggedArgNt(linkerFlags,  T_MSVC_CL T_RELEASE_BUILD,      LINK_LIBRARY_DIR, "[ROOT]/third_party/_lib_release");
-	AddTaggedArgStr(linkerFlags, T_CLANG T_UNIX T_DEBUG_BUILD,   CLANG_LIBRARY_DIR, StrLit("[ROOT]/third_party/_lib_debug"));
-	AddTaggedArgStr(linkerFlags, T_CLANG T_UNIX T_RELEASE_BUILD, CLANG_LIBRARY_DIR, StrLit("[ROOT]/third_party/_lib_release"));
+	AddTaggedArgStr(linkerFlags,  T_MSVC_CL T_DEBUG_BUILD,       LINK_LIBRARY_DIR,  JoinPaths(pigCoreThirdPartyPath, StrLit("_lib_debug")));
+	AddTaggedArgStr(linkerFlags,  T_MSVC_CL T_RELEASE_BUILD,     LINK_LIBRARY_DIR,  JoinPaths(pigCoreThirdPartyPath, StrLit("_lib_release")));
+	AddTaggedArgStr(linkerFlags, T_CLANG T_UNIX T_DEBUG_BUILD,   CLANG_LIBRARY_DIR, JoinPaths(pigCoreThirdPartyPath, StrLit("_lib_debug")));
+	AddTaggedArgStr(linkerFlags, T_CLANG T_UNIX T_RELEASE_BUILD, CLANG_LIBRARY_DIR, JoinPaths(pigCoreThirdPartyPath, StrLit("_lib_release")));
 	
 	// +==============================+
 	// |          Libraries           |
