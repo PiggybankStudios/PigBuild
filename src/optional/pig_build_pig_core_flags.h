@@ -147,8 +147,8 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	// +==============================+
 	// |     Include Directories      |
 	// +==============================+
-	AddTaggedArgNt(compilerFlags, T_MSVC_CL,      CL_INCLUDE_DIR, "[ROOT]");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX, CLANG_INCLUDE_DIR, "[ROOT]");
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL,      CL_INCLUDE_DIR, JoinPaths(pigCorePath, StrLit("src")));
+	AddTaggedArgStr(compilerFlags, T_CLANG T_UNIX, CLANG_INCLUDE_DIR, JoinPaths(pigCorePath, StrLit("src")));
 	//TODO: Really we should do `pkg-config dbus-1 --cflags`
 	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX, CLANG_INCLUDE_DIR, "/usr/include/dbus-1.0");
 	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX, CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/dbus-1.0/include"); //This was the path on Lubuntu
