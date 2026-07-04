@@ -149,6 +149,7 @@ Description:
 #define CLANG_STDLIB_FOLDER          "--sysroot \"[VAL]\""
 #define CLANG_M_FLAG                 "-m[VAL]" //TODO: Name this better! Values: cx16, sha
 #define CLANG_TARGET_ARCHITECTURE    "--target=[VAL]"
+#define CLANG_LANGUAGE               "-x [VAL]" //"objective-c", "objective-c++"
 #define CLANG_COMPILER_ARG           "-Xclang [VAL]" //TODO: Name this better!
 #define CLANG_LINKER_ARG             "-Xlinker [VAL]" //TODO: Name this better!
 //NOTE: Arguments prefixed with -Wl, are passed along to the linker

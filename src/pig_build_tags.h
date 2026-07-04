@@ -51,9 +51,10 @@ Description:
 #define T_WASM            "|Wasm"
 
 // Languages
-#define T_LANG_C          "|LangC"
-#define T_LANG_CPP        "|LangCpp"
-#define T_LANG_OBJECTIVEC "|LangObjectiveC"
+#define T_LANG_C            "|LangC"
+#define T_LANG_CPP          "|LangCpp"
+#define T_LANG_OBJECTIVEC   "|LangObjectiveC"
+#define T_LANG_OBJECTIVECPP "|LangObjectiveCpp"
 
 // Common build_config.h defines
 #define T_DEBUG_BUILD     "|DEBUG_BUILD==true"

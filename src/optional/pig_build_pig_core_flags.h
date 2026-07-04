@@ -116,7 +116,7 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	// |      Configure warnings      |
 	// +==============================+
 	AddTaggedArgNt(compilerFlags,  T_MSVC_CL, CL_WARNING_LEVEL, "X"); //Treat all warnings as errors
-	AddTaggedArgNt(compilerFlags, T_MSVC_CL, CL_WARNING_LEVEL, "4"); //Use warning level 4, then disable various warnings we don't care about
+	AddTaggedArgNt(compilerFlags,  T_MSVC_CL, CL_WARNING_LEVEL, "4"); //Use warning level 4, then disable various warnings we don't care about
 	AddTaggedArgNt(compilerFlags,  T_CLANG,   CLANG_WARNING_LEVEL, "all"); //This enables all the warnings about constructions that some users consider questionable, and that are easy to avoid (or modify to prevent the warning), even in conjunction with macros
 	AddTaggedArgNt(compilerFlags,  T_CLANG,   CLANG_WARNING_LEVEL, "extra"); //This enables some extra warning flags that are not enabled by -Wall
 	//We set the highest warning level above and then remove the warnings we don't care about here
