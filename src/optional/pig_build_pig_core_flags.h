@@ -86,14 +86,17 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_LANG_C, CL_LANG_VERSION, "clatest"); //Use latest C language spec features
 	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_LANG_C, CL_EXPERIMENTAL, "c11atomics"); //Enables _Atomic types
 	// AddTaggedArg(compilerFlags, T_MSVC_CL T_LANG_C, CL_ENABLE_ADDRESS_SANATIZER);
-	AddTaggedArgNt(compilerFlags,  T_CLANG   T_LANG_C, CLANG_LANG_VERSION, "gnu2x"); //Use C20+ language spec (NOTE: We originally had -std=c2x but that didn't define MAP_ANONYMOUS and mmap was failing)
 	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_LANG_CPP, CL_LANG_VERSION, "c++20");
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_LANG_CPP, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_ENUMERATION_MUST_HAVE_UNDERLYING_TYPE));
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_LANG_CPP, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_BITWISE_OP_BETWEEN_ENUMS));
-	AddTaggedArgNt(compilerFlags,  T_CLANG   T_LANG_CPP, CLANG_LANG_VERSION, "c++20"); // TODO: What option should we actually choose here?
-	AddTaggedArgNt(compilerFlags,  T_CLANG   T_LANG_CPP, CLANG_SYSTEM_LIBRARY, "stdc++"); // Fixes tracy.so link-time errors regarding stuff like `operator delete(void*, unsigned long)`
-	AddTaggedArgNt(compilerFlags,  T_CLANG   T_LANG_OBJECTIVEC, CLANG_LANG_VERSION, "gnu2x"); //NOTE: We still ask for gnu23 features in Objective-C mode, the distinguishing factor is that we compile a .m file not a .c file
-	AddTaggedArg(compilerFlags,    T_CLANG   T_LANG_OBJECTIVEC, CLANG_ENABLE_OBJC_ARC);
+	AddTaggedArgNt(compilerFlags,  T_CLANG   T_LANG_C,            CLANG_LANG_VERSION, "gnu2x"); //Use C20+ language spec (NOTE: We originally had -std=c2x but that didn't define MAP_ANONYMOUS and mmap was failing)
+	AddTaggedArgNt(compilerFlags,  T_CLANG   T_LANG_OBJECTIVEC,   CLANG_LANG_VERSION, "gnu2x"); //NOTE: We still ask for gnu23 features in Objective-C mode, the distinguishing factor is that we compile a .m file not a .c file
+	AddTaggedArgNt(compilerFlags,  T_CLANG   T_LANG_CPP,          CLANG_LANG_VERSION, "c++20"); // TODO: What option should we actually choose here?
+	AddTaggedArgNt(compilerFlags,  T_CLANG   T_LANG_OBJECTIVECPP, CLANG_LANG_VERSION, "c++20");
+	AddTaggedArgNt(compilerFlags,  T_CLANG   T_LANG_CPP,          CLANG_SYSTEM_LIBRARY, "stdc++"); // Fixes tracy.so link-time errors regarding stuff like `operator delete(void*, unsigned long)`
+	AddTaggedArgNt(compilerFlags,  T_CLANG   T_LANG_OBJECTIVECPP, CLANG_SYSTEM_LIBRARY, "stdc++");
+	AddTaggedArg(compilerFlags,    T_CLANG   T_LANG_OBJECTIVEC,   CLANG_ENABLE_OBJC_ARC);
+	AddTaggedArg(compilerFlags,    T_CLANG   T_LANG_OBJECTIVECPP, CLANG_ENABLE_OBJC_ARC);
 	//TODO: Figure out why these are needed when linking with imgui.o with Clang on Linux
 	// AddTaggedArg(compilerFlags, T_CLANG   T_LANG_C T_BUILD_WITH_IMGUI, "-lstdc++"); //TODO: Since this is being added to clang_LangCppFlags flags now (was needed for tracy.so as well as imgui.so) we probably don't need to add it here
 	AddTaggedArg(compilerFlags,    T_CLANG   T_LANG_C T_BUILD_WITH_IMGUI, "-fno-threadsafe-statics"); //Eliminates undefined references to stuff like "__cxa_guard_acquire"
@@ -147,12 +150,14 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	// +==============================+
 	// |     Include Directories      |
 	// +==============================+
-	AddTaggedArgStr(compilerFlags, T_MSVC_CL,      CL_INCLUDE_DIR, JoinPaths(pigCorePath, StrLit("src")));
-	AddTaggedArgStr(compilerFlags, T_CLANG T_UNIX, CLANG_INCLUDE_DIR, JoinPaths(pigCorePath, StrLit("src")));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL,                       CL_INCLUDE_DIR,    JoinPaths(pigCorePath, StrLit("src")));
+	AddTaggedArgStr(compilerFlags, T_CLANG T_UNIX,                  CLANG_INCLUDE_DIR, JoinPaths(pigCorePath, StrLit("src")));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_PIG_CORE_TESTS,      CL_INCLUDE_DIR,    JoinPaths(pigCorePath, StrLit("src/tests")));
+	AddTaggedArgStr(compilerFlags, T_CLANG T_UNIX T_PIG_CORE_TESTS, CLANG_INCLUDE_DIR, JoinPaths(pigCorePath, StrLit("src/tests")));
 	//TODO: Really we should do `pkg-config dbus-1 --cflags`
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX, CLANG_INCLUDE_DIR, "/usr/include/dbus-1.0");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX, CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/dbus-1.0/include"); //This was the path on Lubuntu
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX, CLANG_INCLUDE_DIR, "/usr/lib64/dbus-1.0/include"); //This is the path on Fedora Workstation
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX, CLANG_INCLUDE_DIR, "/usr/include/dbus-1.0");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX, CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/dbus-1.0/include"); //This was the path on Lubuntu
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX, CLANG_INCLUDE_DIR, "/usr/lib64/dbus-1.0/include"); //This is the path on Fedora Workstation
 	Str freetypeDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/freetype/include"));
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_BUILD_WITH_FREETYPE, CL_INCLUDE_DIR, freetypeDir);
 	AddTaggedArgStr(compilerFlags, T_CLANG   T_BUILD_WITH_FREETYPE, CLANG_INCLUDE_DIR, freetypeDir);
@@ -160,23 +165,23 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_BUILD_WITH_FREETYPE, CL_INCLUDE_DIR, plutosvgDir);
 	AddTaggedArgStr(compilerFlags, T_CLANG   T_BUILD_WITH_FREETYPE, CLANG_INCLUDE_DIR, plutosvgDir);
 	//TODO: Really we should do `pkg-config --cflags gtk4`
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/gtk-4.0");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/glib-2.0");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/glib-2.0/include");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/x86_64-linux-gnu");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/cairo");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/pango-1.0");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/harfbuzz");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/freetype2");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/libpng16");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/libmount");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/blkid");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/fribidi");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/pixman-1");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/gdk-pixbuf-2.0");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/webp");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/graphene-1.0");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/graphene-1.0/include");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/gtk-4.0");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/glib-2.0");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/glib-2.0/include");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/x86_64-linux-gnu");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/cairo");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/pango-1.0");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/harfbuzz");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/freetype2");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/libpng16");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/libmount");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/blkid");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/fribidi");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/pixman-1");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/gdk-pixbuf-2.0");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/webp");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/graphene-1.0");
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/graphene-1.0/include");
 	
 	// +==============================+
 	// |     Library Directories      |
