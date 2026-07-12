@@ -191,6 +191,62 @@ void AssertFileExist(Str filePath, bool wasCreatedByBuild)
 	}
 }
 
+void MyCreateFolder(Str path, bool createParentFoldersIfNeeded)
+{
+	u64 numPathParts = CountPathParts(path);
+	if (createParentFoldersIfNeeded && numPathParts > 1)
+	{
+		for (u64 pIndex = 0; pIndex < numPathParts; pIndex++)
+		{
+			Str pathPart = GetPathPartAtIndex(path, pIndex);
+			NotEmptyStr(pathPart);
+			Assert(IsSizedPntrWithin(path.chars, path.length, pathPart.chars, pathPart.length));
+			u64 partEndIndex = (u64)((pathPart.chars + pathPart.length) - path.chars);
+			Str partialPath = StrSlice(path, 0, partEndIndex);
+			if (!DoesFolderExist(partialPath))
+			{
+				MyCreateFolder(partialPath, false);
+			}
+		}
+	}
+	
+	#if BUILDING_ON_WINDOWS
+	{
+		if (!DoesFolderExist(path))
+		{
+			Str pathNt = CopyStr(path);
+			BOOL createResult = CreateDirectoryA(
+				pathNt.chars, //lpPathName
+				NULL //lpSecurityAttributes
+			);
+			if (createResult != TRUE)
+			{
+				//TODO: Should we do GetLastError?
+				PrintLine_E("Failed to create folder: \"%.*s\"", StrPrint(path));
+				Assert(createResult == TRUE);
+			}
+			FreeStr(&pathNt);
+		}
+	}
+	#elif (BUILDING_ON_LINUX || BUILDING_ON_OSX)
+	{
+		if (!DoesFolderExist(path))
+		{
+			Str pathNt = CopyStr(path);
+			int mkdirResult = mkdir(pathNt.chars, FOLDER_PERMISSIONS);
+			if (mkdirResult != 0)
+			{
+				PrintLine_E("Failed to create folder. Error: %d - \"%.*s\"", mkdirResult, StrPrint(path));
+				Assert(mkdirResult == 0);
+			}
+			FreeStr(&pathNt);
+		}
+	}
+	#else
+	#error CreateFolder does not support the current platform yet!
+	#endif
+}
+
 bool TryReadFile(Str filePath, Str* contentsOut)
 {
 	Str filePathNt = CopyStr(filePath);
@@ -465,7 +521,7 @@ void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
 	Assert(readSuccess);
 	CreateAndWriteFile(newFilePath, fileContents, false);
 	free(fileContents.chars);
-	#if BUILDING_ON_LINUX
+	#if (BUILDING_ON_LINUX || BUILDING_ON_OSX)
 	if (copyPermissions)
 	{
 		Str filePathNt = CopyStr(filePath);

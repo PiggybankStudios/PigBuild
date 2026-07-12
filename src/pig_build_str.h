@@ -81,6 +81,12 @@ struct StrFull
 #define IsEmptyStr16Pntr(stringPntr) ((stringPntr) == nullptr || (stringPntr)->numWords == 0)
 #define IsEmptyStrFullPntr(stringPntr) ((stringPntr) == nullptr || (stringPntr)->numCodepoints == 0)
 
+#define AssertNullTerm(string)      Assert(IsNullTerminated(string))
+#define NotNullStr(string)          Assert(!IsNullStr(string))
+#define NotNullStrPntr(stringPntr)  Assert((stringPntr) != nullptr && !IsNullStr(*(stringPntr)))
+#define NotEmptyStr(string)         Assert(!IsEmptyStr(string))
+#define NotEmptyStrPntr(stringPntr) Assert((stringPntr) != nullptr && !IsEmptyStr(*(stringPntr)))
+
 // +--------------------------------------------------------------+
 // |                     Basic Str Functions                      |
 // +--------------------------------------------------------------+

@@ -242,4 +242,8 @@ typedef double r64;
 #define MEMBER_SIZE(structName, memberName)   sizeof(((const structName*)1)->memberName)
 #define MEMBER_OFFSET(structName, memberName) (u32)((const u8*)&((const structName*)1)->memberName - (const u8*)((const structName*)1))
 
+// Converts all 3 pointers to u8* and does pointer arithmetic to determine if pntr is >= regionStart and < (regionStart + regionSize)
+#define IsPntrWithin(regionStart, regionSize, pntr) (((u8*)(pntr)) >= ((u8*)(regionStart)) && ((u8*)(pntr)) <= (((u8*)(regionStart)) + (regionSize)))
+#define IsSizedPntrWithin(regionStart, regionSize, pntr, size) (((u8*)(pntr)) >= ((u8*)(regionStart)) && (((u8*)(pntr)) + (size)) <= (((u8*)(regionStart)) + (regionSize)))
+
 #endif //  _PIG_BUILD_BASE_H
