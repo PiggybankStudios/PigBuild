@@ -920,9 +920,9 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	// +--------------------------------------------------------------+
 	// |                    Create OSX App Bundle                     |
 	// +--------------------------------------------------------------+
+	Str appBundleDir = JoinStrings2(PROJECT_FOLDER_NAME, StrLit(".app"));
 	if (BUILD_OSX && BUILD_INTO_SINGLE_UNIT)
 	{
-		Str appBundleDir   = JoinStrings2(PROJECT_FOLDER_NAME, StrLit(".app"));
 		Str appContentsDir = JoinPaths(appBundleDir, StrLit("Contents"));
 		Str infoPlistPath  = JoinPaths(appContentsDir, StrLit("Info.plist"));
 		Str appMacOSDir    = JoinPaths(appContentsDir, StrLit("MacOS"));
@@ -970,6 +970,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		if (BUILD_PIG_CORE_DLL) { CopyFileToFolder(StrLit(PIG_CORE_DLL_NAME DLL_EXT), dataFolder, true); }
 		if (BUILD_APP_DLL)      { CopyFileToFolder(filenameAppDll,                    dataFolder, true); }
 		if (PROFILING_ENABLED)  { CopyFileToFolder(StrLit("tracy" DLL_EXT),           dataFolder, true); }
+		if (BUILD_OSX && BUILD_INTO_SINGLE_UNIT) { CopyFolderTo(appBundleDir, JoinPaths(dataFolder, appBundleDir), true, true); }
 	}
 	
 	// +--------------------------------------------------------------+

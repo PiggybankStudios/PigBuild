@@ -518,7 +518,7 @@ void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
 	Assert(readSuccess);
 	CreateAndWriteFile(newFilePath, fileContents, false);
 	free(fileContents.chars);
-	#if BUILDING_ON_LINUX
+	#if (BUILDING_ON_LINUX || BUILDING_ON_OSX)
 	if (copyPermissions)
 	{
 		Str filePathNt = CopyStr(filePath);
@@ -528,6 +528,7 @@ void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
 		free(filePathNt.chars);
 		
 		Str newFilePathNt = CopyStr(newFilePath);
+		PrintLine("Copying permissions %d of file \"%.*s\" to \"%.*s\"", oldFileStats.st_mode, StrPrint(filePath), StrPrint(newFilePath));
 		int modResult = chmod(newFilePathNt.chars, oldFileStats.st_mode);
 		Assert(modResult == 0);
 		free(newFilePathNt.chars);
@@ -571,7 +572,6 @@ FileIter StartFileIter(Str folderPath)
 	return result;
 }
 
-// Ex version gives isFolderOut
 bool StepFileIter(FileIter* fileIter, Str* pathOut, bool* isFolderOut)
 {
 	if (fileIter->finished) { return false; }
@@ -700,6 +700,37 @@ void RecursiveDirWalk(Str rootDir, RecursiveDirWalkCallback_f* callback, void* c
 		{
 			RecursiveDirWalk(path, callback, contextPntr);
 		}
+	}
+}
+
+void CopyFolderTo(Str folderPath, Str destPath, bool copySubFolders, bool copyPermissions)
+{
+	Str fullFolderPath = GetFullPath(folderPath, PATH_SEP_CHAR);
+	StrArray pathsToWalk = EMPTY;
+	AddStr(&pathsToWalk, fullFolderPath);
+	while (pathsToWalk.length > 0)
+	{
+		Str nextPath = CopyStr(pathsToWalk.strings[0]);
+		RemoveStrAtIndex(&pathsToWalk, 0);
+		Str nextPathRelative = nextPath;
+		if (StrExactStartsWith(nextPath, fullFolderPath)) { nextPathRelative = StrSliceFrom(nextPath, fullFolderPath.length); }
+		Str nextDestFolder = JoinPaths(destPath, nextPathRelative);
+		MyCreateFolder(nextDestFolder, false);
+		FileIter iter = StartFileIter(nextPath);
+		Str nextFileOrFolder = EMPTY;
+		bool isFolder = false;
+		while (StepFileIter(&iter, &nextFileOrFolder, &isFolder))
+		{
+			if (!isFolder)
+			{
+				CopyFileToFolder(nextFileOrFolder, nextDestFolder, copyPermissions);
+			}
+			else if (copySubFolders)
+			{
+				AddStr(&pathsToWalk, nextFileOrFolder);
+			}
+		}
+		FreeStr(&nextPath);
 	}
 }
 
