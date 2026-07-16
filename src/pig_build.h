@@ -41,6 +41,8 @@ Description:
 #include "optional/pig_build_emscripten.h"
 #include "optional/pig_build_playdate.h"
 #include "optional/pig_build_orca.h"
+#include "optional/pig_build_zip_resources.h"
+#include "optional/pig_build_pig_core_gui_app.h"
 #endif
 
 #endif //  _PIG_BUILD_H
