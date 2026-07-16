@@ -61,20 +61,27 @@ Date:   03\21\2026
 #endif
 
 #if BUILDING_ON_WINDOWS
-#define IF_WINDOWS(...) __VA_ARGS__
+#define IF_WINDOWS(...)     __VA_ARGS__
+#define IF_NOT_WINDOWS(...) //nothing
 #else
-#define IF_WINDOWS(...) //nothing
+#define IF_WINDOWS(...)     //nothing
+#define IF_NOT_WINDOWS(...) __VA_ARGS__
 #endif
 #if BUILDING_ON_LINUX
-#define IF_LINUX(...) __VA_ARGS__
+#define IF_LINUX(...)     __VA_ARGS__
+#define IF_NOT_LINUX(...) //nothing
 #else
-#define IF_LINUX(...) //nothing
+#define IF_LINUX(...)     //nothing
+#define IF_NOT_LINUX(...) __VA_ARGS__
 #endif
 #if BUILDING_ON_OSX
-#define IF_OSX(...) __VA_ARGS__
+#define IF_OSX(...)     __VA_ARGS__
+#define IF_NOT_OSX(...) //nothing
 #else
-#define IF_OSX(...) //nothing
+#define IF_OSX(...)     //nothing
+#define IF_NOT_OSX(...) __VA_ARGS__
 #endif
+
 #if LANGUAGE_IS_C
 #define IF_LANG_C(...) __VA_ARGS__
 #else
@@ -245,5 +252,24 @@ typedef double r64;
 // Converts all 3 pointers to u8* and does pointer arithmetic to determine if pntr is >= regionStart and < (regionStart + regionSize)
 #define IsPntrWithin(regionStart, regionSize, pntr) (((u8*)(pntr)) >= ((u8*)(regionStart)) && ((u8*)(pntr)) <= (((u8*)(regionStart)) + (regionSize)))
 #define IsSizedPntrWithin(regionStart, regionSize, pntr, size) (((u8*)(pntr)) >= ((u8*)(regionStart)) && (((u8*)(pntr)) + (size)) <= (((u8*)(regionStart)) + (regionSize)))
+
+//TODO: we should do a proper explanation of what's happening here
+// Preprocessor macros are a bit finicky and we need the 2 layer deep macro thing to concat 2 things when one or both of the parts are preprocessor macros we want to expand before doing the concat
+#define PIG_BUILD_CONCAT_INNER(leftPart, rightPart) leftPart ## rightPart
+#define PIG_BUILD_CONCAT(leftPart, rightPart)       PIG_BUILD_CONCAT_INNER(leftPart, rightPart)
+
+//TODO: We can probably get rid of the Ex variants
+//Use a for loop to execute code at the end of a block (warning: if a break is hit inside the block then the endCode will NOT run!)
+#define DeferBlockEx(uniqueName, endCode)                                 for (int uniqueName = 0; uniqueName == 0; (uniqueName = 1, (endCode)))
+#define DeferBlock(endCode)                                               DeferBlockEx(PIG_BUILD_CONCAT(DeferBlockIter, __LINE__), (endCode))
+//startCode runs at beginning of block
+#define DeferBlockWithStartEx(uniqueName, startCode, endCode)             for (int uniqueName = ((startCode), 0); uniqueName == 0; (uniqueName = 1, (endCode)))
+#define DeferBlockWithStart(startCode, endCode)                           DeferBlockWithStartEx(PIG_BUILD_CONCAT(DeferBlockIter, __LINE__), (startCode), (endCode))
+//startCode returns bool to determine if block should run, endCode always runs
+#define DeferIfBlockEx(uniqueName, startCodeAndCondition, endCode)        for (int uniqueName = 2 * !(startCodeAndCondition); (uniqueName == 2) ? ((endCode), false) : (uniqueName == 0); (uniqueName = 1, (endCode)))
+#define DeferIfBlock(startCodeAndCondition, endCode)                      DeferIfBlockEx(PIG_BUILD_CONCAT(DeferBlockIter, __LINE__), (startCodeAndCondition), (endCode))
+//startCode returns bool to determine block should run, endCode only runs if startCode returns true
+#define DeferIfBlockCondEndEx(uniqueName, startCodeAndCondition, endCode) for (int uniqueName = 1 * !(startCodeAndCondition); uniqueName == 0; (uniqueName = 1, (endCode)))
+#define DeferIfBlockCondEnd(startCodeAndCondition, endCode)               DeferIfBlockCondEndEx(PIG_BUILD_CONCAT(DeferBlockIter, __LINE__), (startCodeAndCondition), (endCode))
 
 #endif //  _PIG_BUILD_BASE_H

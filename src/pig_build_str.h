@@ -74,18 +74,21 @@ struct StrFull
 #define StrPrint(string)   (int)(string).length, (string).chars
 #define Str16Print(string) (int)(string).numWords, (string).words
 
-#define IsEmptyStr(string)           ((string).length == 0)
-#define IsEmptyStr16(string)         ((string).numWords == 0)
+#define IsEmptyStr(string)             ((string).length == 0)
+#define IsEmptyStr16(string)           ((string).numWords == 0)
 #define IsEmptyStrFull(string)         ((string).numCodepoints == 0)
-#define IsEmptyStrPntr(stringPntr)   ((stringPntr) == nullptr || (stringPntr)->length == 0)
-#define IsEmptyStr16Pntr(stringPntr) ((stringPntr) == nullptr || (stringPntr)->numWords == 0)
+#define IsEmptyStrPntr(stringPntr)     ((stringPntr) == nullptr || (stringPntr)->length == 0)
+#define IsEmptyStr16Pntr(stringPntr)   ((stringPntr) == nullptr || (stringPntr)->numWords == 0)
 #define IsEmptyStrFullPntr(stringPntr) ((stringPntr) == nullptr || (stringPntr)->numCodepoints == 0)
+
+#define IsNullTerminated(string)       ((string).pntr != nullptr && (string).chars[(string).length] == '\0')
+#define IsNullStr(string)              ((string).length > 0 && (string).pntr == nullptr)
 
 #define AssertNullTerm(string)      Assert(IsNullTerminated(string))
 #define NotNullStr(string)          Assert(!IsNullStr(string))
 #define NotNullStrPntr(stringPntr)  Assert((stringPntr) != nullptr && !IsNullStr(*(stringPntr)))
 #define NotEmptyStr(string)         Assert(!IsEmptyStr(string))
-#define NotEmptyStrPntr(stringPntr) Assert((stringPntr) != nullptr && !IsEmptyStr(*(stringPntr)))
+#define NotEmptyStrPntr(stringPntr) Assert(stringPntr != nullptr && !IsEmptyStr(*(stringPntr)))
 
 // +--------------------------------------------------------------+
 // |                     Basic Str Functions                      |

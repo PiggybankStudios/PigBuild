@@ -221,11 +221,9 @@ void MyCreateFolder(Str path, bool createParentFoldersIfNeeded)
 			);
 			if (createResult != TRUE)
 			{
-				//TODO: Should we do GetLastError?
-				PrintLine_E("Failed to create folder: \"%.*s\"", StrPrint(path));
+				PrintLine_E("Failed to create folder in MyCreateFolder: \"%.*s\"", StrPrint(path));
 				Assert(createResult == TRUE);
 			}
-			FreeStr(&pathNt);
 		}
 	}
 	#elif (BUILDING_ON_LINUX || BUILDING_ON_OSX)
@@ -236,14 +234,13 @@ void MyCreateFolder(Str path, bool createParentFoldersIfNeeded)
 			int mkdirResult = mkdir(pathNt.chars, FOLDER_PERMISSIONS);
 			if (mkdirResult != 0)
 			{
-				PrintLine_E("Failed to create folder. Error: %d - \"%.*s\"", mkdirResult, StrPrint(path));
+				PrintLine_E("Failed to create folder in MyCreateFolder: \"%.*s\"", StrPrint(path));
 				Assert(mkdirResult == 0);
 			}
-			FreeStr(&pathNt);
 		}
 	}
 	#else
-	#error CreateFolder does not support the current platform yet!
+	#error MyCreateFolder does not support the current platform yet!
 	#endif
 }
 
@@ -521,7 +518,7 @@ void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
 	Assert(readSuccess);
 	CreateAndWriteFile(newFilePath, fileContents, false);
 	free(fileContents.chars);
-	#if (BUILDING_ON_LINUX || BUILDING_ON_OSX)
+	#if BUILDING_ON_LINUX
 	if (copyPermissions)
 	{
 		Str filePathNt = CopyStr(filePath);
