@@ -32,15 +32,11 @@ Description:
 #include "pig_build_file.h"
 #include "optional/pig_build_zip_resources.h"
 
-#define FILENAME_WIN_RESOURCES_RES "resources.res"
-#define FILENAME_TRACY_DLL         "tracy.dll"
-#define FILENAME_TRACY_LIB         "tracy.lib"
-#define FILENAME_TRACY_SO          "tracy.so"
-#define FILENAME_TRACY_DYLIB       "tracy.dylib"
-#define FILENAME_PIG_CORE_DLL      "pig_core.dll"
-#define FILENAME_PIG_CORE_LIB      "pig_core.lib"
-#define FILENAME_PIG_CORE_SO       "libpig_core.so"
-#define FILENAME_PIG_CORE_DYLIB    "libpig_core.dylib"
+#if (BUILDING_ON_LINUX || BUILDING_ON_OSX)
+#define PIG_CORE_DLL_NAME      "libpig_core"
+#else
+#define PIG_CORE_DLL_NAME      "pig_core"
+#endif
 
 #define T_SHADER_OBJS      "|ShaderObjs"
 
@@ -149,27 +145,15 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		WriteLine("Building piggen" EXE_EXT " because it's missing");
 		BUILD_PIGGEN = true;
 	}
-	if (PROFILING_ENABLED && !BUILD_TRACY_DLL && BUILD_WINDOWS && !DoesFileExist(StrLit(FILENAME_TRACY_DLL)))
+	if (PROFILING_ENABLED && !BUILD_TRACY_DLL && !DoesFileExist(StrLit("tracy" DLL_EXT)))
 	{
-		WriteLine("Building " FILENAME_TRACY_DLL " because it's missing");
+		WriteLine("Building tracy" DLL_EXT " because it's missing");
 		BUILD_TRACY_DLL = true;
 	}
-	if (PROFILING_ENABLED && !BUILD_TRACY_DLL && BUILD_LINUX && !DoesFileExist(StrLit(FILENAME_TRACY_SO)))
+	if ((BUILD_APP_EXE || BUILD_APP_DLL) && !BUILD_PIG_CORE_DLL && !BUILD_INTO_SINGLE_UNIT && !DoesFileExist(StrLit(PIG_CORE_DLL_NAME DLL_EXT)))
 	{
-		WriteLine("Building " FILENAME_TRACY_SO " because it's missing");
-		BUILD_TRACY_DLL = true;
-	}
-	if ((BUILD_APP_EXE || BUILD_APP_DLL) && !BUILD_PIG_CORE_DLL && !BUILD_INTO_SINGLE_UNIT && BUILDING_ON_WINDOWS && !DoesFileExist(StrLit(FILENAME_PIG_CORE_DLL)))
-	{
-		WriteLine("Building " FILENAME_PIG_CORE_DLL " because it's missing");
+		WriteLine("Building " PIG_CORE_DLL_NAME DLL_EXT " because it's missing");
 		BUILD_PIG_CORE_DLL = true;
-		BUILD_WINDOWS = true;
-	}
-	if ((BUILD_APP_EXE || BUILD_APP_DLL) && !BUILD_PIG_CORE_DLL && !BUILD_INTO_SINGLE_UNIT && !BUILDING_ON_WINDOWS && !DoesFileExist(StrLit(FILENAME_PIG_CORE_SO)))
-	{
-		WriteLine("Building " FILENAME_PIG_CORE_SO " because it's missing");
-		BUILD_PIG_CORE_DLL = true;
-		BUILD_LINUX = true;
 	}
 	#if BUILDING_ON_WINDOWS
 	Str filenameAppExe = JoinStrings2(PROJECT_EXE_NAME, StrLit(".exe"));
@@ -219,6 +203,9 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	{
 		Str piggenMainPath = StrLit("[ROOT]/core/src/piggen/piggen_main.c");
 		
+		// +==============================+
+		// |   Build Piggen on Windows    |
+		// +==============================+
 		if (BUILD_WINDOWS)
 		{
 			InitializeMsvcIf(StrLit("../core"), &isMsvcInitialized);
@@ -244,6 +231,9 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			WriteLine("[Built piggen.exe for Windows!]");
 		}
 		
+		// +==============================+
+		// |    Build Piggen on Linux     |
+		// +==============================+
 		if (BUILD_LINUX)
 		{
 			WriteLine("\n[Building piggen for Linux...]");
@@ -319,16 +309,19 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	// +--------------------------------------------------------------+
 	if (BUILD_TRACY_DLL)
 	{
+		// +==============================+
+		// |    Build Tracy on Windows    |
+		// +==============================+
 		if (BUILD_WINDOWS)
 		{
 			InitializeMsvcIf(StrLit("../core"), &isMsvcInitialized);
-			PrintLine("[Building %s for Windows...]", FILENAME_TRACY_DLL);
+			PrintLine("[Building tracy.dll for Windows...]");
 			
 			CliArgs cmd = EMPTY;
 			// AddArg(&cmd, CL_COMPILE);
 			AddArgNt(&cmd, CLI_QUOTED_ARG, "[ROOT]/core/third_party/tracy/TracyClient.cpp");
 			AddArgNt(&cmd, CL_INCLUDE_DIR, "[ROOT]/core/third_party/tracy");
-			AddArgNt(&cmd, CL_BINARY_FILE, FILENAME_TRACY_DLL);
+			AddArgNt(&cmd, CL_BINARY_FILE, "tracy.dll");
 			AddArgNt(&cmd, CL_DEFINE, "TRACY_ENABLE");
 			AddArgNt(&cmd, CL_DEFINE, "TRACY_EXPORTS");
 			AddArgNt(&cmd, CL_CONFIGURE_EXCEPTION_HANDLING, "s"); //enable stack-unwinding
@@ -345,13 +338,17 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			AddTag(&tags, T_WINDOWS);
 			AddTag(&tags, T_LANG_CPP);
 			
-			RunCliProgramAndExitOnFailureTags(StrLit(EXE_MSVC_CL), tags, &cmd, StrLit("Failed to build " FILENAME_TRACY_DLL "!"));
-			AssertFileExist(StrLit(FILENAME_TRACY_DLL), true);
-			PrintLine("[Built %s for Windows!]", FILENAME_TRACY_DLL);
+			RunCliProgramAndExitOnFailureTags(StrLit(EXE_MSVC_CL), tags, &cmd, StrLit("Failed to build tracy.dll!"));
+			AssertFileExist(StrLit("tracy.dll"), true);
+			WriteLine("[Built tracy.dll for Windows!]");
 		}
+		
+		// +==============================+
+		// |     Build Tracy on Linux     |
+		// +==============================+
 		if (BUILD_LINUX)
 		{
-			PrintLine("\n[Building %s for Linux...]", FILENAME_TRACY_SO);
+			WriteLine("\n[Building tracy.so for Linux...]");
 			IF_NOT_LINUX(MakeAndMoveIntoLinuxFolder());
 			
 			CliArgs cmd = EMPTY;
@@ -359,7 +356,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			IF_NOT_LINUX(cmd.rootDirPath = StrLit("../.."));
 			AddArgNt(&cmd, CLI_QUOTED_ARG, "[ROOT]/core/third_party/tracy/TracyClient.cpp");
 			AddArgNt(&cmd, CLANG_INCLUDE_DIR, "[ROOT]/core/third_party/tracy");
-			AddArgNt(&cmd, CLANG_OUTPUT_FILE, FILENAME_TRACY_SO);
+			AddArgNt(&cmd, CLANG_OUTPUT_FILE, "tracy.so");
 			AddArg(&cmd, CLANG_BUILD_SHARED_LIB);
 			AddArg(&cmd, CLANG_fPIC);
 			AddArgNt(&cmd, CLANG_DEFINE, "TRACY_ENABLE");
@@ -383,9 +380,9 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			Str clangExe = StrLit(EXE_WSL_CLANG);
 			#endif
 			
-			RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, StrLit("Failed to build " FILENAME_TRACY_SO "!"));
-			AssertFileExist(StrLit(FILENAME_TRACY_SO), true);
-			PrintLine("[Built %s for Linux!]", FILENAME_TRACY_SO);
+			RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, StrLit("Failed to build tracy.so!"));
+			AssertFileExist(StrLit("tracy.so"), true);
+			WriteLine("[Built tracy.so for Linux!]");
 			
 			IF_NOT_LINUX(PopOutOfLinuxFolder());
 		}
@@ -393,8 +390,8 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	}
 	if (PROFILING_ENABLED)
 	{
-		AddTaggedArgNt(&commonLinkerFlags, T_MSVC_CL, CLI_QUOTED_ARG, FILENAME_TRACY_LIB);
-		AddTaggedArgNt(&commonLinkerFlags, T_CLANG,   CLI_QUOTED_ARG, FILENAME_TRACY_SO);
+		AddTaggedArgNt(&commonLinkerFlags, T_MSVC_CL, CLI_QUOTED_ARG, "tracy" LIB_EXT);
+		AddTaggedArgNt(&commonLinkerFlags, T_CLANG,   CLI_QUOTED_ARG, "tracy" LIB_EXT);
 	}
 	
 	// +--------------------------------------------------------------+
@@ -519,6 +516,9 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			PrintLine("Generating \"%.*s\"...", StrPrint(realSourcePath));
 			CreateAndWriteFile(realSourcePath, sourceFileContents, true);
 			
+			// +==============================+
+			// |   Build Shader on Windows    |
+			// +==============================+
 			if (BUILD_WINDOWS)
 			{
 				Str objPath = findContext.objPaths.strings[sIndex];
@@ -539,6 +539,10 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 				RunCliProgramAndExitOnFailureTags(StrLit(EXE_MSVC_CL), tags, &cmd, FormatStr("Failed to build %.*s for Windows!", StrPrint(sourcePath)));
 				AssertFileExist(objPath, true);
 			}
+			
+			// +==============================+
+			// |    Build Shader on Linux     |
+			// +==============================+
 			if (BUILD_LINUX)
 			{
 				IF_NOT_LINUX(MakeAndMoveIntoLinuxFolder());
@@ -577,6 +581,10 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 				
 				IF_NOT_LINUX(PopOutOfLinuxFolder());
 			}
+			
+			// +==============================+
+			// |     Build Shader on OSX      |
+			// +==============================+
 			if (BUILD_OSX)
 			{
 				Str oPath = findContext.oPaths.strings[sIndex];
@@ -616,14 +624,17 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	{
 		Str pigCoreDllMainPath = StrLit("[ROOT]/core/src/dll/dll_main.c");
 		
+		// +==============================+
+		// |   Build PigCore on Windows   |
+		// +==============================+
 		if (BUILD_WINDOWS)
 		{
 			InitializeMsvcIf(StrLit("../core"), &isMsvcInitialized);
-			PrintLine("\n[Building %s for Windows...]", FILENAME_PIG_CORE_DLL);
+			WriteLine("\n[Building pig_core.dll for Windows...]");
 			
 			CliArgs cmd = EMPTY;
 			AddArgStr(&cmd, CLI_QUOTED_ARG, pigCoreDllMainPath);
-			AddArgNt(&cmd, CL_BINARY_FILE, FILENAME_PIG_CORE_DLL);
+			AddArgNt(&cmd, CL_BINARY_FILE, "pig_core.dll");
 			AddArgList(&cmd, &commonCompilerFlags);
 			if (DUMP_ASSEMBLY) { AddArgNt(&cmd, CL_ASSEMB_LISTING_FILE, "pig_core.asm"); }
 			AddArg(&cmd, CL_LINK);
@@ -638,21 +649,24 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			AddTag(&tags, T_PIG_CORE);
 			AddTag(&tags, T_LIBRARY);
 			
-			RunCliProgramAndExitOnFailureTags(StrLit(EXE_MSVC_CL), tags, &cmd, StrLit("Failed to build " FILENAME_PIG_CORE_DLL "!"));
-			AssertFileExist(StrLit(FILENAME_PIG_CORE_DLL), true);
-			PrintLine("[Built %s for Windows!]", FILENAME_PIG_CORE_DLL);
+			RunCliProgramAndExitOnFailureTags(StrLit(EXE_MSVC_CL), tags, &cmd, StrLit("Failed to build pig_core.dll!"));
+			AssertFileExist(StrLit("pig_core.dll"), true);
+			WriteLine("[Built pig_core.dll for Windows!]");
 		}
 		
+		// +==============================+
+		// |    Build PigCore on Linux    |
+		// +==============================+
 		if (BUILD_LINUX)
 		{
-			PrintLine("\n[Building %s for Linux...]", FILENAME_PIG_CORE_SO);
+			WriteLine("\n[Building libpig_core.so for Linux...]");
 			IF_NOT_LINUX(MakeAndMoveIntoLinuxFolder());
 			
 			CliArgs cmd = EMPTY;
 			cmd.pathSepChar = '/';
 			IF_NOT_LINUX(cmd.rootDirPath = StrLit("../.."));
 			AddArgStr(&cmd, CLI_QUOTED_ARG, pigCoreDllMainPath);
-			AddArgNt(&cmd, CLANG_OUTPUT_FILE, FILENAME_PIG_CORE_SO);
+			AddArgNt(&cmd, CLANG_OUTPUT_FILE, "libpig_core.so");
 			AddArg(&cmd, CLANG_BUILD_SHARED_LIB);
 			AddArg(&cmd, CLANG_fPIC);
 			AddArgList(&cmd, &commonCompilerFlags);
@@ -673,9 +687,9 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			Str clangExe = StrLit(EXE_WSL_CLANG);
 			#endif
 			
-			RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, StrLit("Failed to build " FILENAME_PIG_CORE_SO "!"));
-			AssertFileExist(StrLit(FILENAME_PIG_CORE_SO), true);
-			PrintLine("[Built %s for Linux!]", FILENAME_PIG_CORE_SO);
+			RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, StrLit("Failed to build libpig_core.so!"));
+			AssertFileExist(StrLit("libpig_core.so"), true);
+			WriteLine("[Built libpig_core.so for Linux!]");
 			
 			IF_NOT_LINUX(PopOutOfLinuxFolder());
 		}
@@ -691,6 +705,9 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		//NOTE: When BUILD_INTO_SINGLE_UNIT platform_main.c #includes app_main.c (and has PigCore implementations)
 		Str platformMainPath = JoinPaths(appFolderPath, StrLit("platform_main.c"));
 		
+		// +==============================+
+		// |   Build App.exe on Windows   |
+		// +==============================+
 		if (BUILD_WINDOWS)
 		{
 			InitializeMsvcIf(StrLit("../core"), &isMsvcInitialized);
@@ -714,8 +731,8 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			if (DUMP_ASSEMBLY) { AddArgStr(&cmd, CL_ASSEMB_LISTING_FILE, ChangePathExtension(filenameAppExe, StrLit(".asm"), true)); }
 			AddArg(&cmd, CL_LINK);
 			AddArgList(&cmd, &commonLinkerFlags);
-			if (!BUILD_INTO_SINGLE_UNIT) { AddArgNt(&cmd, CLI_QUOTED_ARG, FILENAME_PIG_CORE_LIB); }
-			AddArgNt(&cmd, CLI_QUOTED_ARG, FILENAME_WIN_RESOURCES_RES);
+			if (!BUILD_INTO_SINGLE_UNIT) { AddArgNt(&cmd, CLI_QUOTED_ARG, "pig_core.lib"); }
+			AddArgNt(&cmd, CLI_QUOTED_ARG, "resources.res");
 			
 			StrArray tags = EMPTY;
 			AddStrArray(&tags, &commonTags);
@@ -734,6 +751,9 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			PrintLine("[Built %.*s for Windows!]", StrPrint(filenameAppExe));
 		}
 		
+		// +===============================+
+		// | Build App Executable on Linux |
+		// +===============================+
 		if (BUILD_LINUX)
 		{
 			PrintLine("\n[Building %.*s for Linux...]", StrPrint(filenameAppExe));
@@ -747,7 +767,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			AddArgList(&cmd, &commonCompilerFlags);
 			// AddArgNt(&cmd, CLANG_SYSTEM_LIBRARY, "GL"); //TODO: This should be getting added by PigCore flags!
 			AddArgNt(&cmd, CLANG_RPATH_DIR, ".");
-			if (!BUILD_INTO_SINGLE_UNIT) { AddArgNt(&cmd, CLI_QUOTED_ARG, FILENAME_PIG_CORE_SO); }
+			if (!BUILD_INTO_SINGLE_UNIT) { AddArgNt(&cmd, CLI_QUOTED_ARG, "libpig_core.so"); }
 			AddArgList(&cmd, &commonLinkerFlags);
 			
 			StrArray tags = EMPTY;
@@ -776,6 +796,9 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			IF_NOT_LINUX(PopOutOfLinuxFolder());
 		}
 		
+		// +==============================+
+		// | Build App Executable on OSX  |
+		// +==============================+
 		if (BUILD_OSX)
 		{
 			PrintLine("\n[Building %.*s for OSX...]", StrPrint(filenameAppExe));
@@ -796,7 +819,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			AddArgStr(&cmd, CLANG_OUTPUT_FILE, filenameAppExe);
 			AddArgList(&cmd, &commonCompilerFlags);
 			AddArgNt(&cmd, CLANG_RPATH_DIR, ".");
-			if (!BUILD_INTO_SINGLE_UNIT) { AddArgNt(&cmd, CLI_QUOTED_ARG, FILENAME_PIG_CORE_SO); }
+			if (!BUILD_INTO_SINGLE_UNIT) { AddArgNt(&cmd, CLI_QUOTED_ARG, "libpig_core.so"); }
 			AddArgList(&cmd, &commonLinkerFlags);
 			
 			StrArray tags = EMPTY;
@@ -825,6 +848,9 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	{
 		Str appMainPath = JoinPaths(appFolderPath, StrLit("app_main.c"));
 		
+		// +==============================+
+		// |   Build App.dll on Windows   |
+		// +==============================+
 		if (BUILD_WINDOWS)
 		{
 			InitializeMsvcIf(StrLit("../core"), &isMsvcInitialized);
@@ -838,7 +864,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			AddArg(&cmd, CL_LINK);
 			AddArg(&cmd, LINK_BUILD_DLL);
 			AddArgList(&cmd, &commonLinkerFlags);
-			AddArgNt(&cmd, CLI_QUOTED_ARG, FILENAME_PIG_CORE_LIB);
+			AddArgNt(&cmd, CLI_QUOTED_ARG, "pig_core.lib");
 			
 			StrArray tags = EMPTY;
 			AddStrArray(&tags, &commonTags);
@@ -853,6 +879,9 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			PrintLine("[Built %.*s for Windows!]", StrPrint(filenameAppDll));
 		}
 		
+		// +==============================+
+		// |    Build App.so on Linux     |
+		// +==============================+
 		if (BUILD_LINUX)
 		{
 			PrintLine("\n[Building %.*s for Linux...]", StrPrint(filenameAppDll));
@@ -865,7 +894,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			AddArgStr(&cmd, CLANG_OUTPUT_FILE, filenameAppDll);
 			AddArg(&cmd, CLANG_BUILD_SHARED_LIB);
 			AddArg(&cmd, CLANG_fPIC);
-			AddArgNt(&cmd, CLI_QUOTED_ARG, FILENAME_PIG_CORE_SO);
+			AddArgNt(&cmd, CLI_QUOTED_ARG, "libpig_core.so");
 			AddArgList(&cmd, &commonCompilerFlags);
 			AddArgList(&cmd, &commonLinkerFlags);
 			
@@ -899,21 +928,15 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	// +--------------------------------------------------------------+
 	if (BUILD_OSX && BUILD_INTO_SINGLE_UNIT)
 	{
-		PrintLine("PROJECT_FOLDER_NAME \"%.*s\"", StrPrint(PROJECT_FOLDER_NAME));
 		Str appBundleDir   = JoinStrings2(PROJECT_FOLDER_NAME, StrLit(".app"));
-		PrintLine("appBundleDir \"%.*s\"", StrPrint(appBundleDir));
 		Str appContentsDir = JoinPaths(appBundleDir, StrLit("Contents"));
-		PrintLine("appContentsDir \"%.*s\"", StrPrint(appContentsDir));
 		Str infoPlistPath  = JoinPaths(appContentsDir, StrLit("Info.plist"));
-		PrintLine("infoPlistPath \"%.*s\"", StrPrint(infoPlistPath));
 		Str appMacOSDir    = JoinPaths(appContentsDir, StrLit("MacOS"));
-		PrintLine("appMacOSDir \"%.*s\"", StrPrint(appMacOSDir));
 		
 		MyCreateFolder(appBundleDir, false);
 		MyCreateFolder(appContentsDir, false);
 		MyCreateFolder(appMacOSDir, false);
 		
-		PrintLine("Writing to \"%.*s\"", StrPrint(infoPlistPath));
 		Str plistContents = FormatStr(
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 			"<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
@@ -949,18 +972,10 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	{
 		Str dataFolder = StrLit("../data");
 		PrintLine("Copying files to %.*s...", StrPrint(dataFolder));
-		if (BUILD_APP_EXE) { CopyFileToFolder(filenameAppExe, dataFolder, true); }
-		if (BUILD_APP_DLL) { CopyFileToFolder(filenameAppDll, dataFolder, true); }
-		#if BUILDING_ON_WINDOWS
-		if (BUILD_PIG_CORE_DLL) { CopyFileToFolder(StrLit(FILENAME_PIG_CORE_DLL), dataFolder, true); }
-		if (PROFILING_ENABLED) { CopyFileToFolder(StrLit(FILENAME_TRACY_DLL), dataFolder, true); }
-		#elif BUILDING_ON_LINUX
-		if (BUILD_PIG_CORE_DLL) { CopyFileToFolder(StrLit(FILENAME_PIG_CORE_SO), dataFolder, true); }
-		if (PROFILING_ENABLED) { CopyFileToFolder(StrLit(FILENAME_TRACY_SO), dataFolder, true); }
-		#elif BUILDING_ON_OSX
-		if (BUILD_PIG_CORE_DLL) { CopyFileToFolder(StrLit(FILENAME_PIG_CORE_DYLIB), dataFolder, true); }
-		if (PROFILING_ENABLED) { CopyFileToFolder(StrLit(FILENAME_TRACY_DYLIB), dataFolder, true); }
-		#endif
+		if (BUILD_APP_EXE)      { CopyFileToFolder(filenameAppExe,                    dataFolder, true); }
+		if (BUILD_PIG_CORE_DLL) { CopyFileToFolder(StrLit(PIG_CORE_DLL_NAME DLL_EXT), dataFolder, true); }
+		if (BUILD_APP_DLL)      { CopyFileToFolder(filenameAppDll,                    dataFolder, true); }
+		if (PROFILING_ENABLED)  { CopyFileToFolder(StrLit("tracy" DLL_EXT),           dataFolder, true); }
 	}
 	
 	// +--------------------------------------------------------------+
