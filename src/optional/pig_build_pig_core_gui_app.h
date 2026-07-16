@@ -254,12 +254,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			AddTag(&tags, T_UNIX);
 			AddTag(&tags, T_LANG_C);
 			
-			#if BUILDING_ON_LINUX
-			Str clangExe = StrLit(EXE_CLANG);
-			#else
-			Str clangExe = StrLit(EXE_WSL_CLANG);
-			#endif
-			
+			Str clangExe = MakeStrNt(BUILDING_ON_LINUX ? EXE_CLANG : EXE_WSL_CLANG);
 			RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, StrLit("Failed to build piggen!"));
 			AssertFileExist(piggenExePath, true);
 			WriteLine("[Built piggen for Linux!]");
@@ -267,6 +262,31 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			IF_NOT_LINUX(PopOutOfLinuxFolder());
 		}
 		
+		// +==============================+
+		// |     Build Piggen for OSX     |
+		// +==============================+
+		if (BUILD_OSX)
+		{
+			WriteLine("\n[Building piggen for OSX...]");
+			
+			CliArgs cmd = EMPTY;
+			AddArgNt(&cmd, CLANG_OUTPUT_FILE, "piggen");
+			AddArgList(&cmd, &commonCompilerFlags);
+			AddArgList(&cmd, &commonLinkerFlags);
+			AddArgNt(&cmd, CLANG_LANGUAGE, "objective-c");
+			AddArgStr(&cmd, CLI_QUOTED_ARG, piggenMainPath);
+			
+			StrArray tags = EMPTY;
+			AddStrArray(&tags, &commonTags);
+			AddTag(&tags, T_CLANG);
+			AddTag(&tags, T_OSX);
+			AddTag(&tags, T_UNIX);
+			AddTag(&tags, T_LANG_OBJECTIVEC);
+			
+			RunCliProgramAndExitOnFailureTags(StrLit(EXE_CLANG), tags, &cmd, StrLit("Failed to build piggen!"));
+			AssertFileExist(StrLit("piggen"), true);
+			WriteLine("[Built piggen for OSX!]");
+		}
 		//TODO: Add OSX support
 	}
 	
@@ -289,11 +309,10 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		AddArgNt(&cmd, PIGGEN_EXCLUDE_FOLDER, "[ROOT]/core/data/");
 		AddArgNt(&cmd, PIGGEN_EXCLUDE_FOLDER, "[ROOT]/core/media/");
 		
-		AddArgNt(&cmd, PIGGEN_EXCLUDE_FOLDER, "[ROOT]/core/base/base_defines_check.h");
-		AddArgNt(&cmd, PIGGEN_EXCLUDE_FOLDER, "[ROOT]/core/piggen/");
-		AddArgNt(&cmd, PIGGEN_EXCLUDE_FOLDER, "[ROOT]/core/tools/");
-		AddArgNt(&cmd, PIGGEN_EXCLUDE_FOLDER, "[ROOT]/core/third_party/");
-		AddArgNt(&cmd, PIGGEN_EXCLUDE_FOLDER, "[ROOT]/core/wasm/std/");
+		AddArgNt(&cmd, PIGGEN_EXCLUDE_FOLDER, "[ROOT]/core/src/base/base_defines_check.h");
+		AddArgNt(&cmd, PIGGEN_EXCLUDE_FOLDER, "[ROOT]/core/src/piggen/");
+		AddArgNt(&cmd, PIGGEN_EXCLUDE_FOLDER, "[ROOT]/core/src/third_party/");
+		AddArgNt(&cmd, PIGGEN_EXCLUDE_FOLDER, "[ROOT]/core/src/wasm/std/");
 		AddArgNt(&cmd, PIGGEN_EXCLUDE_FOLDER, "[ROOT]/core/.git/");
 		AddArgNt(&cmd, PIGGEN_EXCLUDE_FOLDER, "[ROOT]/core/build/");
 		AddArgNt(&cmd, PIGGEN_EXCLUDE_FOLDER, "[ROOT]/core/media/");
@@ -374,12 +393,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			AddTag(&tags, T_UNIX);
 			AddTag(&tags, T_LANG_CPP);
 			
-			#if BUILDING_ON_LINUX
-			Str clangExe = StrLit(EXE_CLANG);
-			#else
-			Str clangExe = StrLit(EXE_WSL_CLANG);
-			#endif
-			
+			Str clangExe = MakeStrNt(BUILDING_ON_LINUX ? EXE_CLANG : EXE_WSL_CLANG);
 			RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, StrLit("Failed to build tracy.so!"));
 			AssertFileExist(StrLit("tracy.so"), true);
 			WriteLine("[Built tracy.so for Linux!]");
@@ -570,12 +584,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 				AddTag(&tags, T_UNIX);
 				AddTag(&tags, T_LANG_C);
 				
-				#if BUILDING_ON_LINUX
-				Str clangExe = StrLit(EXE_CLANG);
-				#else
-				Str clangExe = StrLit(EXE_WSL_CLANG);
-				#endif
-				
+				Str clangExe = MakeStrNt(BUILDING_ON_LINUX ? EXE_CLANG : EXE_WSL_CLANG);
 				RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, FormatStr("Failed to build %.*s for Linux!", StrPrint(sourcePath)));
 				AssertFileExist(oPath, true);
 				
@@ -681,12 +690,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			AddTag(&tags, T_PIG_CORE);
 			AddTag(&tags, T_LIBRARY);
 			
-			#if BUILDING_ON_LINUX
-			Str clangExe = StrLit(EXE_CLANG);
-			#else
-			Str clangExe = StrLit(EXE_WSL_CLANG);
-			#endif
-			
+			Str clangExe = MakeStrNt(BUILDING_ON_LINUX ? EXE_CLANG : EXE_WSL_CLANG);
 			RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, StrLit("Failed to build libpig_core.so!"));
 			AssertFileExist(StrLit("libpig_core.so"), true);
 			WriteLine("[Built libpig_core.so for Linux!]");
@@ -783,12 +787,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 				AddTag(&tags, T_SHADER_OBJS);
 			}
 			
-			#if BUILDING_ON_LINUX
-			Str clangExe = StrLit(EXE_CLANG);
-			#else
-			Str clangExe = StrLit(EXE_WSL_CLANG);
-			#endif
-			
+			Str clangExe = MakeStrNt(BUILDING_ON_LINUX ? EXE_CLANG : EXE_WSL_CLANG);
 			RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, FormatStr("Failed to build %.*s on Linux!", StrPrint(filenameAppExe)));
 			AssertFileExist(filenameAppExe, true);
 			PrintLine("[Built %.*s for Linux!]", StrPrint(filenameAppExe));
@@ -907,12 +906,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			AddTag(&tags, T_LIBRARY);
 			AddTag(&tags, T_SHADER_OBJS);
 			
-			#if BUILDING_ON_LINUX
-			Str clangExe = StrLit(EXE_CLANG);
-			#else
-			Str clangExe = StrLit(EXE_WSL_CLANG);
-			#endif
-			
+			Str clangExe = MakeStrNt(BUILDING_ON_LINUX ? EXE_CLANG : EXE_WSL_CLANG);
 			RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, FormatStr("Failed to build %.*s!", StrPrint(filenameAppDll)));
 			AssertFileExist(filenameAppDll, true);
 			PrintLine("[Built %.*s for Linux!]", StrPrint(filenameAppDll));
