@@ -90,6 +90,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	LOAD_CONFIG(BUILD_WITH_SOKOL_APP);
 	LOAD_CONFIG(BUILD_WITH_FREETYPE);
 	LOAD_CONFIG(BUILD_WITH_GTK);
+	LOAD_CONFIG(BUILD_WITH_HTTP);
 	#undef LOAD_CONFIG
 	
 	// +==============================+
