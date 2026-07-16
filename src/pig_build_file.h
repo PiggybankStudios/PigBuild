@@ -191,6 +191,59 @@ void AssertFileExist(Str filePath, bool wasCreatedByBuild)
 	}
 }
 
+void MyCreateFolder(Str path, bool createParentFoldersIfNeeded)
+{
+	u64 numPathParts = CountPathParts(path);
+	if (createParentFoldersIfNeeded && numPathParts > 1)
+	{
+		for (u64 pIndex = 0; pIndex < numPathParts; pIndex++)
+		{
+			Str pathPart = GetPathPartAtIndex(path, pIndex);
+			NotEmptyStr(pathPart);
+			Assert(IsSizedPntrWithin(path.chars, path.length, pathPart.chars, pathPart.length));
+			u64 partEndIndex = (u64)((pathPart.chars + pathPart.length) - path.chars);
+			Str partialPath = StrSlice(path, 0, partEndIndex);
+			if (!DoesFolderExist(partialPath))
+			{
+				MyCreateFolder(partialPath, false);
+			}
+		}
+	}
+	
+	#if BUILDING_ON_WINDOWS
+	{
+		if (!DoesFolderExist(path))
+		{
+			Str pathNt = CopyStr(path);
+			BOOL createResult = CreateDirectoryA(
+				pathNt.chars, //lpPathName
+				NULL //lpSecurityAttributes
+			);
+			if (createResult != TRUE)
+			{
+				PrintLine_E("Failed to create folder in MyCreateFolder: \"%.*s\"", StrPrint(path));
+				Assert(createResult == TRUE);
+			}
+		}
+	}
+	#elif (BUILDING_ON_LINUX || BUILDING_ON_OSX)
+	{
+		if (!DoesFolderExist(path))
+		{
+			Str pathNt = CopyStr(path);
+			int mkdirResult = mkdir(pathNt.chars, FOLDER_PERMISSIONS);
+			if (mkdirResult != 0)
+			{
+				PrintLine_E("Failed to create folder in MyCreateFolder: \"%.*s\"", StrPrint(path));
+				Assert(mkdirResult == 0);
+			}
+		}
+	}
+	#else
+	#error MyCreateFolder does not support the current platform yet!
+	#endif
+}
+
 bool TryReadFile(Str filePath, Str* contentsOut)
 {
 	Str filePathNt = CopyStr(filePath);
