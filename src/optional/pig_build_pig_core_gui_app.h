@@ -44,6 +44,9 @@ Description:
 
 #define T_SHADER_OBJS      "|ShaderObjs"
 
+void MakeAndMoveIntoLinuxFolder() { MyCreateFolder(StrLit("linux"), false); chdir("linux"); }
+void PopOutOfLinuxFolder() { chdir(".."); }
+
 int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str appFolderPath)
 {
 	bool isMsvcInitialized = WasMsvcDevBatchRun();
@@ -243,9 +246,11 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		if (BUILD_LINUX)
 		{
 			WriteLine("\n[Building piggen for Linux...]");
+			IF_NOT_LINUX(MakeAndMoveIntoLinuxFolder());
 			
 			CliArgs cmd = EMPTY;
 			cmd.pathSepChar = '/';
+			IF_NOT_LINUX(cmd.rootDirPath = StrLit("../.."));
 			AddArgStr(&cmd, CLI_QUOTED_ARG, piggenMainPath);
 			AddArgStr(&cmd, CLANG_OUTPUT_FILE, piggenExePath);
 			AddArgList(&cmd, &commonCompilerFlags);
@@ -262,18 +267,13 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			Str clangExe = StrLit(EXE_CLANG);
 			#else
 			Str clangExe = StrLit(EXE_WSL_CLANG);
-			MyCreateFolder(StrLit("linux"), false);
-			chdir("linux");
-			cmd.rootDirPath = StrLit("../..");
 			#endif
 			
 			RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, StrLit("Failed to build piggen!"));
 			AssertFileExist(piggenExePath, true);
 			WriteLine("[Built piggen for Linux!]");
 			
-			#if !BUILDING_ON_LINUX
-			chdir("..");
-			#endif
+			IF_NOT_LINUX(PopOutOfLinuxFolder());
 		}
 		
 		//TODO: Add OSX support
@@ -351,9 +351,11 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		if (BUILD_LINUX)
 		{
 			PrintLine("\n[Building %s for Linux...]", FILENAME_TRACY_SO);
+			IF_NOT_LINUX(MakeAndMoveIntoLinuxFolder());
 			
 			CliArgs cmd = EMPTY;
 			cmd.pathSepChar = '/';
+			IF_NOT_LINUX(cmd.rootDirPath = StrLit("../.."));
 			AddArgNt(&cmd, CLI_QUOTED_ARG, "[ROOT]/core/third_party/tracy/TracyClient.cpp");
 			AddArgNt(&cmd, CLANG_INCLUDE_DIR, "[ROOT]/core/third_party/tracy");
 			AddArgNt(&cmd, CLANG_OUTPUT_FILE, FILENAME_TRACY_SO);
@@ -378,18 +380,13 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			Str clangExe = StrLit(EXE_CLANG);
 			#else
 			Str clangExe = StrLit(EXE_WSL_CLANG);
-			MyCreateFolder(StrLit("linux"), false);
-			chdir("linux");
-			cmd.rootDirPath = StrLit("../..");
 			#endif
 			
 			RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, StrLit("Failed to build " FILENAME_TRACY_SO "!"));
 			AssertFileExist(StrLit(FILENAME_TRACY_SO), true);
 			PrintLine("[Built %s for Linux!]", FILENAME_TRACY_SO);
 			
-			#if !BUILDING_ON_LINUX
-			chdir("..");
-			#endif
+			IF_NOT_LINUX(PopOutOfLinuxFolder());
 		}
 		//TODO: Add OSX support
 	}
@@ -543,6 +540,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			}
 			if (BUILD_LINUX)
 			{
+				IF_NOT_LINUX(MakeAndMoveIntoLinuxFolder());
 				Str oPath = findContext.oPaths.strings[sIndex];
 				//TODO: The path we store in the findContext needs to have [ROOT] at the beginning somehow so we can get rid of this logic
 				// Str fixedSourcePath = BUILDING_ON_LINUX ? CopyStr(sourcePath) : JoinStrings2(StrLit("../"), sourcePath, false);
@@ -552,6 +550,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 				
 				CliArgs cmd = EMPTY;
 				cmd.pathSepChar = '/';
+				IF_NOT_LINUX(cmd.rootDirPath = StrLit("../.."));
 				AddArg(&cmd, CLANG_COMPILE);
 				AddArgStr(&cmd, CLI_QUOTED_ARG, sourcePath);
 				AddArgStr(&cmd, CLANG_OUTPUT_FILE, oPath);
@@ -570,17 +569,12 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 				Str clangExe = StrLit(EXE_CLANG);
 				#else
 				Str clangExe = StrLit(EXE_WSL_CLANG);
-				MyCreateFolder(StrLit("linux"), false);
-				chdir("linux");
-				cmd.rootDirPath = StrLit("../..");
 				#endif
 				
 				RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, FormatStr("Failed to build %.*s for Linux!", StrPrint(sourcePath)));
 				AssertFileExist(oPath, true);
 				
-				#if !BUILDING_ON_LINUX
-				chdir("..");
-				#endif
+				IF_NOT_LINUX(PopOutOfLinuxFolder());
 			}
 			if (BUILD_OSX)
 			{
@@ -651,9 +645,11 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		if (BUILD_LINUX)
 		{
 			PrintLine("\n[Building %s for Linux...]", FILENAME_PIG_CORE_SO);
+			IF_NOT_LINUX(MakeAndMoveIntoLinuxFolder());
 			
 			CliArgs cmd = EMPTY;
 			cmd.pathSepChar = '/';
+			IF_NOT_LINUX(cmd.rootDirPath = StrLit("../.."));
 			AddArgStr(&cmd, CLI_QUOTED_ARG, pigCoreDllMainPath);
 			AddArgNt(&cmd, CLANG_OUTPUT_FILE, FILENAME_PIG_CORE_SO);
 			AddArg(&cmd, CLANG_BUILD_SHARED_LIB);
@@ -674,18 +670,13 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			Str clangExe = StrLit(EXE_CLANG);
 			#else
 			Str clangExe = StrLit(EXE_WSL_CLANG);
-			MyCreateFolder(StrLit("linux"), false);
-			chdir("linux");
-			cmd.rootDirPath = StrLit("../..");
 			#endif
 			
 			RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, StrLit("Failed to build " FILENAME_PIG_CORE_SO "!"));
 			AssertFileExist(StrLit(FILENAME_PIG_CORE_SO), true);
 			PrintLine("[Built %s for Linux!]", FILENAME_PIG_CORE_SO);
 			
-			#if !BUILDING_ON_LINUX
-			chdir("..");
-			#endif
+			IF_NOT_LINUX(PopOutOfLinuxFolder());
 		}
 		
 		//TODO: Add OSX support
@@ -745,9 +736,11 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		if (BUILD_LINUX)
 		{
 			PrintLine("\n[Building %.*s for Linux...]", StrPrint(filenameAppExe));
+			IF_NOT_LINUX(MakeAndMoveIntoLinuxFolder());
 			
 			CliArgs cmd = EMPTY;
 			cmd.pathSepChar = '/';
+			IF_NOT_LINUX(cmd.rootDirPath = StrLit("../.."));
 			AddArgStr(&cmd, CLI_QUOTED_ARG, platformMainPath);
 			AddArgStr(&cmd, CLANG_OUTPUT_FILE, filenameAppExe);
 			AddArgList(&cmd, &commonCompilerFlags);
@@ -773,18 +766,13 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			Str clangExe = StrLit(EXE_CLANG);
 			#else
 			Str clangExe = StrLit(EXE_WSL_CLANG);
-			MyCreateFolder(StrLit("linux"), false);
-			chdir("linux");
-			cmd.rootDirPath = StrLit("../..");
 			#endif
 			
 			RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, FormatStr("Failed to build %.*s on Linux!", StrPrint(filenameAppExe)));
 			AssertFileExist(filenameAppExe, true);
 			PrintLine("[Built %.*s for Linux!]", StrPrint(filenameAppExe));
 			
-			#if !BUILDING_ON_LINUX
-			chdir("..");
-			#endif
+			IF_NOT_LINUX(PopOutOfLinuxFolder());
 		}
 		
 		if (BUILD_OSX)
@@ -867,9 +855,11 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		if (BUILD_LINUX)
 		{
 			PrintLine("\n[Building %.*s for Linux...]", StrPrint(filenameAppDll));
+			IF_NOT_LINUX(MakeAndMoveIntoLinuxFolder());
 			
 			CliArgs cmd = EMPTY;
 			cmd.pathSepChar = '/';
+			IF_NOT_LINUX(cmd.rootDirPath = StrLit("../.."));
 			AddArgStr(&cmd, CLI_QUOTED_ARG, appMainPath);
 			AddArgStr(&cmd, CLANG_OUTPUT_FILE, filenameAppDll);
 			AddArg(&cmd, CLANG_BUILD_SHARED_LIB);
@@ -891,18 +881,13 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			Str clangExe = StrLit(EXE_CLANG);
 			#else
 			Str clangExe = StrLit(EXE_WSL_CLANG);
-			MyCreateFolder(StrLit("linux"), false);
-			chdir("linux");
-			cmd.rootDirPath = StrLit("../..");
 			#endif
 			
 			RunCliProgramAndExitOnFailureTags(clangExe, tags, &cmd, FormatStr("Failed to build %.*s!", StrPrint(filenameAppDll)));
 			AssertFileExist(filenameAppDll, true);
 			PrintLine("[Built %.*s for Linux!]", StrPrint(filenameAppDll));
 			
-			#if !BUILDING_ON_LINUX
-			chdir("..");
-			#endif
+			IF_NOT_LINUX(PopOutOfLinuxFolder());
 		}
 		
 		//TODO: Add OSX support
