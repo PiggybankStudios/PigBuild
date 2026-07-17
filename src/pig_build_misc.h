@@ -26,6 +26,16 @@ int RunCliProgramTags(Str programPath, StrArray tagsList, const CliArgs* args)
 	// for (u64 tIndex = 0; tIndex < tagsList.length; tIndex++) { PrintLine("Tag[%llu]: \"%.*s\"", tIndex, StrPrint(tagsList.strings[tIndex])); }
 	Str joinedArgs = (args != nullptr) ? FilterAndJoinCliArgsList(programPath, args, &tagsList) : programPath;
 	#if PIG_BUILD_PRINT_SYS_CMDS
+	u64 numMatchingArgs = GetNumMatchingArgs(args, &tagsList);
+	if (tagsList.length > 0)
+	{
+		PrintLine(">> Matched %llu/%llu argument%s on %llu tag%s",
+			numMatchingArgs, args->array.length, Plural(numMatchingArgs, "s"),
+			tagsList.length, Plural(tagsList.length, "s")
+		);
+		// for (u64 tIndex = 0; tIndex < tagsList.length; tIndex++){ PrintLine("\tTag[%llu]: \"%.*s\"", tIndex, StrPrint(tagsList.strings[tIndex])); }
+	}
+	else { PrintLine(">> No tags given. All %llu arg%s match", args->array.length, Plural(args->array.length, "s")); }
 	PrintLine(">> %s", joinedArgs.chars);
 	#endif
 	fflush(stdout);

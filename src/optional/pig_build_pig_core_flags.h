@@ -137,6 +137,7 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	AddTaggedArgNt(compilerFlags,  T_CLANG,   CLANG_DISABLE_WARNING, CLANG_WARNING_SWITCH_MISSING_CASES);
 	AddTaggedArgNt(compilerFlags,  T_CLANG,   CLANG_DISABLE_WARNING, CLANG_WARNING_UNUSED_FUNCTION);
 	AddTaggedArgNt(compilerFlags,  T_CLANG,   CLANG_DISABLE_WARNING, CLANG_WARNING_UNUSED_CMD_LINE_ARG);
+	AddTaggedArgNt(compilerFlags,  T_CLANG,   CLANG_DISABLE_WARNING, CLANG_WARNING_MISSING_FIELD_INITIALIZERS);
 	//We don't care about these warnings in DEBUG_BUILDs, but we will solve them when we go to build in release mode because they probably indicate mistakes at that point
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_SWITCH_ONLY_DEFAULT));
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_UNREFERENCED_FUNC_PARAMETER));
@@ -268,7 +269,6 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_TRACY, CL_CONFIGURE_EXCEPTION_HANDLING, "s"); //enable stack-unwinding
 	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_TRACY, CL_CONFIGURE_EXCEPTION_HANDLING, "c"); //extern "C" functions don't through exceptions
 	AddTaggedArgNt(compilerFlags,  T_CLANG   T_TRACY, CLANG_DISABLE_WARNING, CLANG_WARNING_SHADOWING); // declaration shadows a local variable
-	AddTaggedArgNt(compilerFlags,  T_CLANG   T_TRACY, CLANG_DISABLE_WARNING, CLANG_WARNING_MISSING_FIELD_INITIALIZERS); // missing field 'extra' initializer
 	AddTaggedArgNt(compilerFlags,  T_CLANG   T_TRACY, CLANG_DISABLE_WARNING, CLANG_WARNING_MISSING_FALLTHROUGH_IN_SWITCH); // unannotated fall-through between switch labels
 	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_TRACY T_DUMP_ASSEMBLY, CL_ASSEMB_LISTING_FILE, "tracy.asm");
 	

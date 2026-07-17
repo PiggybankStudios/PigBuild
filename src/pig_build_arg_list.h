@@ -179,6 +179,19 @@ Str FormatCliArg(const CliArg* arg, Str rootDirPath, char pathSepChar)
 	return result;
 }
 
+u64 GetNumMatchingArgs(const CliArgs* args, const StrArray* tagsListPntr)
+{
+	u64 result = 0;
+	for (u64 aIndex = 0; aIndex < args->array.length; aIndex++)
+	{
+		if (DoTagsMatch(tagsListPntr, &args->array.args[aIndex].includeTags, &args->array.args[aIndex].excludeTags))
+		{
+			result++;
+		}
+	}
+	return result;
+}
+
 Str FilterAndJoinCliArgsList(Str prefix, const CliArgs* args, StrArray* tagsListPntr)
 {
 	StrArray localEmptyTagList = EMPTY;
