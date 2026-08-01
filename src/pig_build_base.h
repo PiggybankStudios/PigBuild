@@ -82,6 +82,16 @@ Date:   03\21\2026
 #define IF_NOT_OSX(...) __VA_ARGS__
 #endif
 
+#if (BUILDING_ON_OSX || BUILDING_ON_LINUX)
+#define BUILDING_ON_UNIX   1
+#define IF_UNIX(...)       __VA_ARGS__
+#define IF_NOT_UNIX(...)   //nothing
+#else
+#define BUILDING_ON_UNIX   0
+#define IF_UNIX(...)       //nothing
+#define IF_NOT_UNIX(...)   __VA_ARGS__
+#endif
+
 #if LANGUAGE_IS_C
 #define IF_LANG_C(...) __VA_ARGS__
 #else
