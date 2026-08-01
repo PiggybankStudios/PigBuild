@@ -36,7 +36,7 @@ void Build(Str routingPrefix, Str compiler, Str exeName, bool windowsShell)
 	CliArgs args = EMPTY;
 	args.pathSepChar = windowsShell ? '\\' : '/';
 	AddArgNt(&args, CLI_QUOTED_ARG, "[ROOT]/main.c");
-	AddArgStr(&args, isMsvcCompiler ? CL_OBJ_FILE        : CLANG_OUTPUT_FILE, exeName);
+	AddArgStr(&args, isMsvcCompiler ? CL_BINARY_FILE     : CLANG_OUTPUT_FILE, exeName);
 	AddArg(&args,    isMsvcCompiler ? CL_FULL_FILE_PATHS : CLANG_FULL_FILE_PATHS);
 	if (isMsvcCompiler) { AddArgNt(&args, CL_OBJ_FILE, "main.obj"); }
 	if (isMsvcCompiler) { AddArg(&args, CL_NO_LOGO); }

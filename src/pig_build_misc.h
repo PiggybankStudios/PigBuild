@@ -35,7 +35,11 @@ int RunCliProgramTags(Str programPath, StrArray tagsList, const CliArgs* args)
 		);
 		// for (u64 tIndex = 0; tIndex < tagsList.length; tIndex++){ PrintLine("\tTag[%llu]: \"%.*s\"", tIndex, StrPrint(tagsList.strings[tIndex])); }
 	}
-	else { PrintLine(">> No tags given. All %llu arg%s match", args->array.length, Plural(args->array.length, "s")); }
+	else
+	{
+		u64 numArgs = (args != nullptr) ? args->array.length : 0;
+		PrintLine(">> No tags given. All %llu arg%s match", numArgs, Plural(numArgs, "s"));
+	}
 	PrintLine(">> %s", joinedArgs.chars);
 	#endif
 	fflush(stdout);
