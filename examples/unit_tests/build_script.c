@@ -19,7 +19,7 @@ int main(int argc, const char* argv[])
 	StrArray sourceFolders = EMPTY;
 	AddStrLit(&sourceFolders, "..");
 	AddStrLit(&sourceFolders, PIG_BUILD_FOLDER_PATH "/src");
-	RecompileIfNeeded(&sourceFolders);
+	RecompileIfNeeded(sourceFolders);
 	Str pigBuildFolder = StrLit(PIG_BUILD_FOLDER_PATH);
 	bool isMsvcInitialized = WasMsvcDevBatchRun();
 	

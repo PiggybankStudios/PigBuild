@@ -13,7 +13,7 @@ void RunTests_Unicode()
 	u64 codepointIndex = 0; 
 	while (utf8Str.length > 0)
 	{
-		u32 codepoint = Utf8ToCodepoint(&utf8Str);
+		u32 codepoint = TakeNextUtf8Codepoint(&utf8Str);
 		PrintLine("Codepoint[%llu]: 0x%08X", codepointIndex, codepoint);
 		codepointIndex++;
 	}
@@ -33,6 +33,7 @@ void RunTests_Unicode()
 		if (codepointStr16.length == 1) { PrintLine("Codepoint 0x%08X becomes [1]{0x%04X}", codepoints[cIndex], codepointStr16.words[0]); }
 		else if (codepointStr16.length == 2) { PrintLine("Codepoint 0x%08X becomes [2]{0x%04X, 0x%04X}", codepoints[cIndex], codepointStr16.words[0], codepointStr16.words[1]); }
 	}
-	Str fullStr = CodepointsToUtf8Str(ArrayCount(codepoints), &codepoints[0]);
+	StrFull codepointsStrFull = MakeStrFull(ArrayCount(codepoints), &codepoints[0]);
+	Str fullStr = CodepointsToUtf8Str(codepointsStrFull);
 	PrintLine("fullStr [%llu]\"%.*s\"", fullStr.length, StrPrint(fullStr));
 }

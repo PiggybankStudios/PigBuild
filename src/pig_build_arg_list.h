@@ -181,6 +181,7 @@ Str FormatCliArg(const CliArg* arg, Str rootDirPath, char pathSepChar)
 
 u64 GetNumMatchingArgs(const CliArgs* args, const StrArray* tagsListPntr)
 {
+	if (args == nullptr) { return 0; }
 	u64 result = 0;
 	for (u64 aIndex = 0; aIndex < args->array.length; aIndex++)
 	{
@@ -196,6 +197,7 @@ Str FilterAndJoinCliArgsList(Str prefix, const CliArgs* args, StrArray* tagsList
 {
 	StrArray localEmptyTagList = EMPTY;
 	if (tagsListPntr == nullptr) { tagsListPntr = &localEmptyTagList; }
+	if (args == nullptr) { return CopyStr(prefix); }
 	
 	char pathSepChar = args->pathSepChar;
 	if (pathSepChar == '\0') { pathSepChar = PATH_SEP_CHAR; }

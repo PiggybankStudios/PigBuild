@@ -289,7 +289,7 @@ int main(int argc, char* argv[])
 		}
 		
 		StrArray tags = EMPTY;
-		AddStr(&tags, compilerName);
+		AddStr(&tags, linkerName);
 		AddStrLit(&tags, "linking");
 		AddStrLit(&tags, BUILDING_ON_NAME);
 		

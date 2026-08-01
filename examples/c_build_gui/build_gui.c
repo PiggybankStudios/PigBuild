@@ -49,6 +49,27 @@ Description:
 #error main.c needs to be updated to support the current platform sokol_gfx.h choice!
 #endif
 
+typedef struct v2 v2;
+struct v2
+{
+	r32 x, y;
+};
+typedef struct v3 v3;
+struct v3
+{
+	r32 x, y, z;
+};
+typedef struct v4 v4;
+struct v4
+{
+	r32 x, y, z, w;
+};
+typedef struct mat4 mat4;
+struct mat4
+{
+	r32 r0c0, r1c0, r2c0, r3c0, r0c1, r1c1, r2c1, r3c1, r0c2, r1c2, r2c2, r3c2, r0c3, r1c3, r2c3, r3c3;
+};
+
 #define SOKOL_IMPL
 #include "sokol_app.h"
 #include "sokol_gfx.h"
@@ -124,7 +145,8 @@ void Appinit(void)
 		.layout = {
 			.attrs = {
 				[ATTR_basic_shader_position].format = SG_VERTEXFORMAT_FLOAT3,
-				[ATTR_basic_shader_color0].format = SG_VERTEXFORMAT_FLOAT4
+				[ATTR_basic_shader_texCoord].format = SG_VERTEXFORMAT_FLOAT2,
+				[ATTR_basic_shader_color].format = SG_VERTEXFORMAT_FLOAT4
 			}
 		},
 		.label = "triangle-pipeline"
