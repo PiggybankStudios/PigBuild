@@ -60,9 +60,10 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	// +====================================+
 	// | Common MSVC Compiler/Linker Flags  |
 	// +====================================+
-	AddTaggedArg(compilerFlags, T_MSVC_CL, CL_FULL_FILE_PATHS); //we need full file paths in errors for Sublime Text to be able to parse the errors and display them in the editor
-	AddTaggedArg(compilerFlags, T_MSVC_CL, CL_NO_LOGO); //Suppress the annoying Microsoft logo and copyright info that the compiler prints out
-	AddTaggedArg(linkerFlags,   T_MSVC_CL, LINK_DISABLE_INCREMENTAL);
+	AddTaggedArg(compilerFlags,   T_MSVC_CL,   CL_FULL_FILE_PATHS); //we need full file paths in errors for Sublime Text to be able to parse the errors and display them in the editor
+	AddTaggedArg(compilerFlags,   T_MSVC_CL,   CL_NO_LOGO); //Suppress the annoying Microsoft logo and copyright info that the compiler prints out
+	AddTaggedArg(linkerFlags,     T_MSVC_LINK, LINK_DISABLE_INCREMENTAL);
+	AddTaggedArgNt(compilerFlags, T_MSVC_CL,   CL_DEFINE, "PIG_CORE_DLL_INCLUDE_GFX_SYSTEM_GLOBAL=1");
 	
 	// +==============================+
 	// | Common Clang Compiler flags  |
@@ -79,6 +80,7 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_M_FLAG, "sse");
 	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX T_BUILD_WITH_GTK, CLANG_M_FLAG, "sse2");
 	AddTaggedArg(compilerFlags,   T_CLANG T_UNIX T_BUILD_WITH_GTK, "-pthread");
+	AddTaggedArgNt(compilerFlags, T_CLANG,                         CLANG_DEFINE, "PIG_CORE_DLL_INCLUDE_GFX_SYSTEM_GLOBAL=1");
 	
 	// +==========================================================+
 	// | Language-specific Flags (C vs. C++ vs. Objective-C/C++)  |
