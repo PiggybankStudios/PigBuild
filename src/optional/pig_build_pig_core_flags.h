@@ -207,6 +207,7 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	AddTaggedArgNt(linkerFlags, T_MSVC_CL T_PIG_CORE, CLI_QUOTED_ARG, "User32.lib"); //Needed for GetForegroundWindow, GetDC, etc.
 	AddTaggedArgNt(linkerFlags, T_MSVC_CL T_PIG_CORE, CLI_QUOTED_ARG, "Ole32.lib"); //Needed for Combaseapi.h, CoInitializeEx, CoCreateInstance, etc.
 	AddTaggedArgNt(linkerFlags, T_MSVC_CL T_PIG_CORE, CLI_QUOTED_ARG, "Shell32.lib"); //Needed for SHGetSpecialFolderPathA
+	AddTaggedArgNt(linkerFlags, T_MSVC_CL T_PIGGEN,   CLI_QUOTED_ARG, "Shlwapi.lib"); //Needed for PathFileExistsA
 	AddTaggedArgNt(linkerFlags, T_MSVC_CL T_PIG_CORE, CLI_QUOTED_ARG, "Shlwapi.lib"); //Needed for PathFileExistsA
 	AddTaggedArgNt(linkerFlags, T_MSVC_CL T_PIG_CORE T_BUILD_WITH_RAYLIB, CLI_QUOTED_ARG, "Kernel32.lib");
 	AddTaggedArgNt(linkerFlags, T_MSVC_CL T_PIG_CORE T_BUILD_WITH_RAYLIB, CLI_QUOTED_ARG, "Winmm.lib");
