@@ -43,6 +43,7 @@ Description:
 #define T_BUILD_WITH_PHYSX     "|BUILD_WITH_PHYSX"
 #define T_BUILD_WITH_HTTP      "|BUILD_WITH_HTTP"
 #define T_BUILD_WITH_IMGUI     "|BUILD_WITH_IMGUI"
+#define T_BUILD_WITH_PROTOBUF  "|BUILD_WITH_PROTOBUF"
 #define T_USE_EMSCRIPTEN       "|USE_EMSCRIPTEN"
 #define T_DUMP_ASSEMBLY        "|DUMP_ASSEMBLY"
 #define T_DUMP_PREPROCESSOR    "|DUMP_PREPROCESSOR"
@@ -167,6 +168,8 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	Str plutosvgDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/plutosvg"));
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_BUILD_WITH_FREETYPE, CL_INCLUDE_DIR, plutosvgDir);
 	AddTaggedArgStr(compilerFlags, T_CLANG   T_BUILD_WITH_FREETYPE, CLANG_INCLUDE_DIR, plutosvgDir);
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_BUILD_WITH_PROTOBUF, CL_INCLUDE_DIR,    JoinPaths(pigCorePath, StrLit("src/third_party/protobuf_c")));
+	AddTaggedArgStr(compilerFlags, T_CLANG   T_BUILD_WITH_PROTOBUF, CLANG_INCLUDE_DIR, JoinPaths(pigCorePath, StrLit("src/third_party/protobuf_c")));
 	//TODO: Really we should do `pkg-config --cflags gtk4`
 	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/gtk-4.0");
 	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/glib-2.0");

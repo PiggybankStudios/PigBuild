@@ -40,6 +40,11 @@ Description:
 
 #define T_SHADER_OBJS      "|ShaderObjs"
 
+#define PROTOC_C_OUT_PATH      "--c_out=\"[VAL]\""
+#define PROTOC_PLUGIN_EXE_PATH "--plugin=\"[VAL]\""
+#define PROTOC_PROTO_PATH      "--proto_path=\"[VAL]\""
+#define PROTOC_ERROR_FORMAT    "--error_format=[VAL]"
+
 void MakeAndMoveIntoLinuxFolder() { MyCreateFolder(StrLit("linux"), false); chdir("linux"); }
 void PopOutOfLinuxFolder() { chdir(".."); }
 
@@ -72,6 +77,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	LOAD_CONFIG(BUILD_SHADERS);
 	LOAD_CONFIG(BUILD_PIGGEN);
 	LOAD_CONFIG(RUN_PIGGEN);
+	LOAD_CONFIG(GENERATE_PROTOBUF);
 	LOAD_CONFIG(BUILD_TRACY_DLL);
 	LOAD_CONFIG(PROFILING_ENABLED);
 	LOAD_CONFIG(BUNDLE_RESOURCES_ZIP);
@@ -87,6 +93,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	LOAD_CONFIG(BUILD_WITH_FREETYPE);
 	LOAD_CONFIG(BUILD_WITH_GTK);
 	LOAD_CONFIG(BUILD_WITH_HTTP);
+	LOAD_CONFIG(BUILD_WITH_PROTOBUF);
 	#undef LOAD_CONFIG
 	
 	// +==============================+
@@ -321,6 +328,36 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		
 		Str runnablePiggenExePath = StrLit(EXEC_PROGRAM_IN_FOLDER_PREFIX "piggen" EXE_EXT);
 		RunCliProgramAndExitOnFailure(runnablePiggenExePath, &cmd, StrLit("piggen" EXE_EXT " Failed!"));
+	}
+	
+	// +--------------------------------------------------------------+
+	// |                   Generate Protobuf Files                    |
+	// +--------------------------------------------------------------+
+	//TODO: This logic is going to be much harder to abstract for each project since it needs to get the protoc binary built first and then needs to find and generate protobuf headers for all .proto files in the application
+	//      Right now the only application that uses this is COSM which needs protobuf support in order to parse the .osm.pbf file format
+	if (GENERATE_PROTOBUF)
+	{
+		WriteLine("\n[Generating Protobuf...]");
+		
+		CliArgs proto_CommonFlags = EMPTY;
+		AddArgNt(&proto_CommonFlags, PROTOC_PLUGIN_EXE_PATH, "[ROOT]/core/src/third_party/_tools/linux/protoc-gen-c");
+		AddArgNt(&proto_CommonFlags, PROTOC_ERROR_FORMAT, "msvs");
+		AddArgNt(&proto_CommonFlags, PROTOC_PROTO_PATH, "[ROOT]/core");
+		
+		//NOTE: For some reason when [ROOT] folder is given as the first proto_path it likes to make a folder next to the .proto file with the name of the folder it resides in (like making "parse" folder next to "parse/parse_proto_google_types.proto")
+		//      To counteract this, we add the primary folder proto_path first THEN add proto_CommonFlags which includes [ROOT] as a place to look for import resolves
+		
+		//TODO: Rather than manually running on a specific set of .proto files, we should resursively search the folders and find all .proto files
+		{
+			CliArgs cmd = EMPTY;
+			cmd.pathSepChar = '/';
+			AddArgNt(&cmd, PROTOC_PROTO_PATH, "[ROOT]/app");
+			AddArgList(&cmd, &proto_CommonFlags);
+			AddArgNt(&cmd, PROTOC_C_OUT_PATH, "[ROOT]/app");
+			AddArgNt(&cmd, CLI_QUOTED_ARG, "[ROOT]/app/osm_pbf.proto");
+			Str protocExe = MakeStrNt(BUILDING_ON_WINDOWS ? "wsl protoc" : "protoc");
+			RunCliProgramAndExitOnFailure(protocExe, &cmd, StrLit("protoc Failed on osm_pbf.proto!"));
+		}
 	}
 	
 	// +--------------------------------------------------------------+
