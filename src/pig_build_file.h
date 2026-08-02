@@ -528,7 +528,7 @@ void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
 		free(filePathNt.chars);
 		
 		Str newFilePathNt = CopyStr(newFilePath);
-		PrintLine("Copying permissions %d of file \"%.*s\" to \"%.*s\"", oldFileStats.st_mode, StrPrint(filePath), StrPrint(newFilePath));
+		// PrintLine("Copying permissions %d of file \"%.*s\" to \"%.*s\"", oldFileStats.st_mode, StrPrint(filePath), StrPrint(newFilePath));
 		int modResult = chmod(newFilePathNt.chars, oldFileStats.st_mode);
 		Assert(modResult == 0);
 		free(newFilePathNt.chars);

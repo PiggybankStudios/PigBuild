@@ -735,7 +735,12 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			IF_NOT_LINUX(PopOutOfLinuxFolder());
 		}
 		
-		//TODO: Add OSX support
+		if (BUILD_OSX)
+		{
+			//TODO: Add OSX support
+			WriteLine_E("OSX version of building libpig_core.so has not been implemented yet!");
+			exit(8);
+		}
 	}
 	
 	// +--------------------------------------------------------------+
@@ -951,7 +956,12 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			IF_NOT_LINUX(PopOutOfLinuxFolder());
 		}
 		
-		//TODO: Add OSX support
+		if (BUILD_OSX)
+		{
+			//TODO: Add OSX support
+			WriteLine_E("OSX version of building cswitch.so has not been implemented yet!");
+			exit(8);
+		}
 	}
 	
 	// +--------------------------------------------------------------+
