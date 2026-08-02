@@ -50,7 +50,7 @@ void InitializeEmsdkIf(Str pigCoreFolder, bool* isEmsdkInitialized)
 	if (*isEmsdkInitialized == false)
 	{
 		PrintLine("Initializing Emscripten SDK...");
-		Str batchPath = JoinStrings2(pigCoreFolder, StrLit("/" PIG_BUILD_FOLDER_NAME "/shell/init_emsdk.bat"));
+		Str batchPath = StrLit(PIG_BUILD_ROOT "/shell/init_emsdk.bat");
 		RunBatchFileAndApplyDumpedEnvironment(batchPath, StrLit(EMSDK_ENVIRONMENT_TXT_PATH), false);
 		*isEmsdkInitialized = true;
 	}

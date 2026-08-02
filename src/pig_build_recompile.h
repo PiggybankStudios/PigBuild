@@ -37,10 +37,6 @@ Description:
 #ifndef BUILD_SCRIPT_SOURCE_PATH
 #define BUILD_SCRIPT_SOURCE_PATH "../" BUILD_SCRIPT_SOURCE_NAME
 #endif
-#define PIG_BUILD_FOLDER_NAME "pig_build"
-#ifndef PIG_BUILD_FOLDER_PATH
-#define PIG_BUILD_FOLDER_PATH "../" PIG_BUILD_FOLDER_NAME
-#endif
 #define MSVC_ENVIRONMENT_TXT_PATH "msvc_environment.txt"
 
 // Call this function at the top of your build_scropt.c main function.

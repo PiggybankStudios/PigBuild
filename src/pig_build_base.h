@@ -7,11 +7,6 @@ Date:   03\21\2026
 #ifndef _PIG_BUILD_BASE_H
 #define _PIG_BUILD_BASE_H
 
-//#define this before including this file to enable a printout inside `RunCliProgram` like `>> clang main.c -O0 -g -o program`
-#ifndef PIG_BUILD_PRINT_SYS_CMDS
-#define PIG_BUILD_PRINT_SYS_CMDS 0
-#endif
-
 // +--------------------------------------------------------------+
 // |                    BUILDING_ON_X Defines                     |
 // +--------------------------------------------------------------+
@@ -281,5 +276,11 @@ typedef double r64;
 //startCode returns bool to determine block should run, endCode only runs if startCode returns true
 #define DeferIfBlockCondEndEx(uniqueName, startCodeAndCondition, endCode) for (int uniqueName = 1 * !(startCodeAndCondition); uniqueName == 0; (uniqueName = 1, (endCode)))
 #define DeferIfBlockCondEnd(startCodeAndCondition, endCode)               DeferIfBlockCondEndEx(PIG_BUILD_CONCAT(DeferBlockIter, __LINE__), (startCodeAndCondition), (endCode))
+
+// +--------------------------------------------------------------+
+// |                           Globals                            |
+// +--------------------------------------------------------------+
+// Set this to true before calling things in PigBuild in order to get extra debug output (like RunCliProgram functions will print resolved arguments on lines that start with ">> ")
+bool PigBuildDebugMode = false;
 
 #endif //  _PIG_BUILD_BASE_H

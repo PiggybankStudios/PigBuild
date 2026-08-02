@@ -28,21 +28,4 @@ Description:
 #include "pig_build_http.h"
 #include "pig_build_zip.h"
 
-// These are optional headers, mostly for PigCore-based projects or other PiggybankStudios repositories.
-// They are included in PigBuild for reference but not expected to be used by other projects
-#ifndef PIG_BUILD_INCLUDE_OPTIONAL_HEADERS
-#define PIG_BUILD_INCLUDE_OPTIONAL_HEADERS 0
-#endif
-#if PIG_BUILD_INCLUDE_OPTIONAL_HEADERS
-#include "optional/pig_build_pig_core_flags.h"
-#include "optional/pig_build_not_regex.h"
-#include "optional/pig_build_shader_scraping.h"
-#include "optional/pig_build_android.h"
-#include "optional/pig_build_emscripten.h"
-#include "optional/pig_build_playdate.h"
-#include "optional/pig_build_orca.h"
-#include "optional/pig_build_zip_resources.h"
-#include "optional/pig_build_pig_core_gui_app.h"
-#endif
-
 #endif //  _PIG_BUILD_H
