@@ -23,15 +23,6 @@ Description:
 #include "pig_build_file.h"
 #include "pig_build_zip.h"
 
-#if 0
-//NOTE: We use miniz.h when BUNDLE_RESOURCES_ZIP is enabled
-#define MINIZ_NO_STDIO //to disable all usage and any functions which rely on stdio for file I/O.
-#define MINIZ_USE_UNALIGNED_LOADS_AND_STORES 1
-#define MINIZ_LITTLE_ENDIAN                  1
-#include "core/third_party/miniz/miniz.h"
-#include "core/third_party/miniz/miniz.c"
-#endif
-
 typedef struct BundleResourcesContext BundleResourcesContext;
 struct BundleResourcesContext
 {

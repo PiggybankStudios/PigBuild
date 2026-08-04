@@ -70,7 +70,6 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		do {} while(0)
 	LOAD_CONFIG(DEBUG_BUILD);
 	LOAD_CONFIG(BUILD_INTO_SINGLE_UNIT);
-	LOAD_CONFIG(USE_BUNDLED_RESOURCES);
 	LOAD_CONFIG(BUILD_WINDOWS);
 	LOAD_CONFIG(BUILD_LINUX);
 	LOAD_CONFIG(BUILD_OSX);
@@ -80,7 +79,8 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	LOAD_CONFIG(GENERATE_PROTOBUF);
 	LOAD_CONFIG(BUILD_TRACY_DLL);
 	LOAD_CONFIG(PROFILING_ENABLED);
-	LOAD_CONFIG(BUNDLE_RESOURCES_ZIP);
+	LOAD_CONFIG(ZIP_RESOURCES_FOR_EMBEDDING);
+	LOAD_CONFIG(USE_EMBEDDED_RESOURCES_ZIP);
 	LOAD_CONFIG(BUILD_PIG_CORE_DLL);
 	LOAD_CONFIG(BUILD_APP_EXE);
 	LOAD_CONFIG(BUILD_APP_DLL);
@@ -178,10 +178,10 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		PrintLine("Building %.*s because it's missing", StrPrint(filenameAppDll));
 		BUILD_APP_DLL = true;
 	}
-	if (USE_BUNDLED_RESOURCES && !BUNDLE_RESOURCES_ZIP && !DoesFileExist(StrLit("resources.zip")))
+	if (USE_EMBEDDED_RESOURCES_ZIP && !ZIP_RESOURCES_FOR_EMBEDDING && !DoesFileExist(StrLit("resources.zip")))
 	{
 		WriteLine("Bundling resources.zip because it's missing");
-		BUNDLE_RESOURCES_ZIP = true;
+		ZIP_RESOURCES_FOR_EMBEDDING = true;
 	}
 	
 	// +==============================+
@@ -448,7 +448,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	// +--------------------------------------------------------------+
 	// |                       Bundle Resources                       |
 	// +--------------------------------------------------------------+
-	if (BUNDLE_RESOURCES_ZIP)
+	if (ZIP_RESOURCES_FOR_EMBEDDING)
 	{
 		MyCreateFolder(StrLit("gen"), false);
 		BundleResourcesZip(
