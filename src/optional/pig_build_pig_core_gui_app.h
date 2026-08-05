@@ -48,6 +48,14 @@ Description:
 void MakeAndMoveIntoLinuxFolder() { MyCreateFolder(StrLit("linux"), false); chdir("linux"); }
 void PopOutOfLinuxFolder() { chdir(".."); }
 
+typedef struct CopyResourcesIntoAppBundleCallbackContext CopyResourcesIntoAppBundleCallbackContext;
+struct CopyResourcesIntoAppBundleCallbackContext
+{
+	Str resourcesDir;
+	Str appResourcesDir;
+};
+RECURSIVE_DIR_WALK_CALLBACK_DEF(CopyResourcesIntoAppBundleRecursiveDirWalkCallback);
+
 int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str appFolderPath)
 {
 	bool isMsvcInitialized = WasMsvcDevBatchRun();
@@ -81,6 +89,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	LOAD_CONFIG(PROFILING_ENABLED);
 	LOAD_CONFIG(ZIP_RESOURCES_FOR_EMBEDDING);
 	LOAD_CONFIG(USE_EMBEDDED_RESOURCES_ZIP);
+	LOAD_CONFIG(USE_OSX_APP_BUNDLE_RESOURCES);
 	LOAD_CONFIG(BUILD_PIG_CORE_DLL);
 	LOAD_CONFIG(BUILD_APP_EXE);
 	LOAD_CONFIG(BUILD_APP_DLL);
@@ -970,13 +979,15 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	Str appBundleDir = JoinStrings2(PROJECT_FOLDER_NAME, StrLit(".app"));
 	if (BUILD_OSX && BUILD_INTO_SINGLE_UNIT)
 	{
-		Str appContentsDir = JoinPaths(appBundleDir, StrLit("Contents"));
-		Str infoPlistPath  = JoinPaths(appContentsDir, StrLit("Info.plist"));
-		Str appMacOSDir    = JoinPaths(appContentsDir, StrLit("MacOS"));
+		Str appContentsDir  = JoinPaths(appBundleDir, StrLit("Contents"));
+		Str infoPlistPath   = JoinPaths(appContentsDir, StrLit("Info.plist"));
+		Str appMacOSDir     = JoinPaths(appContentsDir, StrLit("MacOS"));
+		Str appResourcesDir = JoinPaths(appContentsDir, StrLit("Resources"));
 		
 		MyCreateFolder(appBundleDir, false);
 		MyCreateFolder(appContentsDir, false);
 		MyCreateFolder(appMacOSDir, false);
+		if (USE_OSX_APP_BUNDLE_RESOURCES) { MyCreateFolder(appResourcesDir, false); }
 		
 		Str plistContents = FormatStr(
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -1004,6 +1015,15 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		CreateAndWriteFile(infoPlistPath, plistContents, true);
 		
 		CopyFileToFolder(filenameAppExe, appMacOSDir, true);
+		
+		if (USE_OSX_APP_BUNDLE_RESOURCES)
+		{
+			PrintLine("Copying resources into %.*s...", StrPrint(appBundleDir));
+			CopyResourcesIntoAppBundleCallbackContext context = EMPTY;
+			context.resourcesDir = StrLit("../data/resources");
+			context.appResourcesDir = appResourcesDir;
+			RecursiveDirWalk(context.resourcesDir, CopyResourcesIntoAppBundleRecursiveDirWalkCallback, &context);
+		}
 	}
 	
 	// +--------------------------------------------------------------+
@@ -1032,6 +1052,52 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	
 	PrintLine("\n[%s Finished Successfully]", BUILD_SCRIPT_EXE_NAME);
 	return 0;
+}
+
+// +====================================================+
+// | CopyResourcesIntoAppBundleRecursiveDirWalkCallback |
+// +====================================================+
+// bool CopyResourcesIntoAppBundleRecursiveDirWalkCallback(Str path, bool isFolder, void* contextPntr)
+RECURSIVE_DIR_WALK_CALLBACK_DEF(CopyResourcesIntoAppBundleRecursiveDirWalkCallback)
+{
+	NotNull(contextPntr);
+	CopyResourcesIntoAppBundleCallbackContext* context = (CopyResourcesIntoAppBundleCallbackContext*)contextPntr;
+	if (isFolder && StrAnyCaseEndsWith(path, StrLit(".git"))) { return false; }
+	if (!isFolder && StrAnyCaseEndsWith(path, StrLit(".DS_Store"))) { return false; }
+	
+	// PrintLine("Resource path: \"%.*s\"", StrPrint(path));
+	Str relativePath = path;
+	Str resourcesDirFull = GetFullPath(context->resourcesDir, '/');
+	if (StrAnyCaseStartsWith(path, context->resourcesDir))
+	{
+		relativePath = StrSliceFrom(path, context->resourcesDir.length);
+	}
+	else if (StrAnyCaseStartsWith(path, resourcesDirFull))
+	{
+		relativePath = StrSliceFrom(path, resourcesDirFull.length);
+	}
+	else
+	{
+		PrintLine_E("Expected \"%.*s\" or \"%.*s\" at beginning of path: \"%.*s\"",
+			StrPrint(context->resourcesDir),
+			StrPrint(resourcesDirFull),
+			StrPrint(path)
+		);
+		AssertMsg(false, "Path in RecursiveDirWalk callback did not contain target directory as first path part!");
+	}
+	Str outputPath = JoinPaths(context->appResourcesDir, relativePath);
+	
+	if (isFolder)
+	{
+		MyCreateFolder(outputPath, true);
+	}
+	else
+	{
+		// PrintLine("Copying \"%.*s\" to \"%.*s\"", StrPrint(path), StrPrint(outputPath));
+		CopyFileToPath(path, outputPath, true);
+	}
+	
+	return true;
 }
 
 #endif //  _PIG_BUILD_PIG_CORE_GUI_APP_H

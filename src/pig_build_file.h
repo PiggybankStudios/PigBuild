@@ -332,6 +332,7 @@ void CreateAndWriteFile(Str filePath, Str contents, bool convertNewLines)
 	}
 	#elif (BUILDING_ON_LINUX || BUILDING_ON_OSX)
 	{
+		// PrintLine("Writing %llu bytes to \"%.*s\"", contents.length, StrPrint(filePath));
 		FILE* fileHandle = fopen(filePathNt.chars, "w");
 		NotNull(fileHandle);
 		if (contents.length > 0)
@@ -515,7 +516,7 @@ void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
 {
 	Str fileContents = Str_Empty_Const;
 	bool readSuccess = TryReadFile(filePath, &fileContents);
-	Assert(readSuccess);
+	AssertMsg(readSuccess, "Failed to read file contents for copying");
 	CreateAndWriteFile(newFilePath, fileContents, false);
 	free(fileContents.chars);
 	#if (BUILDING_ON_LINUX || BUILDING_ON_OSX)
