@@ -160,7 +160,11 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	AddTaggedArgStr(compilerFlags, T_CLANG T_UNIX T_PIG_CORE_TESTS, CLANG_INCLUDE_DIR, JoinPaths(pigCorePath, StrLit("src/tests")));
 	//TODO: Really we should do `pkg-config dbus-1 --cflags`
 	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX, CLANG_INCLUDE_DIR, "/usr/include/dbus-1.0");
+	#if BUILDING_ON_INTEL
 	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX, CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/dbus-1.0/include"); //This was the path on Lubuntu
+	#else
+	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX, CLANG_INCLUDE_DIR, "/usr/lib/aarch64-linux-gnu/dbus-1.0/include"); //This was the path on Raspberry Pi OS
+	#endif
 	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX, CLANG_INCLUDE_DIR, "/usr/lib64/dbus-1.0/include"); //This is the path on Fedora Workstation
 	Str freetypeDir = JoinStrings2(pigCoreThirdPartyPath, StrLit("/freetype/include"));
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_BUILD_WITH_FREETYPE, CL_INCLUDE_DIR, freetypeDir);
@@ -173,8 +177,10 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	//TODO: Really we should do `pkg-config --cflags gtk4`
 	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/gtk-4.0");
 	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/glib-2.0");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/glib-2.0/include");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/x86_64-linux-gnu");
+	IF_INTEL(AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/glib-2.0/include"));
+	IF_ARM(AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/lib/aarch64-linux-gnu/glib-2.0/include"));
+	IF_INTEL(AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/x86_64-linux-gnu"));
+	IF_ARM(AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/aarch64-linux-gnu"));
 	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/cairo");
 	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/pango-1.0");
 	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/harfbuzz");
@@ -187,7 +193,9 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/gdk-pixbuf-2.0");
 	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/webp");
 	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/include/graphene-1.0");
-	AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/graphene-1.0/include");
+	IF_INTEL(AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/lib/x86_64-linux-gnu/graphene-1.0/include"));
+	IF_ARM(AddTaggedArgNt(compilerFlags, T_CLANG T_LINUX T_BUILD_WITH_GTK, CLANG_INCLUDE_DIR, "/usr/lib/aarch64-linux-gnu/graphene-1.0/include"));
+	//TODO: Do we need /usr/include/sysprof-6 ? This shows up on Raspberry Pi on August 6th 2026
 	
 	// +==============================+
 	// |     Library Directories      |
@@ -218,7 +226,10 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	AddTaggedArgNt(linkerFlags, T_MSVC_CL T_PIG_CORE T_BUILD_WITH_HTTP,   CLI_QUOTED_ARG, "Winhttp.lib");
 	AddTaggedArgNt(linkerFlags, T_CLANG T_PIG_CORE T_UNIX, CLANG_SYSTEM_LIBRARY, "pthread");
 	AddTaggedArgNt(linkerFlags, T_CLANG T_PIG_CORE T_LINUX, CLANG_SYSTEM_LIBRARY, "fontconfig");
-	AddTaggedArgNt(linkerFlags, T_CLANG T_PIG_CORE T_LINUX T_BUILD_WITH_SOKOL_GFX, CLANG_SYSTEM_LIBRARY, "GL");
+	//TODO: We are assuming ARM is synonomous with Raspberry Pi, which only supports OpenGLES / EGL
+	IF_INTEL(AddTaggedArgNt(linkerFlags, T_CLANG T_PIG_CORE T_LINUX T_BUILD_WITH_SOKOL_GFX, CLANG_SYSTEM_LIBRARY, "GL"));
+	IF_ARM(AddTaggedArgNt(linkerFlags, T_CLANG T_PIG_CORE T_LINUX T_BUILD_WITH_SOKOL_GFX, CLANG_SYSTEM_LIBRARY, "EGL"));
+	IF_ARM(AddTaggedArgNt(linkerFlags, T_CLANG T_PIG_CORE T_LINUX T_BUILD_WITH_SOKOL_GFX, CLANG_SYSTEM_LIBRARY, "GLESv2"));
 	AddTaggedArgNt(linkerFlags, T_CLANG T_PIG_CORE T_UNIX T_BUILD_WITH_BOX2D, CLANG_SYSTEM_LIBRARY, "box2d");
 	//OSX Frameworks
 	AddTaggedArgNt(linkerFlags, T_CLANG T_OSX, CLANG_FRAMEWORK, "CoreText"); //For functions like CTFontCollectionCreateMatchingFontDescriptors in os_font.h OsReadPlatformFont

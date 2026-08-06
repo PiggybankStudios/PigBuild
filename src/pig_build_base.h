@@ -116,6 +116,21 @@ Date:   03\21\2026
 #define IF_LANG_CPP(...) //nothing
 #endif
 
+#if BUILDING_ON_INTEL
+#define IF_INTEL(...)     __VA_ARGS__
+#define IF_NOT_INTEL(...) //nothing
+#else
+#define IF_INTEL(...)     //nothing
+#define IF_NOT_INTEL(...) __VA_ARGS__
+#endif
+#if BUILDING_ON_ARM
+#define IF_ARM(...)     __VA_ARGS__
+#define IF_NOT_ARM(...) //nothing
+#else
+#define IF_ARM(...)     //nothing
+#define IF_NOT_ARM(...) __VA_ARGS__
+#endif
+
 // +--------------------------------------------------------------+
 // |                  Standard Library Includes                   |
 // +--------------------------------------------------------------+

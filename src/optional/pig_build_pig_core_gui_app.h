@@ -543,7 +543,8 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 			AddArgNt(&cmd, SHDC_FORMAT, "sokol_impl");
 			AddArgNt(&cmd, SHDC_ERROR_FORMAT, "msvc");
 			// AddArg(&cmd, SHDC_REFLECTION);
-			AddArgNt(&cmd, SHDC_SHADER_LANGUAGES, "hlsl5:glsl430:metal_macos");
+			IF_INTEL(AddArgNt(&cmd, SHDC_SHADER_LANGUAGES, "hlsl5:glsl430:metal_macos"));
+			IF_ARM(AddArgNt(&cmd, SHDC_SHADER_LANGUAGES, "hlsl5:glsl310es:metal_macos"));
 			AddArgStr(&cmd, SHDC_INPUT, shaderPath);
 			AddArgStr(&cmd, SHDC_OUTPUT, headerPath);
 			
