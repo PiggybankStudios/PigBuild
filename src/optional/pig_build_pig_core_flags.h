@@ -72,7 +72,7 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	AddTaggedArg(compilerFlags, T_CLANG, CLANG_FULL_FILE_PATHS); //Print absolute paths in diagnostics TODO: Figure out how to resolve these back to windows paths for Sublime error linking?
 	// AddTaggedArgNt(compilerFlags, T_CLANG, CLANG_DEFINE, "_GNU_SOURCE"); //TODO: Maybe we need this for some GNU standard library features?
 	// AddTaggedArgNt(compilerFlags, T_CLANG T_OSX, CLANG_DEFINE, "_POSIX_C_SOURCE"); //TODO: We need to include this in order to get st_mtim on `struct stat` but then we get a bunch of other errors?
-	#if !BUILDING_ON_OSX
+	#if BUILDING_ON_INTEL
 	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX, CLANG_M_FLAG, "ssse3"); //For MeowHash to work we need sse3 support
 	AddTaggedArgNt(compilerFlags, T_CLANG T_UNIX, CLANG_M_FLAG, "aes"); //For MeowHash to work we need aes support
 	#endif
