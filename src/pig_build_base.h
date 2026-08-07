@@ -10,6 +10,14 @@ Date:   03\21\2026
 // +--------------------------------------------------------------+
 // |                    BUILDING_ON_X Defines                     |
 // +--------------------------------------------------------------+
+#if defined(__arm64__) || defined(__aarch64__)
+#define BUILDING_ON_INTEL 0
+#define BUILDING_ON_ARM   1
+#else
+#define BUILDING_ON_INTEL 1
+#define BUILDING_ON_ARM   0
+#endif
+
 #if defined(_WIN32)
 #define BUILDING_ON_WINDOWS 1
 #define BUILDING_ON_NAME "WINDOWS"
@@ -35,11 +43,21 @@ Date:   03\21\2026
 #define BUILDING_ON_NAME "UNKNOWN"
 #endif
 
+#if !BUILDING_ON_LINUX
+#define BUILDING_ON_LINUX_ARM   0
+#define BUILDING_ON_LINUX_INTEL 0
+#elif BUILDING_ON_ARM
+#define BUILDING_ON_LINUX_ARM   1
+#define BUILDING_ON_LINUX_INTEL 0
+#else
+#define BUILDING_ON_LINUX_ARM   0
+#define BUILDING_ON_LINUX_INTEL 1
+#endif
 
 #if !BUILDING_ON_OSX
 #define BUILDING_ON_OSX_ARM   0
 #define BUILDING_ON_OSX_INTEL 0
-#elif defined(__arm64__) || defined(__aarch64__)
+#elif BUILDING_ON_ARM
 #define BUILDING_ON_OSX_ARM   1
 #define BUILDING_ON_OSX_INTEL 0
 #else
@@ -96,6 +114,21 @@ Date:   03\21\2026
 #define IF_LANG_CPP(...) __VA_ARGS__
 #else
 #define IF_LANG_CPP(...) //nothing
+#endif
+
+#if BUILDING_ON_INTEL
+#define IF_INTEL(...)     __VA_ARGS__
+#define IF_NOT_INTEL(...) //nothing
+#else
+#define IF_INTEL(...)     //nothing
+#define IF_NOT_INTEL(...) __VA_ARGS__
+#endif
+#if BUILDING_ON_ARM
+#define IF_ARM(...)     __VA_ARGS__
+#define IF_NOT_ARM(...) //nothing
+#else
+#define IF_ARM(...)     //nothing
+#define IF_NOT_ARM(...) __VA_ARGS__
 #endif
 
 // +--------------------------------------------------------------+
