@@ -516,7 +516,11 @@ void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
 {
 	Str fileContents = Str_Empty_Const;
 	bool readSuccess = TryReadFile(filePath, &fileContents);
-	AssertMsg(readSuccess, "Failed to read file contents for copying");
+	if (!readSuccess)
+	{
+		PrintLine_E("Failed to open/read file for copying at \"%.*s\"", StrPrint(filePath));
+		AssertMsg(readSuccess, "Failed to read file contents for copying");
+	}
 	CreateAndWriteFile(newFilePath, fileContents, false);
 	free(fileContents.chars);
 	#if (BUILDING_ON_LINUX || BUILDING_ON_OSX)

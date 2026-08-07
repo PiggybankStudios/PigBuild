@@ -69,22 +69,26 @@ void FillPlaydateFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str playdat
 		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_LANG_VERSION, "clatest"); //Use latest C language spec features
 		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_EXPERIMENTAL, "c11atomics"); //Enables _Atomic types
 		
-		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_INCLUDE_DIR, "[ROOT]");
-		AddTaggedArgNt(compilerFlags, T_MSVC_LINK T_PLAYDATE T_SIMULATOR, CL_INCLUDE_DIR, "[ROOT]");
+		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_INCLUDE_DIR,    "[ROOT]");
+		AddTaggedArgNt(compilerFlags, T_CLANG   T_PLAYDATE T_SIMULATOR, CLANG_INCLUDE_DIR, "[ROOT]");
 		if (playdateSdkDir_C_API.length > 0)
 		{
-			AddTaggedArgStr(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_INCLUDE_DIR, playdateSdkDir_C_API);
-			AddTaggedArgStr(compilerFlags, T_MSVC_LINK T_PLAYDATE T_SIMULATOR, CL_INCLUDE_DIR, playdateSdkDir_C_API);
+			AddTaggedArgStr(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_INCLUDE_DIR,    playdateSdkDir_C_API);
+			AddTaggedArgStr(compilerFlags, T_CLANG   T_PLAYDATE T_SIMULATOR, CLANG_INCLUDE_DIR, playdateSdkDir_C_API);
 		}
-		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE, "TARGET_SIMULATOR=1");
-		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE, "TARGET_EXTENSION=1");
-		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE, "__HEAP_SIZE=8388208");
-		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE, "__STACK_SIZE=61800");
-		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE, "_WINDLL");
-		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE, "_MBCS");
-		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE, "WIN32");
-		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE, "_WINDOWS");
-		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE, "_WINDLL=1");
+		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE,    "TARGET_SIMULATOR=1");
+		AddTaggedArgNt(compilerFlags, T_CLANG   T_PLAYDATE T_SIMULATOR, CLANG_DEFINE, "TARGET_SIMULATOR=1");
+		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE,    "TARGET_EXTENSION=1");
+		AddTaggedArgNt(compilerFlags, T_CLANG   T_PLAYDATE T_SIMULATOR, CLANG_DEFINE, "TARGET_EXTENSION=1");
+		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE,    "__HEAP_SIZE=8388208");
+		AddTaggedArgNt(compilerFlags, T_CLANG   T_PLAYDATE T_SIMULATOR, CLANG_DEFINE, "__HEAP_SIZE=8388208");
+		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE,    "__STACK_SIZE=61800");
+		AddTaggedArgNt(compilerFlags, T_CLANG   T_PLAYDATE T_SIMULATOR, CLANG_DEFINE, "__STACK_SIZE=61800");
+		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE,    "_WINDLL");
+		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE,    "_MBCS");
+		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE,    "WIN32");
+		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE,    "_WINDOWS");
+		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DEFINE,    "_WINDLL=1");
 		AddTaggedArg(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_ENABLE_BUFFER_SECURITY_CHECK);
 		AddTaggedArg(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_DISABLE_MINIMAL_REBUILD);
 		AddTaggedArgNt(compilerFlags, T_MSVC_CL T_PLAYDATE T_SIMULATOR, CL_ENABLE_RUNTIME_CHECKS, "1"); //Enable fast runtime checks (Equivalent to "su")
