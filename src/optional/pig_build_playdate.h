@@ -165,8 +165,8 @@ void FillPlaydateFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str playdat
 	// | gcc_PlaydateDeviceCompilerFlags  |
 	// +==================================+
 	{
-		AddTaggedArgNt(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_DEBUG_INFO_EX, "3");
-		AddTaggedArgNt(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_DEBUG_INFO_EX, "dwarf-2");
+		AddTaggedArgNt(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_DEBUG_INFO, "3");
+		AddTaggedArgNt(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_DEBUG_INFO, "dwarf-2");
 		AddTaggedArg(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_STD_LIB_DYNAMIC);
 		AddTaggedArgNt(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_DEPENDENCY_FILE, "tests.d"); //TODO: This should really move down below inside the tests.exe block
 		AddTaggedArgNt(compilerFlags, T_ARM_GCC T_PLAYDATE T_DEVICE, GCC_ALIGN_FUNCS_TO, "16");

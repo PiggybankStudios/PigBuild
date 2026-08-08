@@ -25,6 +25,7 @@ Description:
 #include "pig_build_cli_flags.h"
 #include "pig_build_tags.h"
 #include "pig_build_arg_list.h"
+#include "pig_build_compiler_commonalities.h"
 #include "pig_build_http.h"
 #include "pig_build_zip.h"
 

@@ -20,6 +20,8 @@ Description:
 // +==============================+
 // |        MSVC CL Flags         |
 // +==============================+
+// See:           https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options
+// I usually use: https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-alphabetically
 #define CL_COMPILE                          "/c"
 #define CL_DEFINE                           "/D\"[VAL]\""
 #define CL_OBJ_FILE                         "/Fo\"[VAL]\""
@@ -32,7 +34,7 @@ Description:
 #define CL_DISABLE_WARNING                  "/wd[VAL]"
 #define CL_ENABLE_WARNING                   "/we[VAL]" //5262
 #define CL_FULL_FILE_PATHS                  "/FC"
-#define CL_WARNING_LEVEL                    "/W[VAL]" //4, 3
+#define CL_WARNING_LEVEL                    "/W[VAL]" //0, 1, 2, 3, 4, all
 #define CL_NO_LOGO                          "/nologo" //Suppress the startup banner (the message about copyright and version info)
 #define CL_WARNINGS_AS_ERRORS               "/WX"
 #define CL_NO_WARNINGS_AS_ERRORS            "/WX-"
@@ -131,10 +133,10 @@ Description:
 #define CLANG_OPTIMIZATION_LEVEL     "-O[VAL]"
 #define CLANG_DEBUG_INFO             "-g[VAL]"
 #define CLANG_DEBUG_INFO_DEFAULT     "-g"
-#define CLANG_WARNING_LEVEL          "-W[VAL]"
+#define CLANG_WARNING_LEVEL          "-W[VAL]" //all
 #define CLANG_ENABLE_WARNING         "-W[VAL]"
 #define CLANG_DISABLE_WARNING        "-Wno-[VAL]"
-#define CLANG_FULL_FILE_PATHS        "-fdiagnostics-absolute-paths" //Print absolute paths in diagnostics TODO: Figure out how to resolve these back to windows paths for Sublime error linking?
+#define CLANG_FULL_FILE_PATHS        "-fdiagnostics-absolute-paths" //Print absolute paths in diagnostics TODO: When using clang from WSL, we need to figure out how to resolve these back to windows paths for Sublime error linking?
 #define CLANG_INCLUDE_DIR            "-I \"[VAL]\"" //Adds an include directory to search in when resolving #includes
 #define CLANG_LIBRARY_DIR            "-L \"[VAL]\""
 #define CLANG_RPATH_DIR              "-rpath \"[VAL]\""
@@ -204,16 +206,18 @@ Description:
 #define GCC_COMPILE                  "-c"
 #define GCC_PRECOMPILE_ONLY          "-E"
 #define GCC_OUTPUT_FILE              "-o \"[VAL]\""
+#define GCC_OPTIMIZATION_LEVEL       "-O[VAL]" //TODO: This should be tested! (I assume it's the same as clang)
+#define GCC_DEBUG_INFO               "-g[VAL]" // "dwarf-2" (also "3"?)
 #define GCC_DEFINE                   "-D \"[VAL]\""
 #define GCC_INCLUDE_DIR              "-I \"[VAL]\""
-#define GCC_DEBUG_INFO_EX            "-g[VAL]" //Produce debug information in the OS's native format
 #define GCC_STD_LIB_STATIC           "-MT" //MSVC-style option
 #define GCC_STD_LIB_DYNAMIC          "-MD" //MSVC-style option
 #define GCC_STD_LIB_STATIC_DBG       "-MTd" //MSVC-style option
 #define GCC_STD_LIB_DYNAMIC_DBG      "-MDd" //MSVC-style option
-#define GCC_WARNING_LEVEL            "-W[VAL]"
+#define GCC_WARNING_LEVEL            "-W[VAL]" //all
 #define GCC_ENABLE_WARNING           "-W[VAL]"
 #define GCC_DISABLE_WARNING          "-Wno-[VAL]"
+// #define GCC_FULL_FILE_PATHS       This is the default behavior for GCC *if* you pass full paths. There is no option to configure this
 #define GCC_TARGET_THUMB             "-mthumb" //Requests that the compiler targets the T32 (Thumb) instruction set instead of A32 (Arm)
 #define GCC_TARGET_CPU               "-mcpu=[VAL]" //Specify a specific CPU to target during code generation
 #define GCC_FLOAT_ABI_MODE           "-mfloat-abi=[VAL]" //Whether to use hardware instructions for floating-point operations
