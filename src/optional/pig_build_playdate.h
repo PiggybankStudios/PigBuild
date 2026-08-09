@@ -18,12 +18,6 @@ Description:
 
 #define EXE_PDC "pdc"
 #define EXE_ARM_GCC "arm-none-eabi-gcc" //we use this when compiling for the Playdate device
-//NOTE: PlaydateSDK seems to install the WRONG version of arm-none-eabi-gcc into `/usr/local/bin` (it's x86_64, not ARM64)
-//      The ARM OSX toolchain from https://gitlab.arm.com/tooling/gnu-toolchains-for-arm installs into this folder but
-//      does not add it to the $PATH. On OSX there is not great way to set persistent environment variables for all applications
-//      (including GUI apps, like Sublime) so we can't really rely on this being set by the user or being inferred from the PATH
-//      Thus it is currently hard-coded for OSX
-#define EXE_ARM_GCC_OSX_PATH "/Applications/ArmGNUToolchain/15.3.rel1/arm-none-eabi/bin/" EXE_ARM_GCC
 
 #define PDC_SDK_PATH      "-sdkpath \"[VAL]\"" //use the SDK at the given path instead of the default
 #define PDC_LIBPATH       "--libpath \"[VAL]\"" //add the given path to the list of folders to search when resolving imports
