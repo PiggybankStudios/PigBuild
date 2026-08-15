@@ -455,61 +455,10 @@ void RemoveFile(Str filePath)
 	AssertMsg(false, "RemoveFile does not support the current platform yet!");
 	#endif
 }
-
-//TODO: Add support for Linux/OSX!
-void MyRemoveDirectory(Str folderPath, bool recursive)
+bool TryRemoveFile(Str filePath)
 {
-	Str folderPathNt = CopyStr(folderPath);
-	FixPathSlashes(folderPathNt, PATH_SEP_CHAR);
-	
-	if (!recursive)
-	{
-		int rmResult = rmdir(folderPathNt.chars);
-		if (rmResult != 0)
-		{
-			AssertFmt(rmResult == 0, "rmdir(\"%s\") failed: errno=%d", folderPathNt.chars, errno);
-		}
-	}
-	else
-	{
-		#if BUILDING_ON_WINDOWS
-		{
-			Str searchStr = JoinPaths(folderPathNt, StrLit("*"));
-			
-			WIN32_FIND_DATAA findData = EMPTY;
-			HANDLE iterHandle = FindFirstFileA(searchStr.chars, &findData);
-			if (iterHandle == INVALID_HANDLE_VALUE) { return; }
-			
-			do
-			{
-				Str fileNameStr = MakeStrNt(findData.cFileName);
-				if (StrExactEquals(fileNameStr, StrLit(".")) || StrExactEquals(fileNameStr, StrLit(".."))) { continue; }
-				Str fullPath = JoinPaths(folderPath, fileNameStr);
-				
-				if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-				{
-					// PrintLine("Recursing into \"%.*s\"", StrPrint(fullPath));
-					MyRemoveDirectory(fullPath, true);
-				}
-				else
-				{
-					// PrintLine("Removing file \"%.*s\"", StrPrint(fullPath));
-					RemoveFile(fullPath);
-				}
-				
-			} while(FindNextFileA(iterHandle, &findData) != 0);
-			
-			BOOL removeResult = RemoveDirectoryA(folderPathNt.chars);
-			if (removeResult == 0)
-			{
-				DWORD errorCode = GetLastError();
-				AssertFmt(removeResult != 0, "Failed to remove \"%s\". Error: %d", folderPathNt.chars, errorCode);
-			}
-		}
-		#else
-		AssertMsg(false, "RemoveDirectory does not support the current platform yet!");
-		#endif
-	}
+	if (DoesFileExist(filePath)) { RemoveFile(filePath); return true; }
+	else { return false; }
 }
 
 void CopyFileToPath(Str filePath, Str newFilePath, bool copyPermissions)
@@ -706,6 +655,51 @@ void RecursiveDirWalk(Str rootDir, RecursiveDirWalkCallback_f* callback, void* c
 			RecursiveDirWalk(path, callback, contextPntr);
 		}
 	}
+}
+void RecursiveDirWalkBottomUp(Str rootDir, RecursiveDirWalkCallback_f* callback, void* contextPntr)
+{
+	FileIter iter = StartFileIter(rootDir);
+	Str path = Str_Empty_Const;
+	bool isFolder = false;
+	while (StepFileIter(&iter, &path, &isFolder))
+	{
+		if (isFolder)
+		{
+			RecursiveDirWalkBottomUp(path, callback, contextPntr);
+		}
+		bool callbackResult = callback(path, isFolder, contextPntr);
+		//NOTE: callbackResult is ignored in BottomUp version!
+	}
+}
+
+RECURSIVE_DIR_WALK_CALLBACK_DEF(MyRemoveDirectory_RecursiveCallback); //implemented below
+
+void MyRemoveDirectory(Str folderPath, bool recursive)
+{
+	if (!DoesFolderExist(folderPath)) { return; }
+	
+	if (!recursive)
+	{
+		//TODO: Should we use RemoveDirectoryA on Windows?
+		Str folderPathNt = CopyStr(folderPath);
+		FixPathSlashes(folderPathNt, PATH_SEP_CHAR);
+		int rmResult = rmdir(folderPathNt.chars);
+		if (rmResult != 0) { AssertFmt(rmResult == 0, "rmdir(\"%s\") failed: errno=%d", folderPathNt.chars, errno); }
+	}
+	else
+	{
+		RecursiveDirWalkBottomUp(folderPath, MyRemoveDirectory_RecursiveCallback, nullptr);
+		MyRemoveDirectory(folderPath, false);
+	}
+}
+
+// | MyRemoveDirectory_RecursiveCallback |
+// bool MyRemoveDirectory_RecursiveCallback(Str path, bool isFolder, void* contextPntr)
+RECURSIVE_DIR_WALK_CALLBACK_DEF(MyRemoveDirectory_RecursiveCallback)
+{
+	if (isFolder) { MyRemoveDirectory(path, false); }
+	else { RemoveFile(path); }
+	return true;
 }
 
 void CopyFolderTo(Str folderPath, Str destPath, bool copySubFolders, bool copyPermissions)
