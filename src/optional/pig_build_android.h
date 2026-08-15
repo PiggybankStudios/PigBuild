@@ -75,7 +75,11 @@ const char* GetAndroidTargetArchitectureToolchainFolderStr(AndroidTargetArchitec
 
 Str GetAndroidSdkPath()
 {
+	#ifdef ANDROID_SDK
+	const char* sdkEnvVariable = ANDROID_SDK;
+	#else
 	const char* sdkEnvVariable = getenv("ANDROID_SDK");
+	#endif
 	if (sdkEnvVariable == nullptr)
 	{
 		WriteLine_E("Please set the ANDROID_SDK environment variable before trying to build for Android");
