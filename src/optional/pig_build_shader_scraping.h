@@ -386,6 +386,7 @@ RECURSIVE_DIR_WALK_CALLBACK_DEF(FindShaderFilesCallback)
 		FixPathSlashes(rootPath, '/');
 		AddStr(&context->shaderPaths, rootPath);
 		AddStr(&context->headerPaths, JoinStrings2(rootPath, StrLit(".h")));
+		//TODO: If we are on OSX but building for something else like Android then we shouldn't generate a .m and we should generate a .c. If we are building for both OSX and Android then we need both. This logic is faulty
 		#if BUILDING_ON_OSX
 		AddStr(&context->sourcePaths, JoinStrings2(rootPath, StrLit(".m")));
 		#else
