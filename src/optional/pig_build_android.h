@@ -90,7 +90,71 @@ Str GetAndroidSdkPath()
 	return result;
 }
 
-void FillAndroidFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str androidNdkDir, Str androidNdkToolchainDir)
+typedef struct AndroidBinPaths AndroidBinPaths;
+struct AndroidBinPaths
+{
+	Str sdkDir;
+	Str ndkVersionStr;
+	Str platformVersionStr;
+	Str buildToolsVersionStr;
+	Str hostVersionStr;
+	
+	Str ndkDir;
+	Str ndkToolchainDir;
+	Str buildToolsDir;
+	Str platformDir;
+	
+	Str clang;
+	Str d8;
+	Str aapt2;
+	Str apksigner;
+	Str zipalign;
+	Str javac;
+	Str androidJar;
+};
+void FillAndroidBinPaths(AndroidBinPaths* pathsOut, Str sdkDir, Str ndkVersionStr, Str platformVersionStr, Str buildToolsVersionStr)
+{
+	NotNull(pathsOut);
+	memset(pathsOut, 0x00, sizeof(*pathsOut));
+	
+	pathsOut->sdkDir = CopyStr(sdkDir);
+	pathsOut->ndkVersionStr = CopyStr(ndkVersionStr);
+	pathsOut->platformVersionStr = CopyStr(platformVersionStr);
+	pathsOut->buildToolsVersionStr = CopyStr(buildToolsVersionStr);
+	
+	#if BUILDING_ON_WINDOWS
+	pathsOut->hostVersionStr = StrLit("windows-x86_64");
+	// #elif BUILDING_ON_LINUX
+	//TODO: Implement me!
+	#elif BUILDING_ON_OSX
+	pathsOut->hostVersionStr = StrLit("darwin-x86_64");
+	#else
+	AssertMsg(false, "FillAndroidBinPaths has not been implemented on the current platform: " BUILDING_ON_NAME);
+	#endif
+	
+	pathsOut->ndkDir           = JoinPaths3(pathsOut->sdkDir, StrLit("/ndk/"),                      ndkVersionStr);
+	pathsOut->ndkToolchainDir  = JoinPaths3(pathsOut->ndkDir, StrLit("/toolchains/llvm/prebuilt/"), pathsOut->hostVersionStr);
+	pathsOut->buildToolsDir    = JoinPaths3(pathsOut->sdkDir, StrLit("/build-tools/"),              buildToolsVersionStr);
+	pathsOut->platformDir      = JoinPaths3(pathsOut->sdkDir, StrLit("/platforms/"),                platformVersionStr);
+	
+	#if BUILDING_ON_WINDOWS
+	#define BAT_ON_WINDOWS ".bat"
+	#else
+	#define BAT_ON_WINDOWS ""
+	#endif
+	
+	pathsOut->clang      = JoinPathsLit(pathsOut->ndkToolchainDir, "/bin/clang" EXE_EXT);
+	pathsOut->d8         = JoinPathsLit(pathsOut->buildToolsDir, "/d8" BAT_ON_WINDOWS);
+	pathsOut->aapt2      = JoinPathsLit(pathsOut->buildToolsDir, "/aapt2" EXE_EXT);
+	pathsOut->apksigner  = JoinPathsLit(pathsOut->buildToolsDir, "/apksigner" BAT_ON_WINDOWS);
+	pathsOut->zipalign   = JoinPathsLit(pathsOut->buildToolsDir, "/zipalign");
+	pathsOut->javac      = StrLit("javac" EXE_EXT); //TODO: Should we always assume that java compiler is in the search PATH?
+	pathsOut->androidJar = JoinPathsLit(pathsOut->platformDir, "/android.jar");
+	
+	//TODO: We should check to see if all these folders actually exist and give a nice error to the user when they need to install something or change the build_config.h
+}
+
+void FillAndroidFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, const AndroidBinPaths* androidPaths)
 {
 	// +==============================+
 	// |      clang_AndroidFlags      |
@@ -99,8 +163,8 @@ void FillAndroidFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str androidN
 		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID T_DEBUG_BUILD,  CLANG_OPTIMIZATION_LEVEL, "0");
 		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID T_RELEASE_BUILD, CLANG_OPTIMIZATION_LEVEL, "2");
 		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID, CLANG_INCLUDE_DIR, "[ROOT]");
-		AddTaggedArgStr(compilerFlags, T_CLANG T_ANDROID, CLANG_STDLIB_FOLDER, JoinStrings2(androidNdkToolchainDir, StrLit("/sysroot")));
-		AddTaggedArgStr(compilerFlags, T_CLANG T_ANDROID, CLANG_INCLUDE_DIR, JoinStrings2(androidNdkDir, StrLit("/sources/android/native_app_glue")));
+		AddTaggedArgStr(compilerFlags, T_CLANG T_ANDROID, CLANG_STDLIB_FOLDER, JoinPaths(androidPaths->ndkToolchainDir, StrLit("/sysroot")));
+		AddTaggedArgStr(compilerFlags, T_CLANG T_ANDROID, CLANG_INCLUDE_DIR, JoinPaths(androidPaths->ndkDir, StrLit("/sources/android/native_app_glue")));
 		AddTaggedArg(compilerFlags,    T_CLANG T_ANDROID T_DEBUG_BUILD, CLANG_DEBUG_INFO_DEFAULT); //TODO: Should we do dwarf-4 debug info instead?
 		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID, CLANG_DEFINE, "pig_core_EXPORTS"); //TODO: Can we remove this?
 		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID, CLANG_DEFINE, "ANDROID"); //TODO: Can we remove this?
