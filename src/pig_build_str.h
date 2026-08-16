@@ -526,11 +526,21 @@ Str WithTrailingSlash(Str path)
 
 Str JoinPaths(Str leftPath, Str rightPath)
 {
-	if (leftPath.length == 0 || rightPath.length == 0 || HasTrailingSlash(leftPath) || IsSlash(rightPath.chars[0])) { return JoinStrings2(leftPath, rightPath); }
-	else { return JoinStrings3(leftPath, StrLit("/"), rightPath); }
+	Str result = Str_Empty_Const;
+	if (leftPath.length == 0 || rightPath.length == 0 || HasTrailingSlash(leftPath) || IsSlash(rightPath.chars[0])) { result = JoinStrings2(leftPath, rightPath); }
+	else { result = JoinStrings3(leftPath, StrLit("/"), rightPath); }
+	FixPathSlashes(result, '/');
+	return result;
 }
 #define JoinPathsLit(leftPath, rightPathStrLiteral) JoinPaths((leftPath), StrLit(rightPathStrLiteral))
 #define JoinPathsNt(leftPath, rightPathNullTerm)    JoinPaths((leftPath), MakeStrNt(rightPathNullTerm))
+
+Str JoinPaths3(Str leftPath, Str middlePath, Str rightPath)
+{
+	return JoinPaths(JoinPaths(leftPath, middlePath), rightPath);
+}
+#define JoinPaths3Lit(leftPath, middlePath, rightPathStrLiteral) JoinPaths((leftPath), (middlePath), StrLit(rightPathStrLiteral))
+#define JoinPaths3Nt(leftPath, middlePath, rightPathNullTerm) JoinPaths((leftPath), (middlePath), MakeStrNt(rightPathNullTerm))
 
 Str RemovePathExtension(Str path, bool removeSubExtensions)
 {
