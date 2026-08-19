@@ -4,6 +4,8 @@ Author: Taylor Robbins
 Date:   04\05\2026
 */
 
+//TODO: Should we set -DANDROID_ABI=[architecture] ?
+
 #ifndef _PIG_BUILD_ANDROID_H
 #define _PIG_BUILD_ANDROID_H
 
@@ -20,25 +22,29 @@ Date:   04\05\2026
 // +--------------------------------------------------------------+
 // |                       Android Helpers                        |
 // +--------------------------------------------------------------+
+// When compiling a native binary to put into the .apk, we need to potentially include versions compiled to other architectures to match the ABI
+// These three are what we support compiling for. When BUILD_FAT_APK=0 we only compile for Arm8
+// Each compiled .so goes into a sub-folder in the `lib` folder named: `arm64-v8a`, `armeabi-v7a`, and `x86_64` respectively
+// See: https://developer.android.com/ndk/guides/abis
 #if LANGUAGE_IS_C
 typedef enum AndroidTargetArchitecture AndroidTargetArchitecture;
 #endif
 enum AndroidTargetArchitecture
 {
 	AndroidTargetArchitecture_None = 0,
-	AndroidTargetArchitecture_Arm8,
-	AndroidTargetArchitecture_Arm7,
-	AndroidTargetArchitecture_x86,
+	AndroidTargetArchitecture_Arm8, //64-bit ARM, most phones
+	AndroidTargetArchitecture_Arm7, //32-bit ARM, very old phones (could run on 64-bit if entire process is run with 32-bit ABI)
+	AndroidTargetArchitecture_x86_64, //64-bit, mostly emulators (and some chromebooks)
 	AndroidTargetArchitecture_Count,
 };
 const char* GetAndroidTargetArchitectureStr(AndroidTargetArchitecture enumValue)
 {
 	switch (enumValue)
 	{
-		case AndroidTargetArchitecture_None:  return "None";
-		case AndroidTargetArchitecture_Arm8:  return "Arm8";
-		case AndroidTargetArchitecture_Arm7:  return "Arm7";
-		case AndroidTargetArchitecture_x86:   return "x86";
+		case AndroidTargetArchitecture_None:   return "None";
+		case AndroidTargetArchitecture_Arm8:   return "Arm8";
+		case AndroidTargetArchitecture_Arm7:   return "Arm7";
+		case AndroidTargetArchitecture_x86_64: return "x86_64";
 		default: return "Unknown";
 	}
 }
@@ -46,9 +52,9 @@ const char* GetAndroidTargetArchitectureFolderName(AndroidTargetArchitecture enu
 {
 	switch (enumValue)
 	{
-		case AndroidTargetArchitecture_Arm8:  return "arm64-v8a";
-		case AndroidTargetArchitecture_Arm7:  return "armeabi-v7a";
-		case AndroidTargetArchitecture_x86:   return "x86_64";
+		case AndroidTargetArchitecture_Arm8:   return "arm64-v8a";
+		case AndroidTargetArchitecture_Arm7:   return "armeabi-v7a";
+		case AndroidTargetArchitecture_x86_64: return "x86_64";
 		default: return "unknown";
 	}
 }
@@ -56,9 +62,9 @@ const char* GetAndroidTargetArchitectureTargetStr(AndroidTargetArchitecture enum
 {
 	switch (enumValue)
 	{
-		case AndroidTargetArchitecture_Arm8:  return "aarch64-none-linux-android35";
-		case AndroidTargetArchitecture_Arm7:  return "armv7a-none-linux-androideabi35";
-		case AndroidTargetArchitecture_x86:   return "x86_64-none-linux-android35";
+		case AndroidTargetArchitecture_Arm8:   return "aarch64-none-linux-android35";
+		case AndroidTargetArchitecture_Arm7:   return "armv7a-none-linux-androideabi35";
+		case AndroidTargetArchitecture_x86_64: return "x86_64-none-linux-android35";
 		default: return "unknown";
 	}
 }
@@ -66,13 +72,14 @@ const char* GetAndroidTargetArchitectureToolchainFolderStr(AndroidTargetArchitec
 {
 	switch (enumValue)
 	{
-		case AndroidTargetArchitecture_Arm8:  return "aarch64-linux-android";
-		case AndroidTargetArchitecture_Arm7:  return "arm-linux-androideabi";
-		case AndroidTargetArchitecture_x86:   return "x86_64-linux-android";
+		case AndroidTargetArchitecture_Arm8:   return "aarch64-linux-android";
+		case AndroidTargetArchitecture_Arm7:   return "arm-linux-androideabi";
+		case AndroidTargetArchitecture_x86_64: return "x86_64-linux-android";
 		default: return "unknown";
 	}
 }
 
+// Either use #define if it's defined, or look for an environment variable called ANDROID_SDK being set
 Str GetAndroidSdkPath()
 {
 	#ifdef ANDROID_SDK
@@ -87,6 +94,7 @@ Str GetAndroidSdkPath()
 	}
 	Str result = CopyStr(WithoutTrailingSlash(MakeStrNt(sdkEnvVariable)));
 	FixPathSlashes(result, PATH_SEP_CHAR);
+	//TODO: Confirm this path exists?
 	return result;
 }
 
