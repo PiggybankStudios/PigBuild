@@ -15,9 +15,9 @@ Date:   04\05\2026
 #include "pig_build_arg_list.h"
 
 #define T_ANDROID "|Android"
-#define T_ARM8    "|arm8"
-#define T_ARM7    "|arm7"
-#define T_X86     "|x86"
+#define T_ANDROID_ARCH_ARM8   "|AndroidArchArm8"
+#define T_ANDROID_ARCH_ARM7   "|AndroidArchArm7"
+#define T_ANDROID_ARCH_X86_64 "|AndroidArchX86"
 
 // +--------------------------------------------------------------+
 // |                       Android Helpers                        |
@@ -76,6 +76,16 @@ const char* GetAndroidTargetArchitectureToolchainFolderStr(AndroidTargetArchitec
 		case AndroidTargetArchitecture_Arm7:   return "arm-linux-androideabi";
 		case AndroidTargetArchitecture_x86_64: return "x86_64-linux-android";
 		default: return "unknown";
+	}
+}
+const char* GetAndroidTargetArchitectureTag(AndroidTargetArchitecture enumValue)
+{
+	switch (enumValue)
+	{
+		case AndroidTargetArchitecture_Arm8:   return T_ANDROID_ARCH_ARM8;
+		case AndroidTargetArchitecture_Arm7:   return T_ANDROID_ARCH_ARM7;
+		case AndroidTargetArchitecture_x86_64: return T_ANDROID_ARCH_X86_64;
+		default: return "|Unknown";
 	}
 }
 
@@ -212,6 +222,51 @@ void FillAndroidFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, const Androi
 		AddTaggedArgNt(linkerFlags,  T_CLANG T_ANDROID "|BUILD_WITH_BOX2D", CLANG_SYSTEM_LIBRARY, "box2d"); //TODO: We probably need a separate folder or lib name for a Box2D that was compiled for Android!
 		// TODO: -Wl,--dependency-file=CMakeFiles\pig-core.dir\link.d
 	}
+}
+
+//This creats a "lib" folder with sub-folders and chdir in/out of them when building for each architecture
+void BuildAndroidSharedLibraries(const AndroidBinPaths* androidPaths, CliArgs* compilerArgs, StrArray* tags, Str libFolder, Str soFilename, bool buildFatApk)
+{
+	CliArgs commonArgs = EMPTY;
+	if (compilerArgs != nullptr) { AddArgList(&commonArgs, compilerArgs); }
+	AddArg(&commonArgs, CLANG_BUILD_SHARED_LIB);
+	AddArgStr(&commonArgs, CLANG_LIB_SO_NAME, soFilename);
+	AddArgStr(&commonArgs, CLANG_OUTPUT_FILE, soFilename);
+	
+	Str libFolderNt = CopyStr(libFolder);
+	mkdir(libFolderNt.chars, FOLDER_PERMISSIONS);
+	chdir(libFolderNt.chars);
+	for (u64 archIndex = 1; archIndex < AndroidTargetArchitecture_Count; archIndex++)
+	{
+		AndroidTargetArchitecture architecture = (AndroidTargetArchitecture)archIndex;
+		if (architecture == AndroidTargetArchitecture_Arm8 || buildFatApk)
+		{
+			mkdir(GetAndroidTargetArchitectureFolderName(architecture), FOLDER_PERMISSIONS);
+			chdir(GetAndroidTargetArchitectureFolderName(architecture));
+			PrintLine("Building for Android (architecture=%s)...", GetAndroidTargetArchitectureFolderName(architecture));
+			Str architectureStr = MakeStrNt(GetAndroidTargetArchitectureTargetStr(architecture));
+			
+			CliArgs cmd = EMPTY;
+			cmd.pathSepChar = '/';
+			cmd.rootDirPath = StrLit("../../../..");
+			AddArgList(&cmd, &commonArgs);
+			AddArgStr(&cmd, CLANG_TARGET_ARCHITECTURE, architectureStr);
+			Str sysrootRelativePath = JoinPaths3(StrLit("/sysroot/usr/lib/"), architectureStr, StrLit("/35/"));
+			AddArgStr(&cmd, CLANG_LIBRARY_DIR, JoinPaths(androidPaths->ndkToolchainDir, sysrootRelativePath));
+			
+			StrArray fullTags = EMPTY;
+			if (tags != nullptr) { AddStrArray(&fullTags, tags); }
+			AddTag(&fullTags, T_CLANG);
+			AddTag(&fullTags, T_ANDROID);
+			AddTag(&fullTags, GetAndroidTargetArchitectureTag(architecture));
+			
+			RunCliProgramAndExitOnFailureTags(androidPaths->clang, fullTags, &cmd, FormatStr("Failed to build %.*s for Android (architecture=%s)!", StrPrint(soFilename), GetAndroidTargetArchitectureFolderName(architecture)));
+			AssertFileExist(soFilename, true);
+			
+			chdir("..");
+		}
+	}
+	chdir("..");
 }
 
 #endif //  _PIG_BUILD_ANDROID_H
