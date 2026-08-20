@@ -243,7 +243,7 @@ void BuildAndroidSharedLibraries(const AndroidBinPaths* androidPaths, CliArgs* c
 		{
 			mkdir(GetAndroidTargetArchitectureFolderName(architecture), FOLDER_PERMISSIONS);
 			chdir(GetAndroidTargetArchitectureFolderName(architecture));
-			PrintLine("Building for Android (architecture=%s)...", GetAndroidTargetArchitectureFolderName(architecture));
+			PrintLine("Building for Android... %s/%s/%.*s", libFolderNt.chars, GetAndroidTargetArchitectureFolderName(architecture), StrPrint(soFilename));
 			Str architectureStr = MakeStrNt(GetAndroidTargetArchitectureTargetStr(architecture));
 			
 			CliArgs cmd = EMPTY;
@@ -296,6 +296,37 @@ void CompileDummyJavaToClassesDex(const AndroidBinPaths* androidPaths, Str dummy
 	AddArgStr(&d8Cmd, CLI_QUOTED_ARG, dummyClassFilename);
 	RunCliProgramAndExitOnFailure(androidPaths->d8, &d8Cmd, FormatStr("Failed to convert %.*s to %.*s for Android build!", StrPrint(dummyJavaFilename), StrPrint(classesDexFilename)));
 	AssertFileExist(classesDexFilename, true);
+}
+
+// Resources (like the app icon) that need to be findable by the system, or need to have resolution or language dependent versions
+// are stored in a special folder pattern inside a resources.zip that we pass to `aapt2 link`
+// This function takes everything in a target directory and puts it into a properly formatted diff with `aapt2 compile`
+void PackageAndroidResourcesZip(const AndroidBinPaths* androidPaths, Str resourcesDir, Str zipFilename)
+{
+	CliArgs compileResCmd = EMPTY;
+	compileResCmd.pathSepChar = '/';
+	compileResCmd.rootDirPath = StrLit("../..");
+	AddArg(&compileResCmd, "compile");
+	AddArgStr(&compileResCmd, "--dir \"[VAL]\"", resourcesDir);
+	AddArgStr(&compileResCmd, "-o \"[VAL]\"", zipFilename);
+	RunCliProgramAndExitOnFailure(androidPaths->aapt2, &compileResCmd, FormatStr("Failed to package %.*s for Android with aapt2!", StrPrint(zipFilename)));
+	AssertFileExist(zipFilename, true);
+}
+
+// Put the Manifest.xml + resources.zip + android.jar together into the initial .apk file (we will need to insert the .so files and classes.dex manually after this)
+void LinkAndroidApk(const AndroidBinPaths* androidPaths, Str manifestPath, Str resourcesZipPath, Str apkFilename)
+{
+	CliArgs linkApkCmd = EMPTY;
+	linkApkCmd.pathSepChar = '/';
+	linkApkCmd.rootDirPath = StrLit("../..");
+	AddArg(&linkApkCmd, "link");
+	AddArgStr(&linkApkCmd, "-o \"[VAL]\"", apkFilename);
+	AddArgStr(&linkApkCmd, "-I \"[VAL]\"", androidPaths->androidJar);
+	AddArgNt(&linkApkCmd, "-0 [VAL]", "resources.arsc");
+	AddArgStr(&linkApkCmd, "--manifest \"[VAL]\"", manifestPath);
+	AddArgStr(&linkApkCmd, CLI_QUOTED_ARG, resourcesZipPath);
+	RunCliProgramAndExitOnFailure(androidPaths->aapt2, &linkApkCmd, FormatStr("Failed to link %.*s for Android!", StrPrint(apkFilename)));
+	AssertFileExist(apkFilename, true);
 }
 
 #endif //  _PIG_BUILD_ANDROID_H
