@@ -118,7 +118,10 @@ struct AndroidBinPaths
 	Str hostVersionStr;
 	
 	Str ndkDir;
+	Str nativeAppGlueDir;
 	Str ndkToolchainDir;
+	Str ndkSysrootDir;
+	Str sysrootLibDir[AndroidTargetArchitecture_Count];
 	Str buildToolsDir;
 	Str platformDir;
 	
@@ -128,6 +131,7 @@ struct AndroidBinPaths
 	Str apksigner;
 	Str zipalign;
 	Str javac;
+	Str jar;
 	Str androidJar;
 };
 void FillAndroidBinPaths(AndroidBinPaths* pathsOut, Str sdkDir, Str ndkVersionStr, Str platformVersionStr, Str buildToolsVersionStr)
@@ -151,7 +155,14 @@ void FillAndroidBinPaths(AndroidBinPaths* pathsOut, Str sdkDir, Str ndkVersionSt
 	#endif
 	
 	pathsOut->ndkDir           = JoinPaths3(pathsOut->sdkDir, StrLit("/ndk/"),                      ndkVersionStr);
+	pathsOut->nativeAppGlueDir = JoinPathsLit(pathsOut->ndkDir, "/sources/android/native_app_glue");
 	pathsOut->ndkToolchainDir  = JoinPaths3(pathsOut->ndkDir, StrLit("/toolchains/llvm/prebuilt/"), pathsOut->hostVersionStr);
+	pathsOut->ndkSysrootDir    = JoinPaths(pathsOut->ndkToolchainDir, StrLit("sysroot/"));
+	for (u64 archIndex = 0; archIndex < AndroidTargetArchitecture_Count; archIndex++)
+	{
+		Str architectureStr = MakeStrNt(GetAndroidTargetArchitectureTargetStr((AndroidTargetArchitecture)archIndex));
+		pathsOut->sysrootLibDir[archIndex] = JoinPaths4(pathsOut->ndkSysrootDir, StrLit("/usr/lib/"), architectureStr, StrLit("/35/")); //TODO: Should 35 be a configurable value?
+	}
 	pathsOut->buildToolsDir    = JoinPaths3(pathsOut->sdkDir, StrLit("/build-tools/"),              buildToolsVersionStr);
 	pathsOut->platformDir      = JoinPaths3(pathsOut->sdkDir, StrLit("/platforms/"),                platformVersionStr);
 	
@@ -167,6 +178,7 @@ void FillAndroidBinPaths(AndroidBinPaths* pathsOut, Str sdkDir, Str ndkVersionSt
 	pathsOut->apksigner  = JoinPathsLit(pathsOut->buildToolsDir, "/apksigner" BAT_ON_WINDOWS);
 	pathsOut->zipalign   = JoinPathsLit(pathsOut->buildToolsDir, "/zipalign");
 	pathsOut->javac      = StrLit("javac" EXE_EXT); //TODO: Should we always assume that java compiler is in the search PATH?
+	pathsOut->jar        = StrLit("jar"); //TODO: Should we always assume that jar binary is in the search PATH?
 	pathsOut->androidJar = JoinPathsLit(pathsOut->platformDir, "/android.jar");
 	
 	//TODO: We should check to see if all these folders actually exist and give a nice error to the user when they need to install something or change the build_config.h
@@ -180,9 +192,8 @@ void FillAndroidFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, const Androi
 	{
 		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID T_DEBUG_BUILD,  CLANG_OPTIMIZATION_LEVEL, "0");
 		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID T_RELEASE_BUILD, CLANG_OPTIMIZATION_LEVEL, "2");
-		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID, CLANG_INCLUDE_DIR, "[ROOT]");
-		AddTaggedArgStr(compilerFlags, T_CLANG T_ANDROID, CLANG_STDLIB_FOLDER, JoinPaths(androidPaths->ndkToolchainDir, StrLit("/sysroot")));
-		AddTaggedArgStr(compilerFlags, T_CLANG T_ANDROID, CLANG_INCLUDE_DIR, JoinPaths(androidPaths->ndkDir, StrLit("/sources/android/native_app_glue")));
+		AddTaggedArgStr(compilerFlags, T_CLANG T_ANDROID, CLANG_STDLIB_FOLDER, androidPaths->ndkSysrootDir);
+		AddTaggedArgStr(compilerFlags, T_CLANG T_ANDROID, CLANG_INCLUDE_DIR, androidPaths->nativeAppGlueDir);
 		AddTaggedArg(compilerFlags,    T_CLANG T_ANDROID T_DEBUG_BUILD, CLANG_DEBUG_INFO_DEFAULT); //TODO: Should we do dwarf-4 debug info instead?
 		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID, CLANG_DEFINE, "pig_core_EXPORTS"); //TODO: Can we remove this?
 		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID, CLANG_DEFINE, "ANDROID"); //TODO: Can we remove this?
@@ -203,8 +214,6 @@ void FillAndroidFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, const Androi
 	// +==============================+
 	{
 		AddTaggedArg(linkerFlags,    T_CLANG T_ANDROID, CLANG_fPIC);
-		AddTaggedArgStr(linkerFlags, T_CLANG T_ANDROID T_DEBUG_BUILD,  CLANG_LIBRARY_DIR, StrLit("[ROOT]/third_party/_lib_debug"));
-		AddTaggedArgStr(linkerFlags, T_CLANG T_ANDROID T_RELEASE_BUILD, CLANG_LIBRARY_DIR, StrLit("[ROOT]/third_party/_lib_release"));
 		AddTaggedArg(linkerFlags,    T_CLANG T_ANDROID, CLANG_NO_UNDEFINED);
 		AddTaggedArg(linkerFlags,    T_CLANG T_ANDROID, CLANG_FATAL_WARNINGS);
 		AddTaggedArg(linkerFlags,    T_CLANG T_ANDROID, CLANG_NO_UNDEFINED_VERSION);
@@ -251,8 +260,7 @@ void BuildAndroidSharedLibraries(const AndroidBinPaths* androidPaths, CliArgs* c
 			cmd.rootDirPath = StrLit("../../../..");
 			AddArgList(&cmd, &commonArgs);
 			AddArgStr(&cmd, CLANG_TARGET_ARCHITECTURE, architectureStr);
-			Str sysrootRelativePath = JoinPaths3(StrLit("/sysroot/usr/lib/"), architectureStr, StrLit("/35/"));
-			AddArgStr(&cmd, CLANG_LIBRARY_DIR, JoinPaths(androidPaths->ndkToolchainDir, sysrootRelativePath));
+			AddArgStr(&cmd, CLANG_LIBRARY_DIR, androidPaths->sysrootLibDir[archIndex]);
 			
 			StrArray fullTags = EMPTY;
 			if (tags != nullptr) { AddStrArray(&fullTags, tags); }
@@ -327,6 +335,51 @@ void LinkAndroidApk(const AndroidBinPaths* androidPaths, Str manifestPath, Str r
 	AddArgStr(&linkApkCmd, CLI_QUOTED_ARG, resourcesZipPath);
 	RunCliProgramAndExitOnFailure(androidPaths->aapt2, &linkApkCmd, FormatStr("Failed to link %.*s for Android!", StrPrint(apkFilename)));
 	AssertFileExist(apkFilename, true);
+}
+
+// After calling LinkAndroidApk, we have to unpack the .apk into a folder (tempExtractDir), create new folders and add .so files and classes.dex, and then re-pack the .apk with these new files
+// This function mostly uses `jar` binary to unpack and repack the .apk, since we are guaranteed to have that binary if we already have `javac` binary
+void AddNativeBinariesAndClassesDexToAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilename, Str tempExtractDir, Str libFolder, Str soFilename, Str classesDexPath, bool buildFatApk)
+{
+	Str tempExtractDirNt = CopyStr(tempExtractDir);
+	Str relativeLibFolder = JoinPaths(StrLit("../"), libFolder);
+	Str relativeApkFilename = JoinPaths(StrLit("../"), apkFilename);
+	Str relativeClassesDexPath = JoinPaths(StrLit("../"), classesDexPath);
+	
+	if (DoesFolderExist(tempExtractDir)) { MyRemoveDirectory(tempExtractDir, true); }
+	
+	mkdir(tempExtractDirNt.chars, FOLDER_PERMISSIONS);
+	chdir(tempExtractDirNt.chars);
+	
+	CliArgs unpackApkCmd = EMPTY;
+	AddArg(&unpackApkCmd, "--extract");
+	AddArgStr(&unpackApkCmd, "--file=\"[VAL]\"", relativeApkFilename);
+	RunCliProgramAndExitOnFailure(androidPaths->jar, &unpackApkCmd, FormatStr("Failed to unpack %.*s!", StrPrint(apkFilename)));
+	
+	CopyFileToFolder(relativeClassesDexPath, StrLit("./"), true);
+	
+	mkdir("lib", FOLDER_PERMISSIONS);
+	for (u64 archIndex = 1; archIndex < AndroidTargetArchitecture_Count; archIndex++)
+	{
+		AndroidTargetArchitecture architecture = (AndroidTargetArchitecture)archIndex;
+		if (architecture == AndroidTargetArchitecture_Arm8 || buildFatApk)
+		{
+			Str tempApkLibArchFolder = JoinPaths(StrLit("lib"), MakeStrNt(GetAndroidTargetArchitectureFolderName(architecture)));
+			Str buildLibArchFolder = JoinPaths(relativeLibFolder, MakeStrNt(GetAndroidTargetArchitectureFolderName(architecture)));
+			mkdir(tempApkLibArchFolder.chars, FOLDER_PERMISSIONS);
+			CopyFileToFolder(JoinPaths(buildLibArchFolder, soFilename), tempApkLibArchFolder, true);
+		}
+	}
+	
+	CliArgs repackApkCmd = EMPTY;
+	AddArg(&repackApkCmd, "--create");
+	AddArg(&repackApkCmd, "--no-compress");
+	AddArgStr(&repackApkCmd, "--file=\"[VAL]\"", relativeApkFilename);
+	AddArg(&repackApkCmd, "*");
+	RunCliProgramAndExitOnFailure(androidPaths->jar, &repackApkCmd, FormatStr("Failed to repack %.*s!", StrPrint(apkFilename)));
+	
+	chdir("..");
+	// MyRemoveDirectory(tempExtractDir, true);
 }
 
 #endif //  _PIG_BUILD_ANDROID_H
