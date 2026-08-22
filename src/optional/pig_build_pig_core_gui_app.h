@@ -78,9 +78,11 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		do {} while(0)
 	LOAD_CONFIG(DEBUG_BUILD);
 	LOAD_CONFIG(BUILD_INTO_SINGLE_UNIT);
-	LOAD_CONFIG(BUILD_WINDOWS);
-	LOAD_CONFIG(BUILD_LINUX);
-	LOAD_CONFIG(BUILD_OSX);
+	// LOAD_CONFIG(BUILD_WINDOWS);
+	// LOAD_CONFIG(BUILD_LINUX);
+	// LOAD_CONFIG(BUILD_OSX);
+	LOAD_CONFIG(BUILD_THIS_PLATFORM);
+	LOAD_CONFIG(BUILD_LINUX_VIA_WSL);
 	LOAD_CONFIG(BUILD_SHADERS);
 	LOAD_CONFIG(BUILD_PIGGEN);
 	LOAD_CONFIG(RUN_PIGGEN);
@@ -125,6 +127,19 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	// +====================================+
 	// | Enforce Build Config Restrictions  |
 	// +====================================+
+	if (BUILD_LINUX_VIA_WSL && !BUILDING_ON_WINDOWS)
+	{
+		WriteLine_E("BUILD_LINUX_VIA_WSL only works when building on Windows!");
+		BUILD_LINUX_VIA_WSL = false;
+	}
+	if (!BUILD_THIS_PLATFORM && !BUILD_LINUX_VIA_WSL)
+	{
+		WriteLine_E("You must set BUILD_THIS_PLATFORM" IF_WINDOWS("or BUILD_LINUX_VIA_WSL") "!");
+		return 1;
+	}
+	bool BUILD_WINDOWS = (BUILD_THIS_PLATFORM && BUILDING_ON_WINDOWS);
+	bool BUILD_LINUX   = ((BUILD_THIS_PLATFORM && BUILDING_ON_LINUX) || BUILD_LINUX_VIA_WSL);
+	bool BUILD_OSX     = (BUILD_THIS_PLATFORM && BUILDING_ON_OSX);
 	if (BUILD_WINDOWS && !BUILDING_ON_WINDOWS)
 	{
 		WriteLine_E("BUILD_WINDOWS does not working when building on non-Windows platforms");

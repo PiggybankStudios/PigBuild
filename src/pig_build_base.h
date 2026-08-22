@@ -244,7 +244,7 @@ typedef double r64;
 
 // This macro does nothing when stringLiteral IS actually a string literally. If it's a pointer or an array or anything else it will produce a compile-time error
 // We often use this macro when we want to do sizeof(stringLiteral) in a macro and we are expecting number of chars in the string (+1 for null-term char)
-#define CheckStrLit(stringLiteral) ("" stringLiteral "")
+#define CheckStrLit(stringLiteral) "" stringLiteral ""
 
 // We often don't like typing "\n" at the end of our format strings, since writing to the console without a new-line is the less-common case
 // These macros make adding "\n" implicit. Additionally when printing errors we should route to stderr without explicitly writing fprintf(stderr, ...)
