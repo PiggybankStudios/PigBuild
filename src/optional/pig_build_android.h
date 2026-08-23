@@ -124,15 +124,19 @@ struct AndroidBinPaths
 	Str sysrootLibDir[AndroidTargetArchitecture_Count];
 	Str buildToolsDir;
 	Str platformDir;
+	Str platformToolsDir;
 	
 	Str clang;
 	Str d8;
 	Str aapt2;
 	Str apksigner;
 	Str zipalign;
+	Str adb;
+	Str androidJar;
+	
 	Str javac;
 	Str jar;
-	Str androidJar;
+	Str keytool;
 };
 void FillAndroidBinPaths(AndroidBinPaths* pathsOut, Str sdkDir, Str ndkVersionStr, Str platformVersionStr, Str buildToolsVersionStr)
 {
@@ -165,6 +169,7 @@ void FillAndroidBinPaths(AndroidBinPaths* pathsOut, Str sdkDir, Str ndkVersionSt
 	}
 	pathsOut->buildToolsDir    = JoinPaths3(pathsOut->sdkDir, StrLit("/build-tools/"),              buildToolsVersionStr);
 	pathsOut->platformDir      = JoinPaths3(pathsOut->sdkDir, StrLit("/platforms/"),                platformVersionStr);
+	pathsOut->platformToolsDir = JoinPaths(pathsOut->sdkDir, StrLit("/platform-tools"));
 	
 	#if BUILDING_ON_WINDOWS
 	#define BAT_ON_WINDOWS ".bat"
@@ -177,9 +182,12 @@ void FillAndroidBinPaths(AndroidBinPaths* pathsOut, Str sdkDir, Str ndkVersionSt
 	pathsOut->aapt2      = JoinPathsLit(pathsOut->buildToolsDir, "/aapt2" EXE_EXT);
 	pathsOut->apksigner  = JoinPathsLit(pathsOut->buildToolsDir, "/apksigner" BAT_ON_WINDOWS);
 	pathsOut->zipalign   = JoinPathsLit(pathsOut->buildToolsDir, "/zipalign");
-	pathsOut->javac      = StrLit("javac" EXE_EXT); //TODO: Should we always assume that java compiler is in the search PATH?
-	pathsOut->jar        = StrLit("jar"); //TODO: Should we always assume that jar binary is in the search PATH?
+	pathsOut->adb        = JoinPaths(pathsOut->platformToolsDir, StrLit("/adb" EXE_EXT));
 	pathsOut->androidJar = JoinPathsLit(pathsOut->platformDir, "/android.jar");
+	
+	pathsOut->javac      = StrLit("javac" EXE_EXT); //TODO: Should we always assume that java compiler is in the search PATH?
+	pathsOut->jar        = StrLit("jar"); //TODO: Should we always assume that `jar` binary is in the search PATH?
+	pathsOut->keytool    = StrLit("keytool"); //TODO: Should we always assume that `keytool` binary is in the search PATH?
 	
 	//TODO: We should check to see if all these folders actually exist and give a nice error to the user when they need to install something or change the build_config.h
 }
@@ -379,7 +387,90 @@ void AddNativeBinariesAndClassesDexToAndroidApk(const AndroidBinPaths* androidPa
 	RunCliProgramAndExitOnFailure(androidPaths->jar, &repackApkCmd, FormatStr("Failed to repack %.*s!", StrPrint(apkFilename)));
 	
 	chdir("..");
-	// MyRemoveDirectory(tempExtractDir, true);
+	MyRemoveDirectory(tempExtractDir, true);
+}
+
+//TODO: Write a description for what this is doing and why it is needed
+void AlignAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilename, Str tempAlignedApkName)
+{
+	if (DoesFileExist(tempAlignedApkName)) { RemoveFile(tempAlignedApkName); }
+	
+	CliArgs alignApkCmd = EMPTY;
+	AddArg(&alignApkCmd, "-v");
+	AddArg(&alignApkCmd, "4");
+	AddArgStr(&alignApkCmd, CLI_QUOTED_ARG, apkFilename); //input
+	AddArgStr(&alignApkCmd, CLI_QUOTED_ARG, tempAlignedApkName); //output
+	RunCliProgramAndExitOnFailure(androidPaths->zipalign, &alignApkCmd, FormatStr("Failed to ZIP align %.*s!", StrPrint(apkFilename)));
+	AssertFileExist(tempAlignedApkName, true);
+	CopyFileToPath(tempAlignedApkName, apkFilename, true);
+	RemoveFile(tempAlignedApkName);
+}
+
+void SignAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilename, Str signingKeyPath, Str signingPasswordFilePath)
+{
+	CliArgs signApkCmd = EMPTY;
+	signApkCmd.pathSepChar = '/';
+	signApkCmd.rootDirPath = StrLit("../..");
+	AddArg(&signApkCmd, "sign");
+	AddArgStr(&signApkCmd, "--ks \"[VAL]\"", signingKeyPath);
+	AddArgStr(&signApkCmd, "--ks-pass file:[VAL]", signingPasswordFilePath);
+	AddArgStr(&signApkCmd, CLI_QUOTED_ARG, apkFilename);
+	RunCliProgramAndExitOnFailure(androidPaths->apksigner, &signApkCmd, FormatStr("Failed to sign %.*s!", StrPrint(apkFilename)));
+}
+
+//NOTE: If debugSigningKeyPath doesn't exist, we will create a new keystore there (with password "android")
+//      If you want to use the debug keystore created by Android Studio you can point to ~/.android/debug.keystore
+//      The default password for keystores/keys created by Android Studio is "android"
+void DebugSignAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilename, Str debugSigningKeyPath)
+{
+	if (!DoesFileExist(debugSigningKeyPath))
+	{
+		PrintLine_E("Created debug keystore at \"%.*s\"...", StrPrint(debugSigningKeyPath));
+		CliArgs keytoolCmd = EMPTY;
+		AddArg(&keytoolCmd, "-genkey");
+		AddArg(&keytoolCmd, "-v");
+		AddArgStr(&keytoolCmd, "-keystore \"[VAL]\"", debugSigningKeyPath);
+		AddArg(&keytoolCmd, "-alias androiddebugkey");
+		AddArg(&keytoolCmd, "-storepass android");
+		AddArg(&keytoolCmd, "-keypass android");
+		AddArg(&keytoolCmd, "-keyalg RSA");
+		AddArg(&keytoolCmd, "-keysize 2048");
+		AddArg(&keytoolCmd, "-validity 10000");
+		AddArg(&keytoolCmd, "-dname \"CN=Android Debug,O=Android,C=US\"");
+		RunCliProgramAndExitOnFailure(androidPaths->keytool, &keytoolCmd, FormatStr("Failed to create debug keystore at %.*s", StrPrint(debugSigningKeyPath)));
+		AssertFileExist(debugSigningKeyPath, false);
+	}
+	
+	CliArgs signApkCmd = EMPTY;
+	signApkCmd.pathSepChar = '/';
+	signApkCmd.rootDirPath = StrLit("../..");
+	AddArg(&signApkCmd, "sign");
+	AddArgStr(&signApkCmd, "--ks \"[VAL]\"", debugSigningKeyPath);
+	AddArg(&signApkCmd, "--ks-pass pass:android");
+	AddArgStr(&signApkCmd, CLI_QUOTED_ARG, apkFilename);
+	RunCliProgramAndExitOnFailure(androidPaths->apksigner, &signApkCmd, FormatStr("Failed to debug sign %.*s! Make sure this key file has a password of \"android\"", StrPrint(apkFilename)));
+}
+
+//NOTE: activityNameToRun is optional, if supplied we will try and start the app after installation
+void InstallAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilepath, Str activityNameToRun)
+{
+	CliArgs installCmd = EMPTY;
+	installCmd.pathSepChar = '/';
+	AddArg(&installCmd, "install");
+	AddArgStr(&installCmd, CLI_QUOTED_ARG, apkFilepath);
+	RunCliProgramAndExitOnFailure(androidPaths->adb, &installCmd, FormatStr("Failed to install %.*s using abd! Make sure an Android device is connected and permission has been granted to this computer for USB debugging (and developer mode is enabled)!", StrPrint(apkFilepath)));
+	
+	if (!IsEmptyStr(activityNameToRun))
+	{
+		PrintLine_E("Launching \"%.*s\"...", StrPrint(activityNameToRun));
+		CliArgs launchCmd = EMPTY;
+		launchCmd.pathSepChar = '/';
+		AddArg(&launchCmd, "shell");
+		AddArg(&launchCmd, "am");
+		AddArg(&launchCmd, "start");
+		AddArgStr(&launchCmd, "-n \"[VAL]\"", activityNameToRun);
+		RunCliProgramAndExitOnFailure(androidPaths->adb, &launchCmd, FormatStr("Failed to run activity \"%.*s\" after install via abd!", StrPrint(activityNameToRun)));
+	}
 }
 
 #endif //  _PIG_BUILD_ANDROID_H

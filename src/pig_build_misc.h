@@ -224,6 +224,12 @@ bool TryExtractDefineFrom(Str headerFileContents, Str defineName, Str* valueOut)
 
 // We like to have a build_config.h that we pull information from to decide what kind of build we are doing.
 // These functions help us find a particular #define in a C/C++ header file and retrieve it's value
+Str TryExtractStrDefine(Str buildConfigContents, Str defineName, Str defaultValue)
+{
+	Str defineValueStr = Str_Empty_Const;
+	if (!TryExtractDefineFrom(buildConfigContents, defineName, &defineValueStr)) { return defaultValue; }
+	return defineValueStr;
+}
 Str ExtractStrDefine(Str buildConfigContents, Str defineName)
 {
 	Str defineValueStr = Str_Empty_Const;
