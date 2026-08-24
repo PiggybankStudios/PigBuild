@@ -242,7 +242,7 @@ void FillAndroidFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, const Androi
 }
 
 //This creats a "lib" folder with sub-folders and chdir in/out of them when building for each architecture
-void BuildAndroidSharedLibraries(const AndroidBinPaths* androidPaths, CliArgs* compilerArgs, StrArray* tags, Str libFolder, Str soFilename, bool buildFatApk)
+void BuildAndroidSharedLibraries(const AndroidBinPaths* androidPaths, Str rootPath, CliArgs* compilerArgs, StrArray* tags, Str libFolder, Str soFilename, bool buildFatApk)
 {
 	CliArgs commonArgs = EMPTY;
 	if (compilerArgs != nullptr) { AddArgList(&commonArgs, compilerArgs); }
@@ -265,7 +265,7 @@ void BuildAndroidSharedLibraries(const AndroidBinPaths* androidPaths, CliArgs* c
 			
 			CliArgs cmd = EMPTY;
 			cmd.pathSepChar = '/';
-			cmd.rootDirPath = StrLit("../../../..");
+			cmd.rootDirPath = JoinPathsLit(rootPath, "../..");
 			AddArgList(&cmd, &commonArgs);
 			AddArgStr(&cmd, CLANG_TARGET_ARCHITECTURE, architectureStr);
 			AddArgStr(&cmd, CLANG_LIBRARY_DIR, androidPaths->sysrootLibDir[archIndex]);
@@ -274,6 +274,7 @@ void BuildAndroidSharedLibraries(const AndroidBinPaths* androidPaths, CliArgs* c
 			if (tags != nullptr) { AddStrArray(&fullTags, tags); }
 			AddTag(&fullTags, T_CLANG);
 			AddTag(&fullTags, T_ANDROID);
+			AddTag(&fullTags, T_LIBRARY);
 			AddTag(&fullTags, GetAndroidTargetArchitectureTag(architecture));
 			
 			RunCliProgramAndExitOnFailureTags(androidPaths->clang, fullTags, &cmd, FormatStr("Failed to build %.*s for Android (architecture=%s)!", StrPrint(soFilename), GetAndroidTargetArchitectureFolderName(architecture)));
@@ -287,7 +288,7 @@ void BuildAndroidSharedLibraries(const AndroidBinPaths* androidPaths, CliArgs* c
 
 // An .apk MUST contain a classes.dex, even if it contains no real Java code. For projects that are entirely built with native binaries, we generate a Dummy.java with an empty class and compile it to classes.dex file
 // This requires that we call "javac" and "d8" binaries and "androidJar" from androidPaths
-void CompileDummyJavaToClassesDex(const AndroidBinPaths* androidPaths, Str dummyJavaFilename, Str classesDexFilename)
+void CompileDummyJavaToClassesDex(const AndroidBinPaths* androidPaths, Str rootPath, Str dummyJavaFilename, Str classesDexFilename)
 {
 	if (!DoesFileExist(dummyJavaFilename))
 	{
@@ -296,7 +297,7 @@ void CompileDummyJavaToClassesDex(const AndroidBinPaths* androidPaths, Str dummy
 	
 	CliArgs javacCmd = EMPTY;
 	javacCmd.pathSepChar = '/';
-	javacCmd.rootDirPath = StrLit("../..");
+	javacCmd.rootDirPath = rootPath;
 	AddArgNt(&javacCmd, "-d \"[VAL]\"", ".");
 	AddArgStr(&javacCmd, "-classpath \"[VAL]\"", androidPaths->androidJar);
 	AddArgStr(&javacCmd, CLI_QUOTED_ARG, dummyJavaFilename);
@@ -306,7 +307,7 @@ void CompileDummyJavaToClassesDex(const AndroidBinPaths* androidPaths, Str dummy
 	
 	CliArgs d8Cmd = EMPTY;
 	d8Cmd.pathSepChar = '/';
-	d8Cmd.rootDirPath = StrLit("../..");
+	d8Cmd.rootDirPath = rootPath;
 	AddArgStr(&d8Cmd, "--lib \"[VAL]\"", androidPaths->androidJar);
 	AddArgNt(&d8Cmd, "--output \"[VAL]\"", "./");
 	AddArgStr(&d8Cmd, CLI_QUOTED_ARG, dummyClassFilename);
@@ -317,11 +318,11 @@ void CompileDummyJavaToClassesDex(const AndroidBinPaths* androidPaths, Str dummy
 // Resources (like the app icon) that need to be findable by the system, or need to have resolution or language dependent versions
 // are stored in a special folder pattern inside a resources.zip that we pass to `aapt2 link`
 // This function takes everything in a target directory and puts it into a properly formatted diff with `aapt2 compile`
-void PackageAndroidResourcesZip(const AndroidBinPaths* androidPaths, Str resourcesDir, Str zipFilename)
+void PackageAndroidResourcesZip(const AndroidBinPaths* androidPaths, Str rootPath, Str resourcesDir, Str zipFilename)
 {
 	CliArgs compileResCmd = EMPTY;
 	compileResCmd.pathSepChar = '/';
-	compileResCmd.rootDirPath = StrLit("../..");
+	compileResCmd.rootDirPath = rootPath;
 	AddArg(&compileResCmd, "compile");
 	AddArgStr(&compileResCmd, "--dir \"[VAL]\"", resourcesDir);
 	AddArgStr(&compileResCmd, "-o \"[VAL]\"", zipFilename);
@@ -330,11 +331,11 @@ void PackageAndroidResourcesZip(const AndroidBinPaths* androidPaths, Str resourc
 }
 
 // Put the Manifest.xml + resources.zip + android.jar together into the initial .apk file (we will need to insert the .so files and classes.dex manually after this)
-void LinkAndroidApk(const AndroidBinPaths* androidPaths, Str manifestPath, Str resourcesZipPath, Str apkFilename)
+void LinkAndroidApk(const AndroidBinPaths* androidPaths, Str rootPath, Str manifestPath, Str resourcesZipPath, Str apkFilename)
 {
 	CliArgs linkApkCmd = EMPTY;
 	linkApkCmd.pathSepChar = '/';
-	linkApkCmd.rootDirPath = StrLit("../..");
+	linkApkCmd.rootDirPath = rootPath;
 	AddArg(&linkApkCmd, "link");
 	AddArgStr(&linkApkCmd, "-o \"[VAL]\"", apkFilename);
 	AddArgStr(&linkApkCmd, "-I \"[VAL]\"", androidPaths->androidJar);
@@ -347,7 +348,7 @@ void LinkAndroidApk(const AndroidBinPaths* androidPaths, Str manifestPath, Str r
 
 // After calling LinkAndroidApk, we have to unpack the .apk into a folder (tempExtractDir), create new folders and add .so files and classes.dex, and then re-pack the .apk with these new files
 // This function mostly uses `jar` binary to unpack and repack the .apk, since we are guaranteed to have that binary if we already have `javac` binary
-void AddNativeBinariesAndClassesDexToAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilename, Str tempExtractDir, Str libFolder, Str soFilename, Str classesDexPath, bool buildFatApk)
+void AddNativeBinariesAndClassesDexToAndroidApk(const AndroidBinPaths* androidPaths, Str rootPath, Str apkFilename, Str tempExtractDir, Str libFolder, Str soFilename, Str classesDexPath, bool buildFatApk)
 {
 	Str tempExtractDirNt = CopyStr(tempExtractDir);
 	Str relativeLibFolder = JoinPaths(StrLit("../"), libFolder);
@@ -391,11 +392,13 @@ void AddNativeBinariesAndClassesDexToAndroidApk(const AndroidBinPaths* androidPa
 }
 
 //TODO: Write a description for what this is doing and why it is needed
-void AlignAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilename, Str tempAlignedApkName)
+void AlignAndroidApk(const AndroidBinPaths* androidPaths, Str rootPath, Str apkFilename, Str tempAlignedApkName)
 {
 	if (DoesFileExist(tempAlignedApkName)) { RemoveFile(tempAlignedApkName); }
 	
 	CliArgs alignApkCmd = EMPTY;
+	alignApkCmd.pathSepChar = '/';
+	alignApkCmd.rootDirPath = rootPath;
 	AddArg(&alignApkCmd, "-v");
 	AddArg(&alignApkCmd, "4");
 	AddArgStr(&alignApkCmd, CLI_QUOTED_ARG, apkFilename); //input
@@ -406,11 +409,11 @@ void AlignAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilename, Str t
 	RemoveFile(tempAlignedApkName);
 }
 
-void SignAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilename, Str signingKeyPath, Str signingPasswordFilePath)
+void SignAndroidApk(const AndroidBinPaths* androidPaths, Str rootPath, Str apkFilename, Str signingKeyPath, Str signingPasswordFilePath)
 {
 	CliArgs signApkCmd = EMPTY;
 	signApkCmd.pathSepChar = '/';
-	signApkCmd.rootDirPath = StrLit("../..");
+	signApkCmd.rootDirPath = rootPath;
 	AddArg(&signApkCmd, "sign");
 	AddArgStr(&signApkCmd, "--ks \"[VAL]\"", signingKeyPath);
 	AddArgStr(&signApkCmd, "--ks-pass file:[VAL]", signingPasswordFilePath);
@@ -421,12 +424,14 @@ void SignAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilename, Str si
 //NOTE: If debugSigningKeyPath doesn't exist, we will create a new keystore there (with password "android")
 //      If you want to use the debug keystore created by Android Studio you can point to ~/.android/debug.keystore
 //      The default password for keystores/keys created by Android Studio is "android"
-void DebugSignAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilename, Str debugSigningKeyPath)
+void DebugSignAndroidApk(const AndroidBinPaths* androidPaths, Str rootPath, Str apkFilename, Str debugSigningKeyPath)
 {
 	if (!DoesFileExist(debugSigningKeyPath))
 	{
 		PrintLine_E("Created debug keystore at \"%.*s\"...", StrPrint(debugSigningKeyPath));
 		CliArgs keytoolCmd = EMPTY;
+		keytoolCmd.pathSepChar = '/';
+		keytoolCmd.rootDirPath = rootPath;
 		AddArg(&keytoolCmd, "-genkey");
 		AddArg(&keytoolCmd, "-v");
 		AddArgStr(&keytoolCmd, "-keystore \"[VAL]\"", debugSigningKeyPath);
@@ -443,7 +448,7 @@ void DebugSignAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilename, S
 	
 	CliArgs signApkCmd = EMPTY;
 	signApkCmd.pathSepChar = '/';
-	signApkCmd.rootDirPath = StrLit("../..");
+	signApkCmd.rootDirPath = rootPath;
 	AddArg(&signApkCmd, "sign");
 	AddArgStr(&signApkCmd, "--ks \"[VAL]\"", debugSigningKeyPath);
 	AddArg(&signApkCmd, "--ks-pass pass:android");
@@ -452,10 +457,11 @@ void DebugSignAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilename, S
 }
 
 //NOTE: activityNameToRun is optional, if supplied we will try and start the app after installation
-void InstallAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilepath, Str activityNameToRun)
+void InstallAndroidApk(const AndroidBinPaths* androidPaths, Str rootPath, Str apkFilepath, Str activityNameToRun)
 {
 	CliArgs installCmd = EMPTY;
 	installCmd.pathSepChar = '/';
+	installCmd.rootDirPath = rootPath;
 	AddArg(&installCmd, "install");
 	AddArgStr(&installCmd, CLI_QUOTED_ARG, apkFilepath);
 	RunCliProgramAndExitOnFailure(androidPaths->adb, &installCmd, FormatStr("Failed to install %.*s using abd! Make sure an Android device is connected and permission has been granted to this computer for USB debugging (and developer mode is enabled)!", StrPrint(apkFilepath)));
@@ -465,6 +471,7 @@ void InstallAndroidApk(const AndroidBinPaths* androidPaths, Str apkFilepath, Str
 		PrintLine_E("Launching \"%.*s\"...", StrPrint(activityNameToRun));
 		CliArgs launchCmd = EMPTY;
 		launchCmd.pathSepChar = '/';
+		launchCmd.rootDirPath = rootPath;
 		AddArg(&launchCmd, "shell");
 		AddArg(&launchCmd, "am");
 		AddArg(&launchCmd, "start");
