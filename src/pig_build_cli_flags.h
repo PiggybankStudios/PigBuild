@@ -205,18 +205,24 @@ Description:
 
 #define GCC_COMPILE                  "-c"
 #define GCC_PRECOMPILE_ONLY          "-E"
+#define GCC_LANG_VERSION             "-std=[VAL]" //gnu17
 #define GCC_OUTPUT_FILE              "-o \"[VAL]\""
 #define GCC_OPTIMIZATION_LEVEL       "-O[VAL]" //TODO: This should be tested! (I assume it's the same as clang)
+#define GCC_DEBUG_INFO_DEFAULT       "-g"
 #define GCC_DEBUG_INFO               "-g[VAL]" // "dwarf-2" (also "3"?)
 #define GCC_DEFINE                   "-D \"[VAL]\""
 #define GCC_INCLUDE_DIR              "-I \"[VAL]\""
+#define GCC_LIBRARY_DIR              "-L \"[VAL]\""
+#define GCC_SYSTEM_LIBRARY           "-l[VAL]"
 #define GCC_STD_LIB_STATIC           "-MT" //MSVC-style option
 #define GCC_STD_LIB_DYNAMIC          "-MD" //MSVC-style option
 #define GCC_STD_LIB_STATIC_DBG       "-MTd" //MSVC-style option
 #define GCC_STD_LIB_DYNAMIC_DBG      "-MDd" //MSVC-style option
 #define GCC_WARNING_LEVEL            "-W[VAL]" //all
+#define GCC_WARNINGS_AS_ERRORS       "-Werror"
 #define GCC_ENABLE_WARNING           "-W[VAL]"
 #define GCC_DISABLE_WARNING          "-Wno-[VAL]"
+#define GCC_DISABLE_WARNING_AS_ERROR "-Wno-error=[VAL]"
 // #define GCC_FULL_FILE_PATHS       This is the default behavior for GCC *if* you pass full paths. There is no option to configure this
 #define GCC_TARGET_THUMB             "-mthumb" //Requests that the compiler targets the T32 (Thumb) instruction set instead of A32 (Arm)
 #define GCC_TARGET_CPU               "-mcpu=[VAL]" //Specify a specific CPU to target during code generation
