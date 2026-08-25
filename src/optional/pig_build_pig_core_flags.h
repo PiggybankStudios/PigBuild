@@ -155,7 +155,7 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	// |     Include Directories      |
 	// +==============================+
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL,                       CL_INCLUDE_DIR,    JoinPaths(pigCorePath, StrLit("src")));
-	AddTaggedArgStr(compilerFlags, T_CLANG T_UNIX,                  CLANG_INCLUDE_DIR, JoinPaths(pigCorePath, StrLit("src")));
+	AddTaggedArgStr(compilerFlags, T_CLANG,                         CLANG_INCLUDE_DIR, JoinPaths(pigCorePath, StrLit("src")));
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_PIG_CORE_TESTS,      CL_INCLUDE_DIR,    JoinPaths(pigCorePath, StrLit("src/tests")));
 	AddTaggedArgStr(compilerFlags, T_CLANG T_UNIX T_PIG_CORE_TESTS, CLANG_INCLUDE_DIR, JoinPaths(pigCorePath, StrLit("src/tests")));
 	//TODO: Really we should do `pkg-config dbus-1 --cflags`

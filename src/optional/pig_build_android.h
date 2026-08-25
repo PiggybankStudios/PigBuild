@@ -118,17 +118,25 @@ struct AndroidBinPaths
 	Str hostVersionStr;
 	
 	Str ndkDir;
+	Str nativeAppGlueDir;
 	Str ndkToolchainDir;
+	Str ndkSysrootDir;
+	Str sysrootLibDir[AndroidTargetArchitecture_Count];
 	Str buildToolsDir;
 	Str platformDir;
+	Str platformToolsDir;
 	
 	Str clang;
 	Str d8;
 	Str aapt2;
 	Str apksigner;
 	Str zipalign;
-	Str javac;
+	Str adb;
 	Str androidJar;
+	
+	Str javac;
+	Str jar;
+	Str keytool;
 };
 void FillAndroidBinPaths(AndroidBinPaths* pathsOut, Str sdkDir, Str ndkVersionStr, Str platformVersionStr, Str buildToolsVersionStr)
 {
@@ -151,9 +159,17 @@ void FillAndroidBinPaths(AndroidBinPaths* pathsOut, Str sdkDir, Str ndkVersionSt
 	#endif
 	
 	pathsOut->ndkDir           = JoinPaths3(pathsOut->sdkDir, StrLit("/ndk/"),                      ndkVersionStr);
+	pathsOut->nativeAppGlueDir = JoinPathsLit(pathsOut->ndkDir, "/sources/android/native_app_glue");
 	pathsOut->ndkToolchainDir  = JoinPaths3(pathsOut->ndkDir, StrLit("/toolchains/llvm/prebuilt/"), pathsOut->hostVersionStr);
+	pathsOut->ndkSysrootDir    = JoinPaths(pathsOut->ndkToolchainDir, StrLit("sysroot/"));
+	for (u64 archIndex = 0; archIndex < AndroidTargetArchitecture_Count; archIndex++)
+	{
+		Str architectureStr = MakeStrNt(GetAndroidTargetArchitectureTargetStr((AndroidTargetArchitecture)archIndex));
+		pathsOut->sysrootLibDir[archIndex] = JoinPaths4(pathsOut->ndkSysrootDir, StrLit("/usr/lib/"), architectureStr, StrLit("/35/")); //TODO: Should 35 be a configurable value?
+	}
 	pathsOut->buildToolsDir    = JoinPaths3(pathsOut->sdkDir, StrLit("/build-tools/"),              buildToolsVersionStr);
 	pathsOut->platformDir      = JoinPaths3(pathsOut->sdkDir, StrLit("/platforms/"),                platformVersionStr);
+	pathsOut->platformToolsDir = JoinPaths(pathsOut->sdkDir, StrLit("/platform-tools"));
 	
 	#if BUILDING_ON_WINDOWS
 	#define BAT_ON_WINDOWS ".bat"
@@ -166,8 +182,12 @@ void FillAndroidBinPaths(AndroidBinPaths* pathsOut, Str sdkDir, Str ndkVersionSt
 	pathsOut->aapt2      = JoinPathsLit(pathsOut->buildToolsDir, "/aapt2" EXE_EXT);
 	pathsOut->apksigner  = JoinPathsLit(pathsOut->buildToolsDir, "/apksigner" BAT_ON_WINDOWS);
 	pathsOut->zipalign   = JoinPathsLit(pathsOut->buildToolsDir, "/zipalign");
-	pathsOut->javac      = StrLit("javac" EXE_EXT); //TODO: Should we always assume that java compiler is in the search PATH?
+	pathsOut->adb        = JoinPaths(pathsOut->platformToolsDir, StrLit("/adb" EXE_EXT));
 	pathsOut->androidJar = JoinPathsLit(pathsOut->platformDir, "/android.jar");
+	
+	pathsOut->javac      = StrLit("javac" EXE_EXT); //TODO: Should we always assume that java compiler is in the search PATH?
+	pathsOut->jar        = StrLit("jar"); //TODO: Should we always assume that `jar` binary is in the search PATH?
+	pathsOut->keytool    = StrLit("keytool"); //TODO: Should we always assume that `keytool` binary is in the search PATH?
 	
 	//TODO: We should check to see if all these folders actually exist and give a nice error to the user when they need to install something or change the build_config.h
 }
@@ -180,9 +200,8 @@ void FillAndroidFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, const Androi
 	{
 		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID T_DEBUG_BUILD,  CLANG_OPTIMIZATION_LEVEL, "0");
 		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID T_RELEASE_BUILD, CLANG_OPTIMIZATION_LEVEL, "2");
-		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID, CLANG_INCLUDE_DIR, "[ROOT]");
-		AddTaggedArgStr(compilerFlags, T_CLANG T_ANDROID, CLANG_STDLIB_FOLDER, JoinPaths(androidPaths->ndkToolchainDir, StrLit("/sysroot")));
-		AddTaggedArgStr(compilerFlags, T_CLANG T_ANDROID, CLANG_INCLUDE_DIR, JoinPaths(androidPaths->ndkDir, StrLit("/sources/android/native_app_glue")));
+		AddTaggedArgStr(compilerFlags, T_CLANG T_ANDROID, CLANG_STDLIB_FOLDER, androidPaths->ndkSysrootDir);
+		AddTaggedArgStr(compilerFlags, T_CLANG T_ANDROID, CLANG_INCLUDE_DIR, androidPaths->nativeAppGlueDir);
 		AddTaggedArg(compilerFlags,    T_CLANG T_ANDROID T_DEBUG_BUILD, CLANG_DEBUG_INFO_DEFAULT); //TODO: Should we do dwarf-4 debug info instead?
 		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID, CLANG_DEFINE, "pig_core_EXPORTS"); //TODO: Can we remove this?
 		AddTaggedArgNt(compilerFlags,  T_CLANG T_ANDROID, CLANG_DEFINE, "ANDROID"); //TODO: Can we remove this?
@@ -203,8 +222,6 @@ void FillAndroidFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, const Androi
 	// +==============================+
 	{
 		AddTaggedArg(linkerFlags,    T_CLANG T_ANDROID, CLANG_fPIC);
-		AddTaggedArgStr(linkerFlags, T_CLANG T_ANDROID T_DEBUG_BUILD,  CLANG_LIBRARY_DIR, StrLit("[ROOT]/third_party/_lib_debug"));
-		AddTaggedArgStr(linkerFlags, T_CLANG T_ANDROID T_RELEASE_BUILD, CLANG_LIBRARY_DIR, StrLit("[ROOT]/third_party/_lib_release"));
 		AddTaggedArg(linkerFlags,    T_CLANG T_ANDROID, CLANG_NO_UNDEFINED);
 		AddTaggedArg(linkerFlags,    T_CLANG T_ANDROID, CLANG_FATAL_WARNINGS);
 		AddTaggedArg(linkerFlags,    T_CLANG T_ANDROID, CLANG_NO_UNDEFINED_VERSION);
@@ -225,7 +242,7 @@ void FillAndroidFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, const Androi
 }
 
 //This creats a "lib" folder with sub-folders and chdir in/out of them when building for each architecture
-void BuildAndroidSharedLibraries(const AndroidBinPaths* androidPaths, CliArgs* compilerArgs, StrArray* tags, Str libFolder, Str soFilename, bool buildFatApk)
+void BuildAndroidSharedLibraries(const AndroidBinPaths* androidPaths, Str rootPath, CliArgs* compilerArgs, StrArray* tags, Str libFolder, Str soFilename, bool buildFatApk)
 {
 	CliArgs commonArgs = EMPTY;
 	if (compilerArgs != nullptr) { AddArgList(&commonArgs, compilerArgs); }
@@ -248,16 +265,16 @@ void BuildAndroidSharedLibraries(const AndroidBinPaths* androidPaths, CliArgs* c
 			
 			CliArgs cmd = EMPTY;
 			cmd.pathSepChar = '/';
-			cmd.rootDirPath = StrLit("../../../..");
+			cmd.rootDirPath = JoinPathsLit(rootPath, "../..");
 			AddArgList(&cmd, &commonArgs);
 			AddArgStr(&cmd, CLANG_TARGET_ARCHITECTURE, architectureStr);
-			Str sysrootRelativePath = JoinPaths3(StrLit("/sysroot/usr/lib/"), architectureStr, StrLit("/35/"));
-			AddArgStr(&cmd, CLANG_LIBRARY_DIR, JoinPaths(androidPaths->ndkToolchainDir, sysrootRelativePath));
+			AddArgStr(&cmd, CLANG_LIBRARY_DIR, androidPaths->sysrootLibDir[archIndex]);
 			
 			StrArray fullTags = EMPTY;
 			if (tags != nullptr) { AddStrArray(&fullTags, tags); }
 			AddTag(&fullTags, T_CLANG);
 			AddTag(&fullTags, T_ANDROID);
+			AddTag(&fullTags, T_LIBRARY);
 			AddTag(&fullTags, GetAndroidTargetArchitectureTag(architecture));
 			
 			RunCliProgramAndExitOnFailureTags(androidPaths->clang, fullTags, &cmd, FormatStr("Failed to build %.*s for Android (architecture=%s)!", StrPrint(soFilename), GetAndroidTargetArchitectureFolderName(architecture)));
@@ -271,7 +288,7 @@ void BuildAndroidSharedLibraries(const AndroidBinPaths* androidPaths, CliArgs* c
 
 // An .apk MUST contain a classes.dex, even if it contains no real Java code. For projects that are entirely built with native binaries, we generate a Dummy.java with an empty class and compile it to classes.dex file
 // This requires that we call "javac" and "d8" binaries and "androidJar" from androidPaths
-void CompileDummyJavaToClassesDex(const AndroidBinPaths* androidPaths, Str dummyJavaFilename, Str classesDexFilename)
+void CompileDummyJavaToClassesDex(const AndroidBinPaths* androidPaths, Str rootPath, Str dummyJavaFilename, Str classesDexFilename)
 {
 	if (!DoesFileExist(dummyJavaFilename))
 	{
@@ -280,7 +297,7 @@ void CompileDummyJavaToClassesDex(const AndroidBinPaths* androidPaths, Str dummy
 	
 	CliArgs javacCmd = EMPTY;
 	javacCmd.pathSepChar = '/';
-	javacCmd.rootDirPath = StrLit("../..");
+	javacCmd.rootDirPath = rootPath;
 	AddArgNt(&javacCmd, "-d \"[VAL]\"", ".");
 	AddArgStr(&javacCmd, "-classpath \"[VAL]\"", androidPaths->androidJar);
 	AddArgStr(&javacCmd, CLI_QUOTED_ARG, dummyJavaFilename);
@@ -290,7 +307,7 @@ void CompileDummyJavaToClassesDex(const AndroidBinPaths* androidPaths, Str dummy
 	
 	CliArgs d8Cmd = EMPTY;
 	d8Cmd.pathSepChar = '/';
-	d8Cmd.rootDirPath = StrLit("../..");
+	d8Cmd.rootDirPath = rootPath;
 	AddArgStr(&d8Cmd, "--lib \"[VAL]\"", androidPaths->androidJar);
 	AddArgNt(&d8Cmd, "--output \"[VAL]\"", "./");
 	AddArgStr(&d8Cmd, CLI_QUOTED_ARG, dummyClassFilename);
@@ -301,11 +318,11 @@ void CompileDummyJavaToClassesDex(const AndroidBinPaths* androidPaths, Str dummy
 // Resources (like the app icon) that need to be findable by the system, or need to have resolution or language dependent versions
 // are stored in a special folder pattern inside a resources.zip that we pass to `aapt2 link`
 // This function takes everything in a target directory and puts it into a properly formatted diff with `aapt2 compile`
-void PackageAndroidResourcesZip(const AndroidBinPaths* androidPaths, Str resourcesDir, Str zipFilename)
+void PackageAndroidResourcesZip(const AndroidBinPaths* androidPaths, Str rootPath, Str resourcesDir, Str zipFilename)
 {
 	CliArgs compileResCmd = EMPTY;
 	compileResCmd.pathSepChar = '/';
-	compileResCmd.rootDirPath = StrLit("../..");
+	compileResCmd.rootDirPath = rootPath;
 	AddArg(&compileResCmd, "compile");
 	AddArgStr(&compileResCmd, "--dir \"[VAL]\"", resourcesDir);
 	AddArgStr(&compileResCmd, "-o \"[VAL]\"", zipFilename);
@@ -314,11 +331,11 @@ void PackageAndroidResourcesZip(const AndroidBinPaths* androidPaths, Str resourc
 }
 
 // Put the Manifest.xml + resources.zip + android.jar together into the initial .apk file (we will need to insert the .so files and classes.dex manually after this)
-void LinkAndroidApk(const AndroidBinPaths* androidPaths, Str manifestPath, Str resourcesZipPath, Str apkFilename)
+void LinkAndroidApk(const AndroidBinPaths* androidPaths, Str rootPath, Str manifestPath, Str resourcesZipPath, Str apkFilename)
 {
 	CliArgs linkApkCmd = EMPTY;
 	linkApkCmd.pathSepChar = '/';
-	linkApkCmd.rootDirPath = StrLit("../..");
+	linkApkCmd.rootDirPath = rootPath;
 	AddArg(&linkApkCmd, "link");
 	AddArgStr(&linkApkCmd, "-o \"[VAL]\"", apkFilename);
 	AddArgStr(&linkApkCmd, "-I \"[VAL]\"", androidPaths->androidJar);
@@ -327,6 +344,140 @@ void LinkAndroidApk(const AndroidBinPaths* androidPaths, Str manifestPath, Str r
 	AddArgStr(&linkApkCmd, CLI_QUOTED_ARG, resourcesZipPath);
 	RunCliProgramAndExitOnFailure(androidPaths->aapt2, &linkApkCmd, FormatStr("Failed to link %.*s for Android!", StrPrint(apkFilename)));
 	AssertFileExist(apkFilename, true);
+}
+
+// After calling LinkAndroidApk, we have to unpack the .apk into a folder (tempExtractDir), create new folders and add .so files and classes.dex, and then re-pack the .apk with these new files
+// This function mostly uses `jar` binary to unpack and repack the .apk, since we are guaranteed to have that binary if we already have `javac` binary
+void AddNativeBinariesAndClassesDexToAndroidApk(const AndroidBinPaths* androidPaths, Str rootPath, Str apkFilename, Str tempExtractDir, Str libFolder, Str soFilename, Str classesDexPath, bool buildFatApk)
+{
+	Str tempExtractDirNt = CopyStr(tempExtractDir);
+	Str relativeLibFolder = JoinPaths(StrLit("../"), libFolder);
+	Str relativeApkFilename = JoinPaths(StrLit("../"), apkFilename);
+	Str relativeClassesDexPath = JoinPaths(StrLit("../"), classesDexPath);
+	
+	if (DoesFolderExist(tempExtractDir)) { MyRemoveDirectory(tempExtractDir, true); }
+	
+	mkdir(tempExtractDirNt.chars, FOLDER_PERMISSIONS);
+	chdir(tempExtractDirNt.chars);
+	
+	CliArgs unpackApkCmd = EMPTY;
+	AddArg(&unpackApkCmd, "--extract");
+	AddArgStr(&unpackApkCmd, "--file=\"[VAL]\"", relativeApkFilename);
+	RunCliProgramAndExitOnFailure(androidPaths->jar, &unpackApkCmd, FormatStr("Failed to unpack %.*s!", StrPrint(apkFilename)));
+	
+	CopyFileToFolder(relativeClassesDexPath, StrLit("./"), true);
+	
+	mkdir("lib", FOLDER_PERMISSIONS);
+	for (u64 archIndex = 1; archIndex < AndroidTargetArchitecture_Count; archIndex++)
+	{
+		AndroidTargetArchitecture architecture = (AndroidTargetArchitecture)archIndex;
+		if (architecture == AndroidTargetArchitecture_Arm8 || buildFatApk)
+		{
+			Str tempApkLibArchFolder = JoinPaths(StrLit("lib"), MakeStrNt(GetAndroidTargetArchitectureFolderName(architecture)));
+			Str buildLibArchFolder = JoinPaths(relativeLibFolder, MakeStrNt(GetAndroidTargetArchitectureFolderName(architecture)));
+			mkdir(tempApkLibArchFolder.chars, FOLDER_PERMISSIONS);
+			CopyFileToFolder(JoinPaths(buildLibArchFolder, soFilename), tempApkLibArchFolder, true);
+		}
+	}
+	
+	CliArgs repackApkCmd = EMPTY;
+	AddArg(&repackApkCmd, "--create");
+	AddArg(&repackApkCmd, "--no-compress");
+	AddArgStr(&repackApkCmd, "--file=\"[VAL]\"", relativeApkFilename);
+	AddArg(&repackApkCmd, "*");
+	RunCliProgramAndExitOnFailure(androidPaths->jar, &repackApkCmd, FormatStr("Failed to repack %.*s!", StrPrint(apkFilename)));
+	
+	chdir("..");
+	MyRemoveDirectory(tempExtractDir, true);
+}
+
+//TODO: Write a description for what this is doing and why it is needed
+void AlignAndroidApk(const AndroidBinPaths* androidPaths, Str rootPath, Str apkFilename, Str tempAlignedApkName)
+{
+	if (DoesFileExist(tempAlignedApkName)) { RemoveFile(tempAlignedApkName); }
+	
+	CliArgs alignApkCmd = EMPTY;
+	alignApkCmd.pathSepChar = '/';
+	alignApkCmd.rootDirPath = rootPath;
+	AddArg(&alignApkCmd, "-v");
+	AddArg(&alignApkCmd, "4");
+	AddArgStr(&alignApkCmd, CLI_QUOTED_ARG, apkFilename); //input
+	AddArgStr(&alignApkCmd, CLI_QUOTED_ARG, tempAlignedApkName); //output
+	RunCliProgramAndExitOnFailure(androidPaths->zipalign, &alignApkCmd, FormatStr("Failed to ZIP align %.*s!", StrPrint(apkFilename)));
+	AssertFileExist(tempAlignedApkName, true);
+	CopyFileToPath(tempAlignedApkName, apkFilename, true);
+	RemoveFile(tempAlignedApkName);
+}
+
+void SignAndroidApk(const AndroidBinPaths* androidPaths, Str rootPath, Str apkFilename, Str signingKeyPath, Str signingPasswordFilePath)
+{
+	CliArgs signApkCmd = EMPTY;
+	signApkCmd.pathSepChar = '/';
+	signApkCmd.rootDirPath = rootPath;
+	AddArg(&signApkCmd, "sign");
+	AddArgStr(&signApkCmd, "--ks \"[VAL]\"", signingKeyPath);
+	AddArgStr(&signApkCmd, "--ks-pass file:[VAL]", signingPasswordFilePath);
+	AddArgStr(&signApkCmd, CLI_QUOTED_ARG, apkFilename);
+	RunCliProgramAndExitOnFailure(androidPaths->apksigner, &signApkCmd, FormatStr("Failed to sign %.*s!", StrPrint(apkFilename)));
+}
+
+//NOTE: If debugSigningKeyPath doesn't exist, we will create a new keystore there (with password "android")
+//      If you want to use the debug keystore created by Android Studio you can point to ~/.android/debug.keystore
+//      The default password for keystores/keys created by Android Studio is "android"
+void DebugSignAndroidApk(const AndroidBinPaths* androidPaths, Str rootPath, Str apkFilename, Str debugSigningKeyPath)
+{
+	if (!DoesFileExist(debugSigningKeyPath))
+	{
+		PrintLine_E("Created debug keystore at \"%.*s\"...", StrPrint(debugSigningKeyPath));
+		CliArgs keytoolCmd = EMPTY;
+		keytoolCmd.pathSepChar = '/';
+		keytoolCmd.rootDirPath = rootPath;
+		AddArg(&keytoolCmd, "-genkey");
+		AddArg(&keytoolCmd, "-v");
+		AddArgStr(&keytoolCmd, "-keystore \"[VAL]\"", debugSigningKeyPath);
+		AddArg(&keytoolCmd, "-alias androiddebugkey");
+		AddArg(&keytoolCmd, "-storepass android");
+		AddArg(&keytoolCmd, "-keypass android");
+		AddArg(&keytoolCmd, "-keyalg RSA");
+		AddArg(&keytoolCmd, "-keysize 2048");
+		AddArg(&keytoolCmd, "-validity 10000");
+		AddArg(&keytoolCmd, "-dname \"CN=Android Debug,O=Android,C=US\"");
+		RunCliProgramAndExitOnFailure(androidPaths->keytool, &keytoolCmd, FormatStr("Failed to create debug keystore at %.*s", StrPrint(debugSigningKeyPath)));
+		AssertFileExist(debugSigningKeyPath, false);
+	}
+	
+	CliArgs signApkCmd = EMPTY;
+	signApkCmd.pathSepChar = '/';
+	signApkCmd.rootDirPath = rootPath;
+	AddArg(&signApkCmd, "sign");
+	AddArgStr(&signApkCmd, "--ks \"[VAL]\"", debugSigningKeyPath);
+	AddArg(&signApkCmd, "--ks-pass pass:android");
+	AddArgStr(&signApkCmd, CLI_QUOTED_ARG, apkFilename);
+	RunCliProgramAndExitOnFailure(androidPaths->apksigner, &signApkCmd, FormatStr("Failed to debug sign %.*s! Make sure this key file has a password of \"android\"", StrPrint(apkFilename)));
+}
+
+//NOTE: activityNameToRun is optional, if supplied we will try and start the app after installation
+void InstallAndroidApk(const AndroidBinPaths* androidPaths, Str rootPath, Str apkFilepath, Str activityNameToRun)
+{
+	CliArgs installCmd = EMPTY;
+	installCmd.pathSepChar = '/';
+	installCmd.rootDirPath = rootPath;
+	AddArg(&installCmd, "install");
+	AddArgStr(&installCmd, CLI_QUOTED_ARG, apkFilepath);
+	RunCliProgramAndExitOnFailure(androidPaths->adb, &installCmd, FormatStr("Failed to install %.*s using abd! Make sure an Android device is connected and permission has been granted to this computer for USB debugging (and developer mode is enabled)!", StrPrint(apkFilepath)));
+	
+	if (!IsEmptyStr(activityNameToRun))
+	{
+		PrintLine_E("Launching \"%.*s\"...", StrPrint(activityNameToRun));
+		CliArgs launchCmd = EMPTY;
+		launchCmd.pathSepChar = '/';
+		launchCmd.rootDirPath = rootPath;
+		AddArg(&launchCmd, "shell");
+		AddArg(&launchCmd, "am");
+		AddArg(&launchCmd, "start");
+		AddArgStr(&launchCmd, "-n \"[VAL]\"", activityNameToRun);
+		RunCliProgramAndExitOnFailure(androidPaths->adb, &launchCmd, FormatStr("Failed to run activity \"%.*s\" after install via abd!", StrPrint(activityNameToRun)));
+	}
 }
 
 #endif //  _PIG_BUILD_ANDROID_H
