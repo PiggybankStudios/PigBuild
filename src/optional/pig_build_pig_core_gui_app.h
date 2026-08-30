@@ -38,8 +38,6 @@ Description:
 #define PIG_CORE_DLL_NAME      "pig_core"
 #endif
 
-#define T_SHADER_OBJS      "|ShaderObjs"
-
 #define PROTOC_C_OUT_PATH      "--c_out=\"[VAL]\""
 #define PROTOC_PLUGIN_EXE_PATH "--plugin=\"[VAL]\""
 #define PROTOC_PROTO_PATH      "--proto_path=\"[VAL]\""

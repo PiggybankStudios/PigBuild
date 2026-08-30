@@ -50,6 +50,7 @@ typedef RECURSIVE_DIR_WALK_CALLBACK_DEF(RecursiveDirWalkCallback_f);
 Str GetFullPath(Str relativePath, char slashChar)
 {
 	Str result = Str_Empty_Const;
+	if (relativePath.length == 0) { relativePath = StrLit("."); }
 	
 	#if BUILDING_ON_WINDOWS
 	{
@@ -63,7 +64,7 @@ Str GetFullPath(Str relativePath, char slashChar)
 			nullptr, //lpBuffer
 			nullptr //lpFilePart
 		);
-		Assert(getPathResult1 != 0);
+		AssertFmt(getPathResult1 != 0, "Failed to get full path for \"%s\". GetFullPathNameA returned %d", relativePathNt.chars, getPathResult1);
 		
 		result = AllocStr((u64)getPathResult1-1);
 		
@@ -375,7 +376,7 @@ void AppendToFile(Str filePath, Str contentsToAppend, bool convertNewLines)
 		if (fileHandle == INVALID_HANDLE_VALUE)
 		{
 			DWORD errorCode = GetLastError();
-			AssertFmt(fileHandle != INVALID_HANDLE_VALUE, "CreateFileA error: %d", errorCode);
+			AssertFmt(fileHandle != INVALID_HANDLE_VALUE, "CreateFileA error: %d When creating \"%s\"", errorCode, filePathNt.chars);
 		}
 		
 		DWORD moveResult = SetFilePointer(

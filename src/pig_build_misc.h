@@ -22,17 +22,16 @@ Description:
 // +--------------------------------------------------------------+
 int RunCliProgramTags(Str programPath, StrArray tagsList, const CliArgs* args)
 {
-	// PrintLine("Joining/filtering %llu arguments against %llu tags for \"%.*s\"", args->array.length, tagsList.length, StrPrint(programPath));
-	// for (u64 tIndex = 0; tIndex < tagsList.length; tIndex++) { PrintLine("Tag[%llu]: \"%.*s\"", tIndex, StrPrint(tagsList.strings[tIndex])); }
 	Str joinedArgs = (args != nullptr) ? FilterAndJoinCliArgsList(programPath, args, &tagsList) : programPath;
 	if (PigBuildDebugMode)
 	{
 		u64 numMatchingArgs = GetNumMatchingArgs(args, &tagsList);
 		if (tagsList.length > 0)
 		{
-			PrintLine(">> Matched %llu/%llu argument%s on %llu tag%s",
+			PrintLine(">> Matched %llu/%llu argument%s on %llu tag%s for %.*s",
 				numMatchingArgs, args->array.length, Plural(numMatchingArgs, "s"),
-				tagsList.length, Plural(tagsList.length, "s")
+				tagsList.length, Plural(tagsList.length, "s"),
+				StrPrint(programPath)
 			);
 			// for (u64 tIndex = 0; tIndex < tagsList.length; tIndex++){ PrintLine("\tTag[%llu]: \"%.*s\"", tIndex, StrPrint(tagsList.strings[tIndex])); }
 		}

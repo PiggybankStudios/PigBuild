@@ -66,6 +66,9 @@ Description:
 #define T_PROGRAM         "|Program" //.exe or extensionless
 #define T_SHADER          "|Shader" //Usually this is compiling a shdc output to .o/.obj
 
+// Things to link with
+#define T_SHADER_OBJS  "|ShaderObjs"
+
 StrArray SplitTags(Str tagsListStr)
 {
 	StrArray result = MakeStrArrayBySplitting(false, StrLit(TAG_SEP_CHAR_STR), tagsListStr);
