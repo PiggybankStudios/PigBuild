@@ -13,6 +13,7 @@ Date:   08\01\2026
 #include "optional/pig_build_pig_core_flags.h"
 #include "optional/pig_build_not_regex.h"
 #include "optional/pig_build_shader_scraping.h"
+#include "optional/pig_build_shader_shdc.h"
 #include "optional/pig_build_android.h"
 #include "optional/pig_build_emscripten.h"
 #include "optional/pig_build_playdate.h"
