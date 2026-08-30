@@ -527,7 +527,8 @@ Str WithTrailingSlash(Str path)
 Str JoinPaths(Str leftPath, Str rightPath)
 {
 	Str result = Str_Empty_Const;
-	if (leftPath.length == 0 || rightPath.length == 0 || HasTrailingSlash(leftPath) || IsSlash(rightPath.chars[0])) { result = JoinStrings2(leftPath, rightPath); }
+	if (leftPath.length > 0 && rightPath.length > 0 && HasTrailingSlash(leftPath) && IsSlash(rightPath.chars[0])) { result = JoinStrings2(leftPath, StrSliceFrom(rightPath, 1)); }
+	else if (leftPath.length == 0 || rightPath.length == 0 || HasTrailingSlash(leftPath) || IsSlash(rightPath.chars[0])) { result = JoinStrings2(leftPath, rightPath); }
 	else { result = JoinStrings3(leftPath, StrLit("/"), rightPath); }
 	FixPathSlashes(result, '/');
 	return result;
