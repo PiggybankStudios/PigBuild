@@ -540,8 +540,8 @@ Str JoinPaths3(Str leftPath, Str middlePath, Str rightPath)
 {
 	return JoinPaths(JoinPaths(leftPath, middlePath), rightPath);
 }
-#define JoinPaths3Lit(leftPath, middlePath, rightPathStrLiteral) JoinPaths((leftPath), (middlePath), StrLit(rightPathStrLiteral))
-#define JoinPaths3Nt(leftPath, middlePath, rightPathNullTerm) JoinPaths((leftPath), (middlePath), MakeStrNt(rightPathNullTerm))
+#define JoinPaths3Lit(leftPath, middlePath, rightPathStrLiteral) JoinPaths3((leftPath), (middlePath),  StrLit(rightPathStrLiteral))
+#define JoinPaths3Nt(leftPath, middlePath, rightPathNullTerm)    JoinPaths3((leftPath), (middlePath), MakeStrNt(rightPathNullTerm))
 
 Str JoinPaths4(Str firstPath, Str secondPath, Str thirdPath, Str fourthPath)
 {

@@ -227,6 +227,11 @@ Str TryExtractStrDefine(Str buildConfigContents, Str defineName, Str defaultValu
 {
 	Str defineValueStr = Str_Empty_Const;
 	if (!TryExtractDefineFrom(buildConfigContents, defineName, &defineValueStr)) { return defaultValue; }
+	if (defineValueStr.length >= 2 && defineValueStr.chars[0] == '\"' && defineValueStr.chars[defineValueStr.length-1] == '\"')
+	{
+		defineValueStr = StrSlice(defineValueStr, 1, defineValueStr.length-1);
+		//TODO: Handle C string escape sequences!
+	}
 	return defineValueStr;
 }
 Str ExtractStrDefine(Str buildConfigContents, Str defineName)
@@ -236,6 +241,11 @@ Str ExtractStrDefine(Str buildConfigContents, Str defineName)
 	{
 		PrintLine_E("Couldn't find #define %.*s in build_config.h!", StrPrint(defineName));
 		exit(4);
+	}
+	if (defineValueStr.length >= 2 && defineValueStr.chars[0] == '\"' && defineValueStr.chars[defineValueStr.length-1] == '\"')
+	{
+		defineValueStr = StrSlice(defineValueStr, 1, defineValueStr.length-1);
+		//TODO: Handle C string escape sequences!
 	}
 	return defineValueStr;
 }
