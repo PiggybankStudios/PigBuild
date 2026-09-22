@@ -10,11 +10,18 @@ REM run it if we don't need to. To do this we can dump the environment variables
 REM a file after we run the batch file and then rather than running it for the next build
 REM we just parse the dumped file and set the environment variables based off that.
 
+REM Finally we also want to track and report how long the batch file takes so we can
+REM separate that time from our actual build time.
+
+REM TODO: Report a nice error message if we don't find the compiler/VsDevCmd.bat
+
 REM TODO: Eventually we should try and find the compiler in a "smart" way and we should
 REM.      be a little more careful about what we dump to the msvc_environment.txt file
 
-REM Finally we also want to track and report how long the batch file takes so we can
-REM separate that time from our actual build time.
+REM TODO: We should support compiling for Windows ARM targets (and maybe 32-bit windows targets) rather than assuming amd64
+
+REM We should try https://gist.github.com/andrewrk/ffb272748448174e6cdb4958dae9f3d8 or linked revision https://pastebin.com/SX3mSC9n
+REM Those links are C/C++ code, we probably need a simplified batch script for the initial building of the build_script.c
 
 if "%~1"=="" (
 	echo Usage: init_msvc.bat output_file.txt
@@ -27,7 +34,6 @@ for /F "tokens=1-4 delims=:.," %%a in ("%time%") do (
 
 echo Initializing MSVC compiler...
 
-REM TODO: Report a nice error message if we don't find the compiler/VsDevCmd.bat
 REM set VSCMD_DEBUG=3
 REM NOTE: Uncomment or change one of these lines to match your installation of Visual Studio compiler
 REM call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64

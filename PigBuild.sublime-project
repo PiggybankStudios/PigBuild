@@ -16,12 +16,6 @@
 				"examples/*/sokol",
 				"examples/*/sokol_tools",
 			],
-		},
-		{
-			"path": "..",
-			"name": "Project",
-			"file_include_patterns": [ "build_script.c"],
-			"folder_include_patterns": [ "dont_include_any_folders"],
 		}
 	],
 	"settings":

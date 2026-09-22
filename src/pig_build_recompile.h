@@ -48,7 +48,7 @@ void RecompileIfNeeded(StrArray buildScriptDependencies)
 	AddStrArray(&dependencies, &buildScriptDependencies);
 	
 	// For convenience we are going to add pig_build/src and it's subfolders automatically if the build_script didn't mention them
-	Str pigBuildFullPath = GetFullPath(StrLit(PIG_BUILD_ROOT), '/');
+	Str pigBuildFullPath = GetFullPath(StrLit(PIG_BUILD_ROOT));
 	if (DoesFolderExist(pigBuildFullPath))
 	{
 		Str srcFolderPath = JoinPathsLit(pigBuildFullPath, "/src");
@@ -61,7 +61,7 @@ void RecompileIfNeeded(StrArray buildScriptDependencies)
 		{
 			if (DoesFolderExist(dependencies.strings[fIndex]))
 			{
-				Str dependencyFullPath = GetFullPath(dependencies.strings[fIndex], '/');
+				Str dependencyFullPath = GetFullPath(dependencies.strings[fIndex]);
 				if (StrAnyCaseEquals(dependencyFullPath, srcFolderPath)) { dependenciesContainPigBuildSrc = true; }
 				if (StrAnyCaseEquals(dependencyFullPath, optionalFolderPath)) { dependenciesContainPigBuildSrcOptional = true; }
 				if (StrAnyCaseEquals(dependencyFullPath, thirdPartyFolderPath)) { dependenciesContainPigBuildSrcThirdParty = true; }

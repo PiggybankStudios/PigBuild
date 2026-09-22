@@ -364,6 +364,19 @@ u64 StrReplaceChars(Str haystack, char targetChar, char replaceChar)
 	}
 	return numReplacements;
 }
+u64 Str16ReplaceChars(Str16 haystack, u16 targetChar, u16 replaceChar)
+{
+	u64 numReplacements = 0;
+	for (u64 cIndex = 0; cIndex < haystack.length; cIndex++)
+	{
+		if (haystack.words[cIndex] == targetChar)
+		{
+			haystack.words[cIndex] = replaceChar;
+			numReplacements++;
+		}
+	}
+	return numReplacements;
+}
 
 Str StrReplace(Str haystack, Str target, Str replacement)
 {
@@ -506,6 +519,10 @@ Str GetPathPartAtIndex(Str fileOrFolderPath, u64 index)
 void FixPathSlashes(Str path, char slashChar)
 {
 	StrReplaceChars(path, (slashChar == '/') ? '\\' : '/', slashChar);
+}
+void FixPathSlashes16(Str16 widePath, u16 slashChar)
+{
+	Str16ReplaceChars(widePath, (slashChar == '/') ? '\\' : '/', slashChar);
 }
 
 bool HasTrailingSlash(Str path)

@@ -35,7 +35,11 @@ u64 FnvHashStr(Str str, u64 startingState)
 
 u64 FnvHashFile(Str filePath, u64 startingState)
 {
+	#if USE_NEW_API
+	Str fileContents = ReadEntireBinFile(filePath);
+	#else
 	Str fileContents = ReadEntireFile(filePath);
+	#endif
 	u64 fileHash = FnvHashStr(fileContents, startingState);
 	FreeStr(&fileContents);
 	return fileHash;

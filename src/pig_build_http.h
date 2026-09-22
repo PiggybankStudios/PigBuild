@@ -87,7 +87,7 @@ void DownloadAndExtractArchive(Str url, Str archiveFilePath, u64 expectedArchive
 	{
 		Str tempPath = AddSuffixToFileName(archiveFileResolved, StrLit("_TEMP"));
 		DownloadFromUrlAndCheck(url, tempPath, expectedArchiveSize, expectedArchiveHash);
-		CopyFileToPath(tempPath, archiveFileResolved, true);
+		CopyFileToPath(tempPath, archiveFileResolved);
 		RemoveFile(tempPath);
 	}
 	
