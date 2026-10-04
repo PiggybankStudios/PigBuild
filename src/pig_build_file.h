@@ -175,9 +175,94 @@ Str16 GetFullPath16(Str16 relativePath)
 	return result;
 }
 
-Str CollapseParentDirPathParts(Str pathWithParentFolderPaths) //TODO: Implement me!
+//TODO: Should we move this to pig_build_str.h since it's string manipulation only?
+//TODO: Should we handle things like C:/path - //path - ///path - //?/path - C:path - COM1 - etc.?
+Str CollapseParentDirPathParts(Str pathWithParentFolderParts)
 {
-	return Str_Empty;
+	Array_u64 pathPartIndices = EMPTY;
+	u64 numPathParts = CountPathParts(pathWithParentFolderParts);
+	GrowArray_u64(&pathPartIndices, numPathParts);
+	for (u64 pIndex = 0; pIndex < numPathParts; pIndex++) { AddValueArray_u64(&pathPartIndices, pIndex); }
+	bool hasLeadingSlash = HasLeadingSlash(pathWithParentFolderParts);
+	bool hasTrailingSlash = HasTrailingSlash(pathWithParentFolderParts);
+	
+	for (u64 pIndex = 1; pIndex <= numPathParts; pIndex++)
+	{
+		u64 partIndex = pathPartIndices.values[pIndex-1];
+		Str partStr = GetPathPartAtIndex(pathWithParentFolderParts, partIndex);
+		if (StrExactEquals(partStr, StrLit("..")))
+		{
+			u64 prevPartToRemoveIndex = UINT64_MAX;
+			for (u64 pIndex2 = pIndex-1; pIndex2 > 0; pIndex2--)
+			{
+				u64 prevPartIndex = pathPartIndices.values[pIndex2-1];
+				Str prevPartStr = GetPathPartAtIndex(pathWithParentFolderParts, prevPartIndex);
+				if (!StrExactEquals(prevPartStr, StrLit("..")))
+				{
+					prevPartToRemoveIndex = pIndex2-1;
+					// PrintLine("In \"%.*s\": Part %llu \"..\" eliminates part %llu \"%.*s\"", StrPrint(pathWithParentFolderParts), partIndex, prevPartToRemoveIndex, StrPrint(prevPartStr));
+					break;
+				}
+			}
+			
+			if (prevPartToRemoveIndex < numPathParts)
+			{
+				RemoveItemArray_u64(&pathPartIndices, pIndex-1);
+				RemoveItemArray_u64(&pathPartIndices, prevPartToRemoveIndex);
+				numPathParts -= 2;
+				pIndex -= 2;
+			}
+			// else { PrintLine_E("Failed to find a prev part to remove for part %llu", partIndex); }
+		}
+	}
+	
+	bool hasNoParts = (pathPartIndices.length == 0);
+	bool needsPeriod = (hasNoParts && !hasLeadingSlash);
+	bool needsTrailingSlash = (hasTrailingSlash && (!hasNoParts || needsPeriod));
+	Str result = EMPTY;
+	for (u64 pIndex = 0; pIndex < numPathParts; pIndex++)
+	{
+		u64 partIndex = pathPartIndices.values[pIndex];
+		Str partStr = GetPathPartAtIndex(pathWithParentFolderParts, partIndex);
+		result.length += (pIndex > 0 ? 1 : 0) + partStr.length;
+	}
+	result = AllocStr((hasLeadingSlash ? 1 : 0) + result.length + (needsPeriod ? 1 : 0) + (needsTrailingSlash ? 1 : 0));
+	
+	u64 writeIndex = 0;
+	if (hasLeadingSlash)
+	{
+		Assert(writeIndex + 1 <= result.length);
+		result.chars[writeIndex] = '/';
+		writeIndex++;
+	}
+	for (u64 pIndex = 0; pIndex < numPathParts; pIndex++)
+	{
+		u64 partIndex = pathPartIndices.values[pIndex];
+		Str partStr = GetPathPartAtIndex(pathWithParentFolderParts, partIndex);
+		if (pIndex > 0)
+		{
+			Assert(writeIndex + 1 <= result.length);
+			result.chars[writeIndex] = '/';
+			writeIndex++;
+		}
+		Assert(writeIndex + partStr.length <= result.length);
+		memcpy(&result.chars[writeIndex], partStr.chars, partStr.length);
+		writeIndex += partStr.length;
+	}
+	if (needsPeriod)
+	{
+		Assert(writeIndex + 1 <= result.length);
+		result.chars[writeIndex] = '.';
+		writeIndex++;
+	}
+	if (needsTrailingSlash)
+	{
+		Assert(writeIndex + 1 <= result.length);
+		result.chars[writeIndex] = '/';
+		writeIndex++;
+	}
+	
+	return result;
 }
 
 // Rather than just checking string comparison, this will resolve the paths to their actual locations and determine if the location is the same

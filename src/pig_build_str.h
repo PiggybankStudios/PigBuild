@@ -525,6 +525,10 @@ void FixPathSlashes16(Str16 widePath, u16 slashChar)
 	Str16ReplaceChars(widePath, (slashChar == '/') ? '\\' : '/', slashChar);
 }
 
+bool HasLeadingSlash(Str path)
+{
+	return (path.length > 0 && IsSlash(path.chars[0]));
+}
 bool HasTrailingSlash(Str path)
 {
 	return (path.length > 0 && IsSlash(path.chars[path.length-1]));

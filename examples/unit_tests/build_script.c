@@ -10,6 +10,7 @@ Description:
 #define PIG_BUILD_FOLDER_PATH "../../.."
 #include "pig_build.h"
 
+#include "tests_file.c"
 #include "tests_scan.c"
 #include "tests_str_list.c"
 #include "tests_unicode.c"
@@ -25,7 +26,8 @@ int main(int argc, const char* argv[])
 	
 	// RunTests_StrList();
 	// RunTests_Scan();
-	RunTests_Unicode();
+	// RunTests_Unicode();
+	RunTests_File();
 	
 	return 0;
 }
