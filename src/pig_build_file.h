@@ -327,7 +327,12 @@ bool DoesFileOrFolderExist(Str path, bool* isFolderOut)
 		if (statResult == 0)
 		{
 			result = true;
-			if (isFolderOut != nullptr) { *isFolderOut = IsFlagSet(statStruct.st_mode, S_IFDIR); }
+			//TODO: The 4-bit format portion could say it's any of the following, and we currently are treating anything that isn't a "folder" as a "file"
+			//    0010 "char device"
+			//    0110 "block device"
+			//    1010 "symlink"
+			//    1100 "socket"
+			if (isFolderOut != nullptr) { *isFolderOut = ((statStruct.st_mode & S_IFMT) == S_IFDIR); }
 		}
 		else { result = false; }
 	}

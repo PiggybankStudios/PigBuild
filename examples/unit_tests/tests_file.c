@@ -42,6 +42,9 @@ void RunTests_File()
 	CollapseParentDirPathParts_Test("/foo/../", "/");
 	CollapseParentDirPathParts_Test("/foo/", "/foo/");
 	
+	AssertFmt(DoesFolderExist(StrLit("/dev/disk0")) == false, "DoesFolderExist(\"/dev/disk0\") reported as a folder when it really is a block device (more of a file than a folder)");
+	AssertFmt(DoesFileExist(StrLit("/dev/disk0")) == true, "DoesFolderExist(\"/dev/disk0\") reported false");
+	
 	#define UNUSUAL_PATH_ROOT "/Users/robbitay/my/temp/test_file_api/"
 	TestUnusualPath(StrLit(UNUSUAL_PATH_ROOT "_"), true);
 	TestUnusualPath(StrLit(UNUSUAL_PATH_ROOT "__"), false);
