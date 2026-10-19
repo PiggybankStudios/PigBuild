@@ -307,6 +307,7 @@ bool DoesFileOrFolderExist(Str path, bool* isFolderOut)
 {
 	bool result = false;
 	Str fullPathNt = GetFullPath(path);
+	//TODO: On AppleFS we can have folder names with backslash that get replaced with forward slash here and thus are inaccessible
 	FixPathSlashes(fullPathNt, PATH_SEP_CHAR);
 	
 	#if BUILDING_ON_WINDOWS
@@ -660,6 +661,7 @@ bool DoesFileOrFolderExist(Str path, bool* isFolderOut)
 {
 	bool result = false;
 	Str fullPathNt = GetFullPath(path);
+	//TODO: On AppleFS we can have folder names with backslash that get replaced with forward slash here and thus are inaccessible
 	FixPathSlashes(fullPathNt, PATH_SEP_CHAR);
 	
 	#if BUILDING_ON_WINDOWS
