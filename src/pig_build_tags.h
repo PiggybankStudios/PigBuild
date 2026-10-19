@@ -49,6 +49,15 @@ Description:
 #define T_UNIX            "|Unix" // basically (LINUX or OSX)
 #define T_WEB             "|Web"
 #define T_WASM            "|Wasm"
+#if BUILDING_ON_WINDOWS
+#define T_BUILDING_ON_OS T_WINDOWS
+#elif BUILDING_ON_LINUX
+#define T_BUILDING_ON_OS T_LINUX
+#elif BUILDING_ON_OSX
+#define T_BUILDING_ON_OS T_OSX
+#else
+#define T_BUILDING_ON_OS "|UnknownOS"
+#endif
 
 // Languages
 #define T_LANG_C            "|LangC"

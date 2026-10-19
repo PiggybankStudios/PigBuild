@@ -412,4 +412,33 @@ void InitializeMsvcIf(Str pigBuildFolder, bool* isMsvcInitialized)
 	}
 }
 
+Str Base64Encode(Str binaryContents)
+{
+	const char base64EncodingTable[] = {
+		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+		'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+		'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+		'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+		'+', '/'
+	};
+	Str result = EMPTY;
+	result.length = 4 * ((binaryContents.length + 2) / 3);
+	result.chars = malloc(result.length+1);
+	for (u64 bIndex = 0, sIndex = 0; bIndex < binaryContents.length; bIndex += 3, sIndex += 4)
+	{
+		u32 octet0 = ((bIndex+0) < binaryContents.length) ? binaryContents.bytes[bIndex+0] : 0;
+		u32 octet1 = ((bIndex+1) < binaryContents.length) ? binaryContents.bytes[bIndex+1] : 0;
+		u32 octet2 = ((bIndex+2) < binaryContents.length) ? binaryContents.bytes[bIndex+2] : 0;
+		u32 triple = (octet0 << 16) + (octet1 << 8) + (octet2 << 0);
+		result.chars[sIndex+0] = base64EncodingTable[(triple >> (3 * 6)) & 0x3F];
+		result.chars[sIndex+1] = base64EncodingTable[(triple >> (2 * 6)) & 0x3F];
+		result.chars[sIndex+2] = base64EncodingTable[(triple >> (1 * 6)) & 0x3F];
+		result.chars[sIndex+3] = base64EncodingTable[(triple >> (0 * 6)) & 0x3F];
+	}
+	if ((binaryContents.length % 3) > 0) { result.chars[result.length-1] = '='; }
+	if ((binaryContents.length % 3) == 1) { result.chars[result.length-2] = '='; }
+	return result;
+}
+
 #endif //  _PIG_BUILD_MISC_H
