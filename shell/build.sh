@@ -92,8 +92,11 @@ builder_exit_code=0
 if [ $builder_exit_code -eq 42 ]; then
 	echo "[Recompile requested]"
 	compile_builder
-	./builder "$@"
+	builder_exit_code=0
+	./builder "$@" || builder_exit_code=$?
 fi
 
 # Leave the "build" folder
 popd > /dev/null
+
+exit $builder_exit_code
