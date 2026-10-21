@@ -46,7 +46,11 @@ int RunCliProgramTags(Str programPath, StrArray tagsList, const CliArgs* args)
 	fflush(stderr);
 	int resultCode = system(joinedArgs.chars);
 	free(joinedArgs.chars);
+	#if BUILDING_ON_UNIX
+	return WEXITSTATUS(resultCode);
+	#else
 	return resultCode;
+	#endif
 }
 #define RunCliProgram(programPathStr, argsPntr)                         RunCliProgramTags((programPathStr), SplitTagsLit(""), (argsPntr))
 #define RunCliProgramTagsNt(programPathStr, tagsListNullTerm, argsPntr) RunCliProgramTags((programPathStr), SplitTagsNt(tagsListNullTerm), (argsPntr))
