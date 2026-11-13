@@ -28,5 +28,6 @@ Description:
 #include "pig_build_compiler_commonalities.h"
 #include "pig_build_http.h"
 #include "pig_build_zip.h"
+#include "pig_build_shell_equivalents.h"
 
 #endif //  _PIG_BUILD_H

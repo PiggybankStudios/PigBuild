@@ -14,6 +14,7 @@ Description:
 #include "tests_scan.c"
 #include "tests_str_list.c"
 #include "tests_unicode.c"
+#include "tests_shell_equivalents.c"
 
 int main(int argc, const char* argv[])
 {
@@ -27,7 +28,8 @@ int main(int argc, const char* argv[])
 	// RunTests_StrList();
 	// RunTests_Scan();
 	// RunTests_Unicode();
-	RunTests_File();
+	// RunTests_File();
+	RunTests_ShellEquivalents();
 	
 	return 0;
 }
