@@ -1,0 +1,129 @@
+This file is meant to be viewed in [Obsidian](https://obsidian.md/) 
+# TODO List
+### High Priority
+- [ ] ==**NEW**== Add a hash-less size-less way to download dependency zip files
+- [ ] ==**NEW**== Get rid of `init_msvc.bat` and separate initialization of MSVC toolchain from host computer and target platform (ARM vs x86_64 Windows)
+- [ ] ==**Mr. 4th**== Maybe rename "PIG_BUILD_PRINT_SYS_CMDS" to "DIAGNOSTICS"?
+- [ ] ==**Mr. 4th**== Multi-entrypoint is a useful aspect of shell scripts. Composability of scripts
+	- `UNIT_NAME()` macro?
+- [ ] ==**Mr. 4th**== Variadic AddArg with 3 strings could look like a table and the verboseness of unneeded args is sort of amortized
+- [ ] ==**Mr. 4th**== Shell equivalent functions maybe could be a good "onboarding" type thing. In a GETTING_STARTED.md? Or a "examples/simple" folder
+- [ ] Add StrBuilder struct to make it easy to build up a string in steps
+- [ ] How do we do `_Alignof` in a cross-compiler cross-language safe way?
+- [ ] Add functions to `pig_build_file.h` for `mkdir`, `rmdir` and `chdir`
+- [ ] Do our shell scripts handle spaces in the parent directory names? Can we make them handle it properly? (mostly include folder for compiling the `build_script.c`)
+- [ ] Variadic args function for joining tag strings?
+- [ ] Throw a clear error if the compiler is not found on Windows
+- [ ] Make `AssertFileExists` into an actual assertion
+- [ ] Make a `new_project.bat/sh` script?
+- [ ] Run `pkg-config` to get some kinds of flags automatically
+- [ ] Only hash source code files like `.h`, `.c`, etc.
+- [ ] `RecompileIfNeeded` should really take a `StrArray` of blob syntax strings to allow the `build_script.c` to really customize which files are hashed.
+- [ ] Add buildConfig value restrictions (can't build Windows on OSX, etc.)
+- [ ] Add `MallocStruct` and `MallocArray` macros
+- [ ] How would we compile another pig_build-based project from within a `build_script.c`?
+- [ ] Should we just use `fopen` and similar functions from cstd?
+### Everything Else
+- [ ] ==**Mr. 4th**== Comment syntax in a buildable file that adds tags automatically to the RunCliProgram?
+- [ ] ==**Mr. 4th**== "compiler:clang" tag instead of just "clang"
+- [ ] ==**Mr. 4th**== Example that: Builds one thing without any targets or multiple compilers or whatever. Maybe there is a custom asset pipeline that does some work and bakes into .exe and whatever. What does it look like to have a configuration space for my build system?
+- [ ] ==?== Remove T_UNIX tag?
+- [ ] ==?== Rename Str_Empty_Const to something shorter?
+- [ ] Rename "RunCliProgramTagArrayAndExitOnFailure" to something shorter
+- [ ] ==?== Add a support for zip file manipulation in a new file "pig_build_zip.h"?
+- [ ] ==?== Make a RecompileIfNeeded variant that takes a "|" delimated string rather than StrArray. Maybe SplitString helper function instead?
+- [ ] ==?== Safe file replace operation? Like create a temp file, then copy and replace atomically an existing file. Then delete temp
+- [ ] Finish sorting the Android/Web/Orca/Playdate flags in pig_build_core_flags.h
+- [ ] ==?== Should we allow the user to choose the name of the build script file and it's binary name?
+- [ ] Add a "MOTIVATIONS.md" file that explains the design goals of this build system and it's pros/cons compared to other approaches
+- [ ] ==?== Add basic temporary memory arena? Maybe wrap it with something called an "allocator" and have one implementation route to malloc/free?
+- [ ] Add a system to help with parsing command-line arguments
+- [ ] Move the system for parsing "build_config.h" into it's own file (maybe part of the command-line argument parsing system)
+- [ ] Add information for how you might do a bulk/parallel build of all configurations at once
+- [ ] Can we do anything to make this system compatible with Github Actions? and other CI/CD systems?
+- [ ] Should we add ourselves to the .gitignore of the parent directory inside "new_project.bat"? Or maybe just instruct the user to do so inside "README.md"
+- [ ] Can we add support for multiple compilation units easily?
+- [ ] Can we add support for incremental compilation with intermediates tracking?
+- [ ] Move more of the "build_script.c" code into "pig_build"
+- [ ] Should we have an Assert macro? Or just use the one from "<assert.h>"
+- [ ] Add some functions that help measure build times and save them to .csv or something
+- [ ] Make sure every file header has a proper description
+- [ ] Replace ZEROED usages with Str_Empty or Str_Empty_Const where applicable
+- [ ] Remove "/std:clatest" and "-std=gnu2x"
+- [ ] Check if build_script.c compilation failed and exit early int Windows build.bat
+- [ ] 
+### Low Priority
+- [ ] 
+### Finished
+- [x] Move all the `tools/` files to a separate `build_system/` folder
+- [x] Change that folder into it's own git repository
+- [x] Clean up and rename the build_system files as needed
+	- [x] Rename `build_system_flags_....h`
+- [x] Add a system that hashes all the build_script related files and checks for changes
+- [x] Proofread and fix typos in README.md
+- [x] Get rid of uxx type
+- [x] Fix all usages of %.*s with StrPrint
+- [x] Fix up "build.bat" for Windows
+- [x] Add all functions types etc. to custom types list in PigBuild.sublime-project
+- [x] Make a tag-based cmd-line corraling sytem
+- [x] Sort flags in pig_build_core_flags.h
+- [x] Vet all the places we do AllocStr-like stuff
+- [x] Move some files into an "optional" folder to avoid confusion
+- [x] Rename pig_build_build_helpers.h
+- [x] TAG_X macros? Maybe T_X for brevity? Should we add leading "|" for ultimate brevity?
+- [x] Test the List implementation
+- [x] Replace usages of ZEROED for Str with Str_Empty
+- [x] Rename Str8 to Str
+- [x] Should we get rid of most of the addNullTerm strings and just do a CopyStrWithNullterm? Or just always add null-term?
+- [x] Add an AllocStr function?
+- [x] Add an Assert macro?
+- [x] Move SDK path lookups to an optional file somewhere (Give them good error messages if the environment variable isn't set, and good comments describing that they require user setting the environment var)
+- [x] Add "ClOrLink" tag?
+- [x] Remove EXE_ macro usages in tag string formation
+- [x] If a builder is run without builder_hash.txt but DOESNT generate a new hash file then we can end up in a state where code changes can happen and the builder won't get rebuilt because it will think it's running right after a build
+- [x] Make sure RecompileIfNeeded is hashing files inside "optional" folder
+- [x] Add a "pig_build_all.h" or maybe just "pig_build.h"?
+- [x] Add an example "build_script.c" file
+- [x] Move "init_msvc.bat" into this repo. Also add information about MSVC compiler and "vcvarsall.bat"/"VsDevCmd.bat" and how we can save the environment to txt file
+- [x] Move "init_emsdk.bat" into this repo
+- [x] Remove "plex" and "car" aliases
+- [x] Add Str8_Empty?
+- [x] Add AllocStr8?
+- [x] Add types like "u8", "u64", "i32", "r32", etc.
+- [x] Move all the macros into their own file
+- [x] Move all the string related functions into their own file
+- [x] Move all the file related functions into their own file
+- [x] Add a define or something to enable ">> cl ..." printout for debug purposes
+- [x] Should we remove all the static inline keywords? They are probably just misleading
+- [x] Document why we need each of the standard library #includes
+
+# Notes
+- [ ] Met with ==**Mr. 4th**== on May 25th 2025 (2026?)
+- [ ] [MacOS Bundle Structures](https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html#//apple_ref/doc/uid/10000123i-CH101-SW1) 
+- [ ] 
+
+# Motiviations.md Ideas
+- [ ] Talk about memory management in a build script
+- [ ] Benefits of using a single language
+- [ ] Is C a good scripting language? What makes a good scripting language?
+- [ ] List out the primary concerns a build system has. Which concerns does this system help with? Which ones does it not help with?
+	- [ ] String manipulation
+	- [ ] Command-line argument composition
+	- [ ] Injesting configuration options and changing behavior accordingly
+	- [ ] Handling forward slashes and back slashes properly
+	- [ ] Handling relative paths properly (cross-compilation probably needs to happen in a deeper folder)
+	- [ ] Incremental compilation, and tracking of intermediate files
+	- [ ] Running other tools before/after the build. For example packaging an .apk for Android, or shdc for shader cross-comp.
+	- [ ] Interfacing with build systems from dependencies
+	- [ ] Running inside a CI/CD system
+	- [ ] Distributing compilation across a fleet of computers ("farm" or unused PCs in office)
+	- [ ] Parallel compilation of multiple translation units
+	- [ ] Similar cmd-line options to clang/msvc/gcc
+	- [ ] Escaping characters in strings. Adding quotes around strings that have spaces
+	- [ ] Fast build times, small overhead, minimal startup time
+	- [ ] Communicating issues to the user with useful error messages. Handling cases where the computer is in an invalid state gracefully. Forwarding error messages from the compiler/linker/etc.
+	- [ ] Check for build dependencies. Help the user know if their computer is ready to compile (do you have a compiler installed, is it a high enough version, etc.) Tell them where they can get the dependencies or automatically get them
+	- [ ] Compiling resources on Windows (with "rc")
+	- [ ] Uploading built artifacts to Github as a release
+	- [ ] Tracking build times and saving stats to a file. Communicating to the user what is currently being built or taking time
+	- [ ] Handle differences between different Operating Systems or architectures that are used for compilation
