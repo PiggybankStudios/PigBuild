@@ -22,4 +22,10 @@ void RunTests_Run()
 		.error_message="Clang didn't like the arguments we passed to it!",
 		.dont_exit_on_failure=true
 	);
+	
+	exit_on_run_failures = false;
+	pig_run("clang abcdf", .error_message="Failed, but we aren't exiting because exit_on_run_failures global is set!");
+	exit_on_run_failures = true;
+	pig_run("clang abcdf", .error_message="Goodbye :)");
+	AssertMsg(false, "Unreachable!");
 }

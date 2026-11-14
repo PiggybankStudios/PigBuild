@@ -15,6 +15,7 @@ Description:
 #include "pig_build_base.h"
 // #include "pig_build_base.h"
 
+//TODO: Do we need to do any markup on globals?
 bool exit_on_run_failures = true;
 
 typedef struct pig_run_args pig_run_args;
@@ -75,18 +76,19 @@ int pig_run_(Str executablePath, pig_run_args args)
 		
 		if (resultCode != 0)
 		{
+			
+			PrintLine_E("ERROR: \"%.*s\" exited with code %d\nCmd >> %s",
+				StrPrint(executablePath),
+				resultCode,
+				joinedExecutableAndArgsStr.chars
+			);
+			
 			if (!IsEmptyNt(args.error_message)) { PrintLine_E("%s", args.error_message); }
 			
-			if (resultCode != 0 &&
-				!args.dont_exit_on_failure &&
-				exit_on_run_failures)
+			if (!args.dont_exit_on_failure && exit_on_run_failures)
 			{
-				AssertFmt(resultCode != 0,
-					"ERROR: \"%.*s\" exited with code %d\nCmd >> %s",
-					StrPrint(executablePath),
-					resultCode,
-					joinedExecutableAndArgsStr.chars
-				);
+				if (IsEmptyNt(args.error_message)) { Assert(resultCode == 0); }
+				else { exit(resultCode); }
 			}
 		}
 		
