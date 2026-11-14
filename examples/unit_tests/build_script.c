@@ -10,6 +10,7 @@ Description:
 #define PIG_BUILD_FOLDER_PATH "../../.."
 #include "pig_build.h"
 
+#include "tests_run.c"
 #include "tests_file.c"
 #include "tests_scan.c"
 #include "tests_str_list.c"
@@ -25,11 +26,12 @@ int main(int argc, const char* argv[])
 	Str pigBuildFolder = StrLit(PIG_BUILD_FOLDER_PATH);
 	bool isMsvcInitialized = WasMsvcDevBatchRun();
 	
+	RunTests_Run();
 	// RunTests_StrList();
 	// RunTests_Scan();
 	// RunTests_Unicode();
 	// RunTests_File();
-	RunTests_ShellEquivalents();
+	// RunTests_ShellEquivalents();
 	
 	return 0;
 }

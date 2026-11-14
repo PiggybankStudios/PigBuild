@@ -24,7 +24,7 @@ Description:
 typedef struct pig_word_count_args pig_word_count_args;
 struct pig_word_count_args
 {
-	bool path; //false = use the prim, true = count words
+	bool path; //false = treat the pathOrString arg as a string, true = treat the pathOrString arg as a file path and operate on the contents of that file
 	bool lines; //false = count words, true = count words
 	bool longest; //return the length of the longest word/line
 	bool codepoints; //count the number of UTF-8 codepoints rather than the number of bytes in the encoding (only when lines=false)
@@ -35,9 +35,6 @@ struct pig_word_count_args
 };
 typedef struct { pig_word_count_args wrapped; } pig_word_count_args_wrapper;
 #define pig_word_count(pathNt, ...) pig_word_count_(MakeStrNt(pathNt), INIT(pig_word_count_args_wrapper){{ __VA_ARGS__ }}.wrapped)
-
-#define IsEmptyNt(nullTermStr)    ((nullTermStr) == nullptr || (nullTermStr)[0] == '\0')
-#define IsNotEmptyNt(nullTermStr) ((nullTermStr) != nullptr && (nullTermStr)[0] != '\0')
 
 u64 pig_word_count_(Str pathOrString, pig_word_count_args args)
 {
@@ -150,8 +147,6 @@ u64 pig_word_count_(Str pathOrString, pig_word_count_args args)
 	FreeStr(&targetStr);
 	return result;
 }
-
-
 
 // TODO: awk/grep/sed
 // TODO: basename/dirname

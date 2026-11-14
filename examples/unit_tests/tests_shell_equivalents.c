@@ -14,7 +14,7 @@ void TestCaseLines_pig_word_count(u64 expectedCount, const char* targetStrOrPath
 		expectedCount, count,
 		isPath ? "true" : "false"
 	);
-	PrintLine("\"%s\" has %llu line%s", targetStrOrPath, count, (count == 1) ? "" : "s");
+	PrintLine("\"%s\" has %llu line%s", targetStrOrPath, count, Plural(count, "s"));
 }
 void TestCaseWords_pig_word_count(u64 expectedCount, const char* targetStr, const char* word_chars, const char* non_word_chars)
 {
@@ -24,14 +24,15 @@ void TestCaseWords_pig_word_count(u64 expectedCount, const char* targetStr, cons
 		expectedCount, count,
 		word_chars, non_word_chars
 	);
-	PrintLine("\"%s\" has %llu word%s", targetStr, count, (count == 1) ? "" : "s");
+	PrintLine("\"%s\" has %llu word%s", targetStr, count, Plural(count, "s"));
 }
 
 void RunTests_ShellEquivalents()
 {
 	TestCaseLines_pig_word_count(13, PIG_BUILD_ROOT "/build.bat", true);
 	TestCaseLines_pig_word_count(8, "Line1\nLine2\nLine3\nLine4\nLine5\nLine6\nLine7\n", false);
+	
 	TestCaseWords_pig_word_count(5, "Lorem ipsum dolor sit amet", nullptr, nullptr);
 	TestCaseWords_pig_word_count(3, "able-bodied high-spirited round-trip", "abcdefghijklmnopqrstuvwyz-", nullptr);
-	TestCaseWords_pig_word_count(3, "able-bodied r&b function(&a,b,*c)", nullptr, " ");
+	TestCaseWords_pig_word_count(3, "able-bodied r&b function(&a,b,*c)", nullptr, " \t\r\n");
 }
