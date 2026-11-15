@@ -1028,7 +1028,7 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 		);
 		CreateAndWriteFile(infoPlistPath, plistContents, true);
 		
-		CopyFileToFolder(filenameAppExe, appMacOSDir, true);
+		CopyFileToFolder(filenameAppExe, appMacOSDir);
 		
 		if (USE_OSX_APP_BUNDLE_RESOURCES)
 		{
@@ -1047,11 +1047,11 @@ int BuildPigCoreGuiApplication(StrArray* cliArgs, Str buildConfigContents, Str a
 	{
 		Str dataFolder = StrLit("../data");
 		PrintLine("Copying files to %.*s...", StrPrint(dataFolder));
-		if (BUILD_APP_EXE)      { CopyFileToFolder(filenameAppExe,                    dataFolder, true); }
-		if (BUILD_PIG_CORE_DLL) { CopyFileToFolder(StrLit(PIG_CORE_DLL_NAME DLL_EXT), dataFolder, true); }
-		if (BUILD_APP_DLL)      { CopyFileToFolder(filenameAppDll,                    dataFolder, true); }
-		if (PROFILING_ENABLED)  { CopyFileToFolder(StrLit("tracy" DLL_EXT),           dataFolder, true); }
-		if (BUILD_OSX && BUILD_INTO_SINGLE_UNIT) { CopyFolderTo(appBundleDir, JoinPaths(dataFolder, appBundleDir), true, true); }
+		if (BUILD_APP_EXE)      { CopyFileToFolder(filenameAppExe,                    dataFolder); }
+		if (BUILD_PIG_CORE_DLL) { CopyFileToFolder(StrLit(PIG_CORE_DLL_NAME DLL_EXT), dataFolder); }
+		if (BUILD_APP_DLL)      { CopyFileToFolder(filenameAppDll,                    dataFolder); }
+		if (PROFILING_ENABLED)  { CopyFileToFolder(StrLit("tracy" DLL_EXT),           dataFolder); }
+		if (BUILD_OSX && BUILD_INTO_SINGLE_UNIT) { CopyFolderTo(appBundleDir, JoinPaths(dataFolder, appBundleDir), true); }
 	}
 	
 	// +--------------------------------------------------------------+
@@ -1081,7 +1081,7 @@ RECURSIVE_DIR_WALK_CALLBACK_DEF(CopyResourcesIntoAppBundleRecursiveDirWalkCallba
 	
 	// PrintLine("Resource path: \"%.*s\"", StrPrint(path));
 	Str relativePath = path;
-	Str resourcesDirFull = GetFullPath(context->resourcesDir, '/');
+	Str resourcesDirFull = GetFullPath(context->resourcesDir);
 	if (StrAnyCaseStartsWith(path, context->resourcesDir))
 	{
 		relativePath = StrSliceFrom(path, context->resourcesDir.length);
@@ -1108,7 +1108,7 @@ RECURSIVE_DIR_WALK_CALLBACK_DEF(CopyResourcesIntoAppBundleRecursiveDirWalkCallba
 	else
 	{
 		// PrintLine("Copying \"%.*s\" to \"%.*s\"", StrPrint(path), StrPrint(outputPath));
-		CopyFileToPath(path, outputPath, true);
+		CopyFileToPath(path, outputPath);
 	}
 	
 	return true;

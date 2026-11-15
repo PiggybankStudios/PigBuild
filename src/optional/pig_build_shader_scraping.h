@@ -232,7 +232,7 @@ void ScrapeShaderHeaderFileAndAddExtraInfo(Str headerPath, Str shaderPath)
 	
 	assert(shaderName.length > 0);
 	
-	Str shaderFullPath = GetFullPath(shaderPath, '/');
+	Str shaderFullPath = GetFullPath(shaderPath);
 	Str escapedFullShaderPath = EscapeString(shaderFullPath);
 	AppendToFile(headerPath, StrLit(
 		"\n\n//NOTE: These lines were added by pig_build.exe\n"
