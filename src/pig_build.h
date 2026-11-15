@@ -20,6 +20,7 @@ Description:
 #include "pig_build_scan.h"
 #include "pig_build_file.h"
 #include "pig_build_hash.h"
+#include "pig_build_init_msvc.h"
 #include "pig_build_misc.h"
 #include "pig_build_recompile.h"
 #include "pig_build_cli_flags.h"
