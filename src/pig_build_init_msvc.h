@@ -71,7 +71,7 @@ void InitializeMsvcCompiler(MsvcCompilerArchitecture targetArchitecture, Str sav
 		StrAnyCaseEquals(MakeStrNt(vsDevCmdTargetArchEnvVarStrNt), MakeStrNt(GetMsvcCompilerArchitectureEnvVarValue(targetArchitecture))))
 	{
 		//TODO: Should we confirm of the compiler is visible from the PATH and seems to be configured correctly?
-		WriteLine("Environment is already configured for MSVC -arch=%s", GetMsvcCompilerArchitectureEnvVarValue(targetArchitecture));
+		PrintLine("Environment is already configured for MSVC -arch=%s", GetMsvcCompilerArchitectureEnvVarValue(targetArchitecture));
 		return;
 	}
 	
