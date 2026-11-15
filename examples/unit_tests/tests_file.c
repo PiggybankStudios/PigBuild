@@ -6,6 +6,8 @@ Description:
 	** Holds tests for Scan code inside "pig_build_file.h"
 */
 
+#if USE_NEW_API
+
 void CollapseParentDirPathParts_Test_(Str input, Str expectedOutput)
 {
 	Str output = CollapseParentDirPathParts(input);
@@ -13,6 +15,8 @@ void CollapseParentDirPathParts_Test_(Str input, Str expectedOutput)
 	PrintLine("Checked CollapseParentDirPathParts(\"%.*s\") -> \"%.*s\"", StrPrint(input), StrPrint(output));
 }
 #define CollapseParentDirPathParts_Test(inputLit, expectedOutputLit) CollapseParentDirPathParts_Test_(StrLit(inputLit), StrLit(expectedOutputLit))
+
+#endif //USE_NEW_API
 
 void TestUnusualPath(Str pathStr, bool shouldExist)
 {
@@ -23,6 +27,7 @@ void TestUnusualPath(Str pathStr, bool shouldExist)
 
 void RunTests_File()
 {
+	#if USE_NEW_API
 	CollapseParentDirPathParts_Test("foo", "foo");
 	CollapseParentDirPathParts_Test("foo/", "foo/");
 	CollapseParentDirPathParts_Test("foo/bar", "foo/bar");
@@ -41,6 +46,7 @@ void RunTests_File()
 	CollapseParentDirPathParts_Test("foo/../", "./");
 	CollapseParentDirPathParts_Test("/foo/../", "/");
 	CollapseParentDirPathParts_Test("/foo/", "/foo/");
+	#endif //USE_NEW_API
 	
 	AssertFmt(DoesFolderExist(StrLit("/dev/disk0")) == false, "DoesFolderExist(\"/dev/disk0\") reported as a folder when it really is a block device (more of a file than a folder)");
 	AssertFmt(DoesFileExist(StrLit("/dev/disk0")) == true, "DoesFolderExist(\"/dev/disk0\") reported false");

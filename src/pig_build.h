@@ -24,10 +24,12 @@ Description:
 #include "pig_build_misc.h"
 #include "pig_build_recompile.h"
 #include "pig_build_cli_flags.h"
+#include "pig_build_run.h"
 #include "pig_build_tags.h"
 #include "pig_build_arg_list.h"
 #include "pig_build_compiler_commonalities.h"
 #include "pig_build_http.h"
 #include "pig_build_zip.h"
+#include "pig_build_shell_equivalents.h"
 
 #endif //  _PIG_BUILD_H

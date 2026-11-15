@@ -365,7 +365,7 @@ void AddNativeBinariesAndClassesDexToAndroidApk(const AndroidBinPaths* androidPa
 	AddArgStr(&unpackApkCmd, "--file=\"[VAL]\"", relativeApkFilename);
 	RunCliProgramAndExitOnFailure(androidPaths->jar, &unpackApkCmd, FormatStr("Failed to unpack %.*s!", StrPrint(apkFilename)));
 	
-	CopyFileToFolder(relativeClassesDexPath, StrLit("./"), true);
+	CopyFileToFolder(relativeClassesDexPath, StrLit("./"));
 	
 	mkdir("lib", FOLDER_PERMISSIONS);
 	for (u64 archIndex = 1; archIndex < AndroidTargetArchitecture_Count; archIndex++)
@@ -376,7 +376,7 @@ void AddNativeBinariesAndClassesDexToAndroidApk(const AndroidBinPaths* androidPa
 			Str tempApkLibArchFolder = JoinPaths(StrLit("lib"), MakeStrNt(GetAndroidTargetArchitectureFolderName(architecture)));
 			Str buildLibArchFolder = JoinPaths(relativeLibFolder, MakeStrNt(GetAndroidTargetArchitectureFolderName(architecture)));
 			mkdir(tempApkLibArchFolder.chars, FOLDER_PERMISSIONS);
-			CopyFileToFolder(JoinPaths(buildLibArchFolder, soFilename), tempApkLibArchFolder, true);
+			CopyFileToFolder(JoinPaths(buildLibArchFolder, soFilename), tempApkLibArchFolder);
 		}
 	}
 	
@@ -405,7 +405,7 @@ void AlignAndroidApk(const AndroidBinPaths* androidPaths, Str rootPath, Str apkF
 	AddArgStr(&alignApkCmd, CLI_QUOTED_ARG, tempAlignedApkName); //output
 	RunCliProgramAndExitOnFailure(androidPaths->zipalign, &alignApkCmd, FormatStr("Failed to ZIP align %.*s!", StrPrint(apkFilename)));
 	AssertFileExist(tempAlignedApkName, true);
-	CopyFileToPath(tempAlignedApkName, apkFilename, true);
+	CopyFileToPath(tempAlignedApkName, apkFilename);
 	RemoveFile(tempAlignedApkName);
 }
 

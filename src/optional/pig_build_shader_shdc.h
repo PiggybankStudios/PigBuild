@@ -223,7 +223,7 @@ Array_ShaderInfo CrossCompileShadersInFolderWithShdc(Str pigCoreFolder, Str targ
 				
 				Str objPath = shaderInfo->androidObjPaths[archIndex];
 				Str objDir = ResolveRootTo(GetDirectoryPart(objPath, false), StrLit(".."));
-				Str oldWorkingDir = GetFullPath(StrLit("."), '/');
+				Str oldWorkingDir = GetFullPath(StrLit("."));
 				MyCreateFolder(objDir, true);
 				chdir(objDir.chars);
 				

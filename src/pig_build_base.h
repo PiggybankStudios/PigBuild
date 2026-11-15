@@ -206,16 +206,19 @@ Date:   03\21\2026
 #define DLL_EXT ".dll"
 #define LIB_EXT ".lib"
 #define EXE_EXT ".exe"
+#define DLL_PREFIX ""
 #elif BUILDING_ON_OSX
 #define OBJ_EXT ".o"
 #define DLL_EXT ".dylib"
 #define LIB_EXT ".dylib"
 #define EXE_EXT ""
+#define DLL_PREFIX "lib"
 #else
 #define OBJ_EXT ".o"
 #define DLL_EXT ".so"
 #define LIB_EXT ".so"
 #define EXE_EXT ""
+#define DLL_PREFIX "lib"
 #endif
 
 // +--------------------------------------------------------------+
@@ -245,6 +248,10 @@ typedef double r64;
 // This macro does nothing when stringLiteral IS actually a string literally. If it's a pointer or an array or anything else it will produce a compile-time error
 // We often use this macro when we want to do sizeof(stringLiteral) in a macro and we are expecting number of chars in the string (+1 for null-term char)
 #define CheckStrLit(stringLiteral) "" stringLiteral ""
+
+//Helps us handle a nullpter and a "" string both as empty
+#define IsEmptyNt(nullTermStr)    ((nullTermStr) == nullptr || (nullTermStr)[0] == '\0')
+#define IsNotEmptyNt(nullTermStr) ((nullTermStr) != nullptr && (nullTermStr)[0] != '\0')
 
 // We often don't like typing "\n" at the end of our format strings, since writing to the console without a new-line is the less-common case
 // These macros make adding "\n" implicit. Additionally when printing errors we should route to stderr without explicitly writing fprintf(stderr, ...)

@@ -252,6 +252,18 @@ Str CodepointsToUtf8Str(StrFull codepointsStr)
 	return result;
 }
 
+u64 CountCodepointsInUtf8Str(Str str)
+{
+	u64 result = 0;
+	Str consumeStr = str;
+	while (consumeStr.length > 0)
+	{
+		TakeNextUtf8Codepoint(&consumeStr);
+		result++;
+	}
+	return result;
+}
+
 // +--------------------------------------------------------------+
 // |                            UTF-16                            |
 // +--------------------------------------------------------------+
