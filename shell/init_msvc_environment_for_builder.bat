@@ -164,7 +164,7 @@ rem Guard against the batch changing the directory on us
 pushd .
 echo Initializing MSVC compiler...
 rem echo Running "%VCVARSALL_PATH%" %VCVARSALL_ARCHITECTURE_ARG%
-endlocal & set START_TIME="%START_TIME%" & call "%VCVARSALL_PATH%" %VCVARSALL_ARCHITECTURE_ARG% > NUL 2>&1
+endlocal & set "START_TIME=%START_TIME%" & call "%VCVARSALL_PATH%" %VCVARSALL_ARCHITECTURE_ARG% > NUL 2>&1
 popd
 goto :verify_environment
 
@@ -176,7 +176,7 @@ rem Guard against the batch changing the directory on us
 pushd .
 echo Initializing MSVC compiler...
 rem echo Running "%VSDEVCMD_PATH%" %VSDEVCMD_ARCHITECTURE_AND_HOST_ARGS%
-endlocal & set START_TIME="%START_TIME%" & call "%VSDEVCMD_PATH%" %VSDEVCMD_ARCHITECTURE_AND_HOST_ARGS% > NUL 2>&1
+endlocal & set "START_TIME=%START_TIME%" & call "%VSDEVCMD_PATH%" %VSDEVCMD_ARCHITECTURE_AND_HOST_ARGS% > NUL 2>&1
 popd
 goto :verify_environment
 

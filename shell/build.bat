@@ -62,21 +62,23 @@ set "builder_exit_code=!ERRORLEVEL!"
 if "!ERRORLEVEL!"=="42" (
 	echo [Recompile requested]
 	CALL :CompileBuilder
-	if "!ERRORLEVEL!" NEQ "0" goto :Done
+	set "builder_exit_code=!ERRORLEVEL!"
+	if "!builder_exit_code!" NEQ "0" goto :Done
 	.\builder.exe %*
+	set "builder_exit_code=!ERRORLEVEL!"
 )
 
 :Done
 popd
-EXIT /B 0
+EXIT /B %builder_exit_code%
 
 REM +--------------------------------------------------------------+
 REM |                        CompileBuilder                        |
 REM +--------------------------------------------------------------+
 :CompileBuilder
 
-CALL %PIG_BUILD_ROOT%\shell\init_msvc_environment_for_builder.bat
+CALL "%PIG_BUILD_ROOT%\shell\init_msvc_environment_for_builder.bat"
 echo [Compiling build_script.c...]
 del builder.* builder_hash.txt build_script.obj > NUL 2> NUL
-cl %PROJECT_ROOT%\build_script.c %compiler_flags%
+cl "%PROJECT_ROOT%\build_script.c %compiler_flags%"
 EXIT /B
