@@ -115,42 +115,42 @@ rem +==============================+
 
 if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" (
 	set "VS_INSTALL_DIR=C:\Program Files\Microsoft Visual Studio\2022\Community"
-	set "VSDEVCMD_PATH=%VS_INSTALL_DIR%\Common7\Tools\VsDevCmd.bat"
+	set "VSDEVCMD_PATH=!VS_INSTALL_DIR!\Common7\Tools\VsDevCmd.bat"
 	goto :run_vsdevcmd
 )
 if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" (
 	set "VS_INSTALL_DIR=C:\Program Files\Microsoft Visual Studio\2022\Community"
-	set "VCVARSALL_PATH=%VS_INSTALL_DIR%\VC\Auxiliary\Build\vcvarsall.bat"
+	set "VCVARSALL_PATH=!VS_INSTALL_DIR!\VC\Auxiliary\Build\vcvarsall.bat"
 	goto :run_vcvarsall
 )
 if exist "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" (
 	set "VS_INSTALL_DIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0"
-	set "VCVARSALL_PATH=%VS_INSTALL_DIR%\VC\vcvarsall.bat"
+	set "VCVARSALL_PATH=!VS_INSTALL_DIR!\VC\vcvarsall.bat"
 	goto :run_vcvarsall
 )
 if exist "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" (
 	set "VS_INSTALL_DIR=C:\Program Files (x86)\Microsoft Visual Studio 12.0"
-	set "VCVARSALL_PATH=%VS_INSTALL_DIR%\VC\vcvarsall.bat"
+	set "VCVARSALL_PATH=!VS_INSTALL_DIR!\VC\vcvarsall.bat"
 	goto :run_vcvarsall
 )
 if exist "C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\vcvarsall.bat" (
 	set "VS_INSTALL_DIR=C:\Program Files (x86)\Microsoft Visual Studio 11.0"
-	set "VCVARSALL_PATH=%VS_INSTALL_DIR%\VC\vcvarsall.bat"
+	set "VCVARSALL_PATH=!VS_INSTALL_DIR!\VC\vcvarsall.bat"
 	goto :run_vcvarsall
 )
 if exist "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vcvarsall.bat" (
 	set "VS_INSTALL_DIR=C:\Program Files (x86)\Microsoft Visual Studio 10.0"
-	set "VCVARSALL_PATH=%VS_INSTALL_DIR%\VC\vcvarsall.bat"
+	set "VCVARSALL_PATH=!VS_INSTALL_DIR!\VC\vcvarsall.bat"
 	goto :run_vcvarsall
 )
 if exist "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" (
 	set "VS_INSTALL_DIR=C:\Program Files (x86)\Microsoft Visual Studio 9.0"
-	set "VCVARSALL_PATH=%VS_INSTALL_DIR%\VC\vcvarsall.bat"
+	set "VCVARSALL_PATH=!VS_INSTALL_DIR!\VC\vcvarsall.bat"
 	goto :run_vcvarsall
 )
 if exist "C:\Program Files (x86)\Microsoft Visual Studio 8.0\VC\vcvarsall.bat" (
 	set "VS_INSTALL_DIR=C:\Program Files (x86)\Microsoft Visual Studio 8.0"
-	set "VCVARSALL_PATH=%VS_INSTALL_DIR%\VC\vcvarsall.bat"
+	set "VCVARSALL_PATH=!VS_INSTALL_DIR!\VC\vcvarsall.bat"
 	goto :run_vcvarsall
 )
 
