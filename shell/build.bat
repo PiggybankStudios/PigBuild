@@ -80,5 +80,5 @@ REM +--------------------------------------------------------------+
 CALL "%PIG_BUILD_ROOT%\shell\init_msvc_environment_for_builder.bat"
 echo [Compiling build_script.c...]
 del builder.* builder_hash.txt build_script.obj > NUL 2> NUL
-cl "%PROJECT_ROOT%\build_script.c %compiler_flags%"
+cl "%PROJECT_ROOT%\build_script.c" %compiler_flags%
 EXIT /B
