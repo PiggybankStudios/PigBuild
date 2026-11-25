@@ -126,8 +126,8 @@ typedef struct pig_run_pipe_servicer_context pig_run_pipe_servicer_context;
 struct pig_run_pipe_servicer_context
 {
 	HANDLE readHandle;
-	Array_u8 buffer;
-	bool forward_to_console;
+	HANDLE writeHandle; //if set: the received bytes are forwarded to this handle through WriteFile
+	Array_u8 buffer; //if writeHandle is NOT set, then we push bytes into this array as we receive them
 };
 
 static DWORD WINAPI pig_run_pipe_servicer(void* contextPntr)
@@ -137,13 +137,38 @@ static DWORD WINAPI pig_run_pipe_servicer(void* contextPntr)
 	DWORD numBytesRead = 0;
 	while (ReadFile(context->readHandle, &stackBuffer[0], sizeof(stackBuffer), &numBytesRead, NULL) && numBytesRead > 0)
 	{
-		AddValuesArray_u8(&context->buffer, (u64)numBytesRead, &stackBuffer[0]);
+		if (context->writeHandle != INVALID_HANDLE_VALUE)
+		{
+			// If the calling code only wanted stderr not stout (or vice versa),
+			// then we need to forward the bytes to the console using WriteFile
+			DWORD numBytesWritten = 0;
+			BOOL writeResult = WriteFile(
+				context->writeHandle, //hFile
+				&stackBuffer[0], //lpBuffer
+				numBytesRead, //nNumberOfBytesToWrite
+				&numBytesWritten, //lpNumberOfBytesWritten
+				//lpOverlapped
+			);
+			AssertMsg(writeResult != 0, "Failed to forward stdout/stderr bytes to console using WriteFile!");
+			AssertFmt(numBytesWritten == numBytesRead, "Failed to forward %llu byte%s to console! Only %llu/%llu byte%s forwarded",
+				numBytesRead, Plural(numBytesRead, "s"),
+				numBytesWritten,
+				numBytesRead, Plural(numBytesRead, "s")
+			);
+		}
+		else
+		{
+			AddValuesArray_u8(&context->buffer, (u64)numBytesRead, &stackBuffer[0]);
+		}
 	}
 	return 0;
 }
 
 static Str convert_win32_codepage_buffer_to_utf8(UINT consoleCodepage, u64 bufferLength, const u8* bufferPntr)
 {
+	// MultiByteToWideChar treats a bufferLength of 0 as an error, so we return early instead
+	if (bufferLength == 0) { return Str_Empty; }
+	
 	int multiByteToWideCharResult1 = MultiByteToWideChar(
 		consoleCodepage, //CodePage
 		0, //dwFlags
@@ -208,7 +233,7 @@ int pig_run_win32(Str joinedExecutableAndArgsStr, pig_run_args* args)
 			FreeStr16(&joinedExecutableAndArgsWideStr);
 			return PIG_RUN_PIPE_CREATION_FAILED;
 		}
-		BOOL setHandleInfoResult2 = SetHandleInformation(stdoutReadHandle, HANDLE_FLAG_INHERIT, /*dwFlags=*/0);
+		BOOL setHandleInfoResult2 = SetHandleInformation(stderrReadHandle, HANDLE_FLAG_INHERIT, /*dwFlags=*/0);
 		AssertMsg(setHandleInfoResult2 != 0, "SetHandleInformation call on stderr handle failed inside pig_run!");
 	}
 	
@@ -248,7 +273,7 @@ int pig_run_win32(Str joinedExecutableAndArgsStr, pig_run_args* args)
 	{
 		// We create a thread to service the stderr pipe while the main thread services the stdout pipe
 		stderrServiceContext.readHandle = stderrReadHandle;
-		stderrServiceContext.forward_to_console = (args->stderrStr == nullptr);
+		stderrServiceContext.writeHandle = (args->stderrStr == nullptr) ? GetStdHandle(STD_ERROR_HANDLE) : INVALID_HANDLE_VALUE;
 		HANDLE stderrServiceThreadHandle = CreateThread(
 			NULL, //lpThreadAttributes
 			0, //dwStackSize
@@ -259,7 +284,7 @@ int pig_run_win32(Str joinedExecutableAndArgsStr, pig_run_args* args)
 		);
 		
 		stdoutServiceContext.readHandle = stdoutReadHandle;
-		stdoutServiceContext.forward_to_console = (args->stdoutStr == nullptr);
+		stdoutServiceContext.writeHandle = (args->stdoutStr == nullptr) ? GetStdHandle(STD_OUTPUT_HANDLE) : INVALID_HANDLE_VALUE;
 		DWORD stdoutServiceResult = pig_run_pipe_servicer((void*)&stdoutServiceContext);
 		
 		WaitForSingleObject(stderrServiceThreadHandle, INFINITE);

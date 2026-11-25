@@ -7,5 +7,7 @@
 # pushd examples/b_incremental_builds
 # pushd examples/dear_imgui
 pushd examples/unit_tests
+
 ./build.sh
+
 popd
