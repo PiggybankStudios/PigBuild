@@ -1,0 +1,9 @@
+// raddbg 0.9.27 project file
+
+target:
+{
+  executable: "examples/unit_tests/build/builder.exe"
+  working_directory: "examples/unit_tests/build/"
+  enabled: 1
+  label: "Unit Tests (builder.exe)"
+}

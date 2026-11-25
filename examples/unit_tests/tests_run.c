@@ -8,24 +8,43 @@ Description:
 
 void RunTests_Run()
 {
-	pig_run("ls");
-	pig_run("ls -l");
+	#if BUILDING_ON_WINDOWS
 	
+	Str dirOutput = Str_Empty_Const;
+	pig_run("dir", .run_in_shell=true, .stdoutStr=&dirOutput);
+	PrintLine("dir printed %llu bytes", dirOutput.length);
+	
+	#elif BUILDING_ON_UNIX
+	
+	Str lsOutput = Str_Empty_Const;
+	pig_run("ls", .run_in_shell=true, .stdoutStr=&lsOutput);
+	PrintLine("ls printed %llu bytes", lsOutput.length);
+	pig_run("ls -l", .run_in_shell=true, .stdoutStr=&lsOutput);
+	PrintLine("ls -l printed %llu bytes", lsOutput.length);
 	CliArgs args1 = EMPTY; AddArg(&args1, "-l"); AddArg(&args1, "-a");
-	pig_run("ls", .args=args1);
+	pig_run("ls", .run_in_shell=true, .args=args1);
+	
+	#endif
 	
 	CliArgs args2 = EMPTY; AddTaggedArg(&args2, "clang", "-c"); AddTaggedArg(&args2, "cl", "/c");
+	#if BUILDING_ON_UNIX
 	pig_run("clang", .args=args2, .exe_tags=MakeStrArrayVa("clang"), .dry_run=true);
+	#elif BUILDING_ON_WINDOWS
 	pig_run("cl", .args=args2, .exe_tags=MakeStrArrayVa("cl"), .dry_run=true);
+	#endif
 	
+	#if BUILDING_ON_UNIX
 	pig_run("clang abcdf",
 		.error_message="Clang didn't like the arguments we passed to it!",
 		.dont_exit_on_failure=true
 	);
+	#endif //BUILDING_ON_UNIX
 	
+	#if BUILDING_ON_UNIX
 	exit_on_run_failures = false;
 	pig_run("clang abcdf", .error_message="Failed, but we aren't exiting because exit_on_run_failures global is set!");
 	exit_on_run_failures = true;
 	pig_run("clang abcdf", .error_message="Goodbye :)");
 	AssertMsg(false, "Unreachable!");
+	#endif //BUILDING_ON_UNIX
 }
