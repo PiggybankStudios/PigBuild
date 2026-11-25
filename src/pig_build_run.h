@@ -22,7 +22,7 @@ Description:
 #include "pig_build_arg_list.h"
 
 //TODO: Do we need to do any markup on globals?
-bool exit_on_run_failures = true;
+bool pig_run_tolerate_failures = false;
 
 typedef struct pig_run_args pig_run_args;
 struct pig_run_args
@@ -30,7 +30,7 @@ struct pig_run_args
 	CliArgs args;
 	StrArray exe_tags;
 	const char* error_message;
-	bool dont_exit_on_failure;
+	bool tolerate_failure;
 	bool print_cmd;
 	bool print_exit_code;
 	bool dry_run;
@@ -104,7 +104,7 @@ int pig_run_(Str executablePath, pig_run_args args)
 			
 			if (!IsEmptyNt(args.error_message)) { PrintLine_E("%s", args.error_message); }
 			
-			if (!args.dont_exit_on_failure && exit_on_run_failures)
+			if (!args.tolerate_failure && pig_run_tolerate_failures)
 			{
 				if (IsEmptyNt(args.error_message)) { Assert(exitCode == 0); }
 				else { exit(exitCode); }
@@ -147,10 +147,10 @@ static DWORD WINAPI pig_run_pipe_servicer(void* contextPntr)
 				&stackBuffer[0], //lpBuffer
 				numBytesRead, //nNumberOfBytesToWrite
 				&numBytesWritten, //lpNumberOfBytesWritten
-				//lpOverlapped
+				NULL //lpOverlapped
 			);
 			AssertMsg(writeResult != 0, "Failed to forward stdout/stderr bytes to console using WriteFile!");
-			AssertFmt(numBytesWritten == numBytesRead, "Failed to forward %llu byte%s to console! Only %llu/%llu byte%s forwarded",
+			AssertFmt(numBytesWritten == numBytesRead, "Failed to forward %lu byte%s to console! Only %lu/%lu byte%s forwarded",
 				numBytesRead, Plural(numBytesRead, "s"),
 				numBytesWritten,
 				numBytesRead, Plural(numBytesRead, "s")
@@ -346,7 +346,7 @@ int pig_run_win32(Str joinedExecutableAndArgsStr, pig_run_args* args)
 
 int pig_run_unix(Str joinedExecutableAndArgsStr, pig_run_args* args)
 {
-	AssertMsg(false, "pig_run_unix_is_not_implemented_yet"); //TODO: Implement me!
+	// AssertMsg(false, "pig_run_unix_is_not_implemented_yet"); //TODO: Implement me!
 	
 	int exitCode = system(joinedExecutableAndArgsStr.chars);
 	exitCode = WEXITSTATUS(exitCode);

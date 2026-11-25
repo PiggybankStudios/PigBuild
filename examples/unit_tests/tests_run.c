@@ -18,9 +18,11 @@ void RunTests_Run()
 	
 	Str lsOutput = Str_Empty_Const;
 	pig_run("ls", .run_in_shell=true, .stdoutStr=&lsOutput);
-	PrintLine("ls printed %llu bytes", lsOutput.length);
+	PrintLine("ls printed %llu bytes\n\n", lsOutput.length);
+	
 	pig_run("ls -l", .run_in_shell=true, .stdoutStr=&lsOutput);
-	PrintLine("ls -l printed %llu bytes", lsOutput.length);
+	PrintLine("ls -l printed %llu bytes\n\n", lsOutput.length);
+	
 	CliArgs args1 = EMPTY; AddArg(&args1, "-l"); AddArg(&args1, "-a");
 	pig_run("ls", .run_in_shell=true, .args=args1);
 	
@@ -35,15 +37,14 @@ void RunTests_Run()
 	
 	#if BUILDING_ON_UNIX
 	pig_run("clang abcdf",
-		.error_message="Clang didn't like the arguments we passed to it!",
-		.dont_exit_on_failure=true
+		.error_message="Clang returned an error but we didn't exit because we set tolerate_failure",
+		.tolerate_failure=true
 	);
-	#endif //BUILDING_ON_UNIX
 	
-	#if BUILDING_ON_UNIX
-	exit_on_run_failures = false;
-	pig_run("clang abcdf", .error_message="Failed, but we aren't exiting because exit_on_run_failures global is set!");
-	exit_on_run_failures = true;
+	pig_run_tolerate_failures = false;
+	pig_run("clang abcdf", .error_message="Clang returned an error but we aren't exiting because pig_run_tolerate_failures global is disabled!");
+	pig_run_tolerate_failures = true;
+	
 	pig_run("clang abcdf", .error_message="Goodbye :)");
 	AssertMsg(false, "Unreachable!");
 	#endif //BUILDING_ON_UNIX
