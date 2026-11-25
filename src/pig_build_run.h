@@ -104,7 +104,7 @@ int pig_run_(Str executablePath, pig_run_args args)
 			
 			if (!IsEmptyNt(args.error_message)) { PrintLine_E("%s", args.error_message); }
 			
-			if (!args.tolerate_failure && pig_run_tolerate_failures)
+			if (!args.tolerate_failure && !pig_run_tolerate_failures)
 			{
 				if (IsEmptyNt(args.error_message)) { Assert(exitCode == 0); }
 				else { exit(exitCode); }
@@ -202,12 +202,18 @@ static Str convert_win32_codepage_buffer_to_utf8(UINT consoleCodepage, u64 buffe
 
 int pig_run_win32(Str joinedExecutableAndArgsStr, pig_run_args* args)
 {
+	Str16 joinedExecutableAndArgsWideStr = EMPTY;
 	if (args->run_in_shell)
 	{
 		//TODO: we should escape joinedExecutableAndArgsStr so it can live inside the quotes
-		joinedExecutableAndArgsStr = JoinStrings3(StrLit("cmd.exe /d /s /c \""), joinedExecutableAndArgsStr, StrLit("\""));
+		Str shellWrappedExecutableAndArgsStr = JoinStrings3(StrLit("cmd.exe /d /s /c \""), joinedExecutableAndArgsStr, StrLit("\""));
+		joinedExecutableAndArgsWideStr = Utf8ToUtf16Str(shellWrappedExecutableAndArgsStr);
+		FreeStr(&shellWrappedExecutableAndArgsStr);
 	}
-	Str16 joinedExecutableAndArgsWideStr = Utf8ToUtf16Str(joinedExecutableAndArgsStr);
+	else
+	{
+		joinedExecutableAndArgsWideStr = Utf8ToUtf16Str(joinedExecutableAndArgsStr);
+	}
 	
 	bool capturingOutput = (args->stdoutStr != nullptr || args->stderrStr != nullptr);
 	
@@ -331,7 +337,7 @@ int pig_run_win32(Str joinedExecutableAndArgsStr, pig_run_args* args)
 	
 	CloseHandle(processInfo.hProcess);
 	CloseHandle(processInfo.hThread);
-	if (capturingOutput) { CloseHandle(&stdoutReadHandle); CloseHandle(&stderrReadHandle); }
+	if (capturingOutput) { CloseHandle(stdoutReadHandle); CloseHandle(stderrReadHandle); }
 	
 	FreeStr16(&joinedExecutableAndArgsWideStr);
 	return exitCode;
