@@ -41,9 +41,9 @@ void RunTests_Run()
 		.tolerate_failure=true
 	);
 	
-	pig_run_tolerate_failures = false;
-	pig_run("clang abcdf", .error_message="Clang returned an error but we aren't exiting because pig_run_tolerate_failures global is disabled!");
 	pig_run_tolerate_failures = true;
+	pig_run("clang abcdf", .error_message="Clang returned an error but we aren't exiting because pig_run_tolerate_failures global is enabled!");
+	pig_run_tolerate_failures = false;
 	
 	pig_run("clang abcdf", .error_message="Goodbye :)");
 	AssertMsg(false, "Unreachable!");

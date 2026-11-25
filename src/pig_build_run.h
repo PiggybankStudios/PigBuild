@@ -20,6 +20,7 @@ Description:
 #include "pig_build_array.h"
 #include "pig_build_str_array.h"
 #include "pig_build_arg_list.h"
+#include "pig_build_unicode.h"
 
 //TODO: Do we need to do any markup on globals?
 bool pig_run_tolerate_failures = false;
@@ -76,6 +77,7 @@ int pig_run_(Str executablePath, pig_run_args args)
 	if (args.dry_run)
 	{
 		if (!PigBuildDebugMode && !args.print_cmd) { PrintLine(">> %s", joinedExecutableAndArgsStr.chars); }
+		FreeStr(&joinedExecutableAndArgsStr);
 		return 0;
 	}
 	else
@@ -112,7 +114,6 @@ int pig_run_(Str executablePath, pig_run_args args)
 		}
 		
 		FreeStr(&joinedExecutableAndArgsStr);
-		
 		return exitCode;
 	}
 }
@@ -288,6 +289,7 @@ int pig_run_win32(Str joinedExecutableAndArgsStr, pig_run_args* args)
 			0, //dwCreationFlags
 			NULL //lpThreadId
 		);
+		AssertMsg(stderrServiceThreadHandle != INVALID_HANDLE_VALUE, "Failed to create thread to service stderr in pig_run_win32!");
 		
 		stdoutServiceContext.readHandle = stdoutReadHandle;
 		stdoutServiceContext.writeHandle = (args->stdoutStr == nullptr) ? GetStdHandle(STD_OUTPUT_HANDLE) : INVALID_HANDLE_VALUE;
