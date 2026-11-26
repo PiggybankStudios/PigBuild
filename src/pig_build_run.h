@@ -165,6 +165,12 @@ static DWORD WINAPI pig_run_pipe_servicer(void* contextPntr)
 	return 0;
 }
 
+//TODO: We should probably check if the buffer is valid UTF-8 and leave it as-is instead of trying to convert it with MultiByteToWideChar
+//      Many programs do not follow the selected codepage for the console they are attached to and many things output UTF-8 already,
+//      or they output ANSI only which is compatible with being treated as UTF-8.
+//      The only scenario I was really trying to handle here is a program that tries to be maximally compatible on Windows by outputting
+//      wide characters, but I don't see too many examples of that happening right now.
+//      Alternatively we could just provide an explicit option the pig_run_args that allows the calling code to decide what to treat the bytes as
 static Str convert_win32_codepage_buffer_to_utf8(UINT consoleCodepage, u64 bufferLength, const u8* bufferPntr)
 {
 	// MultiByteToWideChar treats a bufferLength of 0 as an error, so we return early instead
@@ -203,6 +209,32 @@ static Str convert_win32_codepage_buffer_to_utf8(UINT consoleCodepage, u64 buffe
 
 int pig_run_win32(Str joinedExecutableAndArgsStr, pig_run_args* args)
 {
+	bool capturingOutput = (args->stdoutStr != nullptr || args->stderrStr != nullptr);
+	
+	SECURITY_ATTRIBUTES securityAttribs = { .nLength=sizeof(SECURITY_ATTRIBUTES), .lpSecurityDescriptor=NULL, .bInheritHandle=TRUE };
+	HANDLE stdoutReadHandle, stdoutWriteHandle;
+	HANDLE stderrReadHandle, stderrWriteHandle;
+	if (capturingOutput)
+	{
+		if (!CreatePipe(&stdoutReadHandle, &stdoutWriteHandle, &securityAttribs, /*nSize=*/0))
+		{
+			AssertMsg(false, "Failed to create stdout pipe in pig_run_win32!");
+			return PIG_RUN_PIPE_CREATION_FAILED;
+		}
+		BOOL setHandleInfoResult1 = SetHandleInformation(stdoutReadHandle, HANDLE_FLAG_INHERIT, /*dwFlags=*/0);
+		AssertMsg(setHandleInfoResult1 != 0, "SetHandleInformation call on stdout handle failed inside pig_run!");
+		
+		if (!CreatePipe(&stderrReadHandle, &stderrWriteHandle, &securityAttribs, /*nSize=*/0))
+		{
+			AssertMsg(false, "Failed to create stderr pipe in pig_run_win32!");
+			CloseHandle(stdoutReadHandle);
+			CloseHandle(stdoutWriteHandle);
+			return PIG_RUN_PIPE_CREATION_FAILED;
+		}
+		BOOL setHandleInfoResult2 = SetHandleInformation(stderrReadHandle, HANDLE_FLAG_INHERIT, /*dwFlags=*/0);
+		AssertMsg(setHandleInfoResult2 != 0, "SetHandleInformation call on stderr handle failed inside pig_run!");
+	}
+	
 	Str16 joinedExecutableAndArgsWideStr = EMPTY;
 	if (args->run_in_shell)
 	{
@@ -214,34 +246,6 @@ int pig_run_win32(Str joinedExecutableAndArgsStr, pig_run_args* args)
 	else
 	{
 		joinedExecutableAndArgsWideStr = Utf8ToUtf16Str(joinedExecutableAndArgsStr);
-	}
-	
-	bool capturingOutput = (args->stdoutStr != nullptr || args->stderrStr != nullptr);
-	
-	SECURITY_ATTRIBUTES securityAttribs = { .nLength=sizeof(SECURITY_ATTRIBUTES), .lpSecurityDescriptor=NULL, .bInheritHandle=TRUE };
-	HANDLE stdoutReadHandle, stdoutWriteHandle;
-	HANDLE stderrReadHandle, stderrWriteHandle;
-	if (capturingOutput)
-	{
-		if (!CreatePipe(&stdoutReadHandle, &stdoutWriteHandle, &securityAttribs, /*nSize=*/0))
-		{
-			AssertMsg(false, "Failed to create stdout pipe on Windows in pig_run!");
-			FreeStr16(&joinedExecutableAndArgsWideStr);
-			return PIG_RUN_PIPE_CREATION_FAILED;
-		}
-		BOOL setHandleInfoResult1 = SetHandleInformation(stdoutReadHandle, HANDLE_FLAG_INHERIT, /*dwFlags=*/0);
-		AssertMsg(setHandleInfoResult1 != 0, "SetHandleInformation call on stdout handle failed inside pig_run!");
-		
-		if (!CreatePipe(&stderrReadHandle, &stderrWriteHandle, &securityAttribs, /*nSize=*/0))
-		{
-			AssertMsg(false, "Failed to create stderr pipe on Windows in pig_run!");
-			CloseHandle(stdoutReadHandle);
-			CloseHandle(stdoutWriteHandle);
-			FreeStr16(&joinedExecutableAndArgsWideStr);
-			return PIG_RUN_PIPE_CREATION_FAILED;
-		}
-		BOOL setHandleInfoResult2 = SetHandleInformation(stderrReadHandle, HANDLE_FLAG_INHERIT, /*dwFlags=*/0);
-		AssertMsg(setHandleInfoResult2 != 0, "SetHandleInformation call on stderr handle failed inside pig_run!");
 	}
 	
 	STARTUPINFOW startupInfo = {
@@ -289,7 +293,7 @@ int pig_run_win32(Str joinedExecutableAndArgsStr, pig_run_args* args)
 			0, //dwCreationFlags
 			NULL //lpThreadId
 		);
-		AssertMsg(stderrServiceThreadHandle != INVALID_HANDLE_VALUE, "Failed to create thread to service stderr in pig_run_win32!");
+		AssertMsg(stderrServiceThreadHandle != NULL, "Failed to create thread to service stderr in pig_run_win32!");
 		
 		stdoutServiceContext.readHandle = stdoutReadHandle;
 		stdoutServiceContext.writeHandle = (args->stdoutStr == nullptr) ? GetStdHandle(STD_OUTPUT_HANDLE) : INVALID_HANDLE_VALUE;
@@ -352,14 +356,148 @@ int pig_run_win32(Str joinedExecutableAndArgsStr, pig_run_args* args)
 // +--------------------------------------------------------------+
 #if BUILDING_ON_UNIX
 
+extern char** environ; //TODO: Do we have to implement this?
+
 int pig_run_unix(Str joinedExecutableAndArgsStr, pig_run_args* args)
 {
-	// AssertMsg(false, "pig_run_unix_is_not_implemented_yet"); //TODO: Implement me!
+	AssertMsg(joinedExecutableAndArgsStr.length > 0, "Called pig_run with no executable name!");
 	
-	int exitCode = system(joinedExecutableAndArgsStr.chars);
-	exitCode = WEXITSTATUS(exitCode);
+	// int exitCode = system(joinedExecutableAndArgsStr.chars);
+	// exitCode = WEXITSTATUS(exitCode);
 	
-	return exitCode;
+	bool capturingOutput = (args->stdoutStr != nullptr || args->stderrStr != nullptr);
+	
+	int stdoutPipeHandles[2];
+	int stderrPipeHandles[2];
+	if (capturingOutput)
+	{
+		//NOTE: We can't use pipe2 here because it's only available on MacOS 27.0 or newer, and the default target for Apple Clang in my experience is 26.0 so that's how the build.sh compiles the build_script.c
+		if (pipe(stdoutPipeHandles) != 0)
+		{
+			AssertMsg(false, "Failed to create stdout pipe in pig_run_unix!");
+			return PIG_RUN_PIPE_CREATION_FAILED;
+		}
+		//NOTE: The separation of pipe() and fcntl() allows a potential race condition if you spawn sub-processes from other threads!
+		//TODO: Maybe we should use pipe2 and change out call to Apple Clang to enforce MacOS 27.0 target?
+		//TODO: Maybe we could use POSIX_SPAWN_CLOEXEC_DEFAULT extension which has been available since MacOS 10.7
+		int fcntlResult1 = fcntl(stdoutPipeHandles[0], F_SETFD, FD_CLOEXEC);
+		Assert(fcntlResult1 == 0);
+		
+		if (pipe(stderrPipeHandles) != 0)
+		{
+			AssertMsg(false, "Failed to create stderr pipe in pig_run_unix!");
+			close(stdoutPipeHandles[0]); close(stdoutPipeHandles[1]);
+			return PIG_RUN_PIPE_CREATION_FAILED;
+		}
+		int fcntlResult2 = fcntl(stderrPipeHandles[0], F_SETFD, FD_CLOEXEC);
+		Assert(fcntlResult2 == 0);
+	}
+	
+	// We need to split the joined string into null-terminated array of char*
+	// First we split into StrArray, then we collect all the pntrs into Array_CStr
+	StrArray argvStrs = SplitStringBySpacesOutsideQuotes(joinedExecutableAndArgsStr);
+	AssertFmt(argvStrs.length >= 1, "Failed to split \"%.*s\" into at least one part", StrPrint(joinedExecutableAndArgsStr));
+	Array_CStr argvCStrs = EMPTY;
+	GrowArray_CStr(&argvCStrs, argvStrs.length);
+	for (u64 sIndex = 0; sIndex < argvStrs.length; sIndex++)
+	{
+		AddValueArray_CStr(&argvCStrs, argvStrs.strings[sIndex].chars);
+	}
+	AddValueArray_CStr(&argvCStrs, nullptr);
+	// PrintLine_E("Split \"%.*s\" into %llu part%s", StrPrint(joinedExecutableAndArgsStr), argvStrs.length, Plural(argvStrs.length, "s"));
+	// for (u64 sIndex = 0; sIndex < argvCStrs.length; sIndex++) { PrintLine_E("\tArg[%llu]: \"%s\"", sIndex, argvCStrs.values[sIndex]); }
+	
+	posix_spawn_file_actions_t fileActions;
+	posix_spawn_file_actions_init(&fileActions);
+	if (capturingOutput)
+	{
+		posix_spawn_file_actions_adddup2(&fileActions, stdoutPipeHandles[1], STDOUT_FILENO);
+		posix_spawn_file_actions_adddup2(&fileActions, stderrPipeHandles[1], STDERR_FILENO);
+	}
+	
+	pid_t spawnedPid = 0;
+	int spawnResult = posix_spawnp(
+		&spawnedPid,
+		argvCStrs.values[0],
+		&fileActions,
+		NULL,
+		argvCStrs.values,
+		environ
+	);
+	posix_spawn_file_actions_destroy(&fileActions);
+	if (capturingOutput) { close(stdoutPipeHandles[1]); close(stderrPipeHandles[1]); }
+	
+	if (spawnResult != 0)
+	{
+		if (capturingOutput) { close(stdoutPipeHandles[0]); close(stderrPipeHandles[0]); }
+		FreeArray_CStr(&argvCStrs);
+		FreeStrArray(&argvStrs);
+		return PIG_RUN_FAILED_TO_START;
+	}
+	
+	if (capturingOutput)
+	{
+		struct pollfd pollFileDescriptors[2] = {
+			{ stdoutPipeHandles[0], POLLIN, 0 },
+			{ stderrPipeHandles[0], POLLIN, 0 },
+		};
+		u8 stackBuffer[4096];
+		Array_u8 stdoutBuffer = EMPTY;
+		Array_u8 stderrBuffer = EMPTY;
+		u8 numFilesDescriptorsOpen = 2;
+		while (numFilesDescriptorsOpen > 0)
+		{
+			int pollResult = poll(pollFileDescriptors, 2, -1);
+			if (pollResult < 0)
+			{
+				if (errno == EINTR) { continue; }
+				else { break; }
+			}
+			for (u8 hIndex = 0; hIndex < 2; hIndex++)
+			{
+				if (pollFileDescriptors[hIndex].fd < 0 || !pollFileDescriptors[hIndex].revents) { continue; }
+				
+				ssize_t numBytesRead = read(
+					pollFileDescriptors[hIndex].fd,
+					&stackBuffer[0],
+					sizeof(stackBuffer)
+				);
+				if (numBytesRead > 0)
+				{
+					AddValuesArray_u8(
+						(hIndex == 0) ? &stdoutBuffer : &stderrBuffer,
+						(u64)numBytesRead,
+						&stackBuffer[0]
+					);
+				}
+				else if (numBytesRead < 0 && errno == EINTR)
+				{
+					continue;
+				}
+				else
+				{
+					close(pollFileDescriptors[hIndex].fd);
+					pollFileDescriptors[hIndex].fd = -1;
+					numFilesDescriptorsOpen--;
+				}
+			}
+		}
+	}
+	
+	int exitCode = 0;
+	int waitResult = 0;
+	do
+	{
+		waitResult = waitpid(
+			spawnedPid,
+			&exitCode,
+			0 //options
+		);
+	} while(waitResult >= 0 || errno == EINTR);
+	
+	FreeArray_CStr(&argvCStrs);
+	FreeStrArray(&argvStrs);
+	return WIFEXITED(exitCode) ? WEXITSTATUS(exitCode) : 128 + WTERMSIG(exitCode);
 }
 
 

@@ -18,10 +18,10 @@ void RunTests_Run()
 	
 	Str lsOutput = Str_Empty_Const;
 	pig_run("ls", .run_in_shell=true, .stdoutStr=&lsOutput);
-	PrintLine("ls printed %llu bytes\n\n", lsOutput.length);
+	PrintLine("ls printed %llu bytes", lsOutput.length);
 	
 	pig_run("ls -l", .run_in_shell=true, .stdoutStr=&lsOutput);
-	PrintLine("ls -l printed %llu bytes\n\n", lsOutput.length);
+	PrintLine("ls -l printed %llu bytes", lsOutput.length);
 	
 	CliArgs args1 = EMPTY; AddArg(&args1, "-l"); AddArg(&args1, "-a");
 	pig_run("ls", .run_in_shell=true, .args=args1);

@@ -161,6 +161,12 @@ Date:   03\21\2026
 #include <dirent.h>
 #endif //!BUILDING_ON_WINDOWS
 
+#if BUILDING_ON_UNIX
+#include <fcntl.h> //needed for O_CLOEXEC and probably other things in pig_build_run.h
+#include <spawn.h> //needed for posix_spawn_file_actions_t and probably other things in pig_build_run.h
+#include <poll.h> //needed for pollfd and probably other things in pig_build_run.h
+#endif
+
 // +--------------------------------------------------------------+
 // |                           Defines                            |
 // +--------------------------------------------------------------+
