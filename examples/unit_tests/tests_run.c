@@ -6,6 +6,27 @@ Description:
 	** Holds tests for Scan code inside "pig_build_run.h"
 */
 
+#if BUILDING_ON_WINDOWS
+void CommandPromptEchoTest(Str stringToEcho, Str expectedEcho)
+{
+	if (IsEmptyStr(expectedEcho)) { expectedEcho = JoinStrings2(stringToEcho, StrLit("\r\n")); }
+	
+	CliArgs args = EMPTY;
+	AddArgStr(&args, CLI_UNQUOTED_ARG, stringToEcho);
+	
+	Str echoOutput = Str_Empty_Const;
+	pig_run("echo", .args=args, .run_in_shell=true, .stdoutStr=&echoOutput);
+	
+	Str expectedEchoHex = ConvertNonAsciiGlyphCharsToHex(expectedEcho, true, false, "<%02X>");
+	Str echoOutputHex = ConvertNonAsciiGlyphCharsToHex(echoOutput, true, false, "<%02X>");
+	AssertFmt(StrExactEquals(echoOutput, expectedEcho), "Expected output to be\n%.*s\nnot\n%.*s", StrPrint(expectedEchoHex), StrPrint(echoOutputHex))
+	// PrintLine("Echo gave us: %.*s", StrPrint(echoOutputHex));
+	
+	FreeStr(&echoOutputHex);
+	FreeStr(&echoOutput);
+}
+#endif //BUILDING_ON_WINDOWS
+
 void RunTests_Run()
 {
 	#if BUILDING_ON_WINDOWS
@@ -13,6 +34,12 @@ void RunTests_Run()
 	Str dirOutput = Str_Empty_Const;
 	pig_run("dir", .run_in_shell=true, .stdoutStr=&dirOutput);
 	PrintLine("dir printed %llu bytes", dirOutput.length);
+	
+	CommandPromptEchoTest(StrLit("Hello World!"), Str_Empty);
+	CommandPromptEchoTest(StrLit("a\bc"), Str_Empty);
+	CommandPromptEchoTest(StrLit("a \t c"), Str_Empty);
+	CommandPromptEchoTest(StrLit("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"), Str_Empty);
+	CommandPromptEchoTest(StrLit("~!@#$?.,-=_+:;[]{}()`\' \" \\%*"), Str_Empty); //NOTE: Characters that cause problems: ^ < > / | &
 	
 	#elif BUILDING_ON_UNIX
 	

@@ -446,4 +446,61 @@ Str Utf16ToUtf8Str(Str16 wideStr)
 	return result;
 }
 
+// +--------------------------------------------------------------+
+// |                    Miscellaneous Helpers                     |
+// +--------------------------------------------------------------+
+//NOTE: hexFormatStr should have a single format specifier that works with a u32 codepoint, like "<%04X>"
+Str ConvertNonAsciiGlyphCharsToHex(Str stringWithNonPrintableChars, bool printWhitespace, bool printNewLines, const char* hexFormatStr)
+{
+	if (IsEmptyNt(hexFormatStr)) { hexFormatStr = "<%04X>"; }
+	
+	Str result = Str_Empty_Const;
+	
+	for (u8 pass = 0; pass < 2; pass++)
+	{
+		u64 outIndex = 0;
+		Str consumeStr = stringWithNonPrintableChars;
+		while (consumeStr.length > 0)
+		{
+			if (IsCharAsciiGlyph(consumeStr.chars[0]) ||
+				(printWhitespace && (consumeStr.chars[0] == ' ' || consumeStr.chars[0] == '\t')) ||
+				(printNewLines && (consumeStr.chars[0] == '\n' || consumeStr.chars[0] == '\r')))
+			{
+				if (pass == 1)
+				{
+					Assert(outIndex+1 <= result.length);
+					result.chars[outIndex] = consumeStr.chars[0];
+				}
+				outIndex++;
+				consumeStr = StrSliceFrom(consumeStr, 1);
+			}
+			else
+			{
+				u32 codepoint = TakeNextUtf8Codepoint(&consumeStr);
+				Str formattedStr = FormatStr(hexFormatStr, codepoint);
+				if (pass == 1)
+				{
+					Assert(outIndex + formattedStr.length <= result.length);
+					memcpy(&result.chars[outIndex], formattedStr.chars, formattedStr.length);
+				}
+				outIndex += formattedStr.length;
+				FreeStr(&formattedStr);
+			}
+		}
+		
+		if (pass == 0)
+		{
+			if (outIndex == 0) { break; }
+			result = AllocStr(outIndex);
+		}
+		else
+		{
+			Assert(outIndex == result.length);
+			result.chars[result.length] = '\0';
+		}
+	}
+	
+	return result;
+}
+
 #endif //  _PIG_BUILD_UNICODE_H

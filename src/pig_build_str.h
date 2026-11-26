@@ -315,6 +315,19 @@ bool IsCharWhitespace(char character)
 	else if (character == '\t') { return true; }
 	else { return false; }
 }
+// Any character which is one byte in UTF-8 and displays a visual glyph (so no spaces, tabs, control characters, etc.)
+bool IsCharAsciiGlyph(char character)
+{
+	return (character >= '!' && character <= '~');
+}
+// Same as IsCharAsciiGlyph except we include whitespace and new-line chars
+bool IsCharRegularAscii(char character)
+{
+	if (IsCharAsciiGlyph(character)) { return true; }
+	if (character == ' ' || character == '\t') { return true; }
+	if (character == '\n' || character == '\r') { return true; }
+	return false;
+}
 bool IsCharIdentifier(char character, bool isFirstChar)
 {
 	if (character == '_') { return true; }

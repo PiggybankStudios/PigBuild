@@ -384,6 +384,7 @@
 			"MatcherCharSet MatcherSet_Range(char minChar, char maxChar)",
 			"MatcherCharSet MatcherSet_Str(Str charsStr)",
 			"Str AllocStr(u64 length)",
+			"Str ConvertNonAsciiGlyphCharsToHex(Str stringWithNonPrintableChars, const char* hexFormatStr)",
 			"Str ConvertU64ToHexStr(u64 value, bool upperCase)",
 			"Str CopyStr(Str strToCopy)",
 			"Str CopyStrNt(const char* strToCopyNt)",
