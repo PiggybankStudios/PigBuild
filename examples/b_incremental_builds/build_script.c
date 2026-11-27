@@ -120,7 +120,7 @@ void FindSourceFilesInFolder(Array_BuildFile* files, Str folder, bool recursive)
 			{
 				BuildFile* file = AddItemArray_BuildFile(files);
 				file->isHeader = StrAnyCaseEndsWith(iterPath, StrLit(".h"));
-				file->path = GetFullPath(iterPath, '/');
+				file->path = GetFullPath(iterPath);
 				file->fileName = GetFileNamePart(file->path, /*includeExtension=*/true);
 				if (!file->isHeader)
 				{

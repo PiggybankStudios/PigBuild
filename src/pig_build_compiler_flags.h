@@ -1,14 +1,17 @@
 /*
-File:   pig_build_cli_flags.h
+File:   pig_build_compiler_flags.h
 Author: Taylor Robbins
 Date:   06\16\2025
 Description:
-	** Contains a bunch of #defines that help us make flags for various CLI programs more readable in the build_script.c
-	** Supported CLI Tools: msvc cl\link\rc, clang, gcc, emcc, shdc, pdc
+	** Contains a bunch of #defines that help us make flags for various compilers more readable in the build_script.c
+	** Supported Compilers: msvc cl\link\rc, clang, gcc
+	** TODO: shdc flags live here temporarily (sokol shader cross compiler)
+	** See optional\pig_build_emscripten.h for `emcc` flags
+	** See optional\pig_build_playdate.h for `pdc` flags
 */
 
-#ifndef _PIG_BUILD_CLI_FLAGS_H
-#define _PIG_BUILD_CLI_FLAGS_H
+#ifndef _PIG_BUILD_COMPILER_FLAGS_H
+#define _PIG_BUILD_COMPILER_FLAGS_H
 
 // +--------------------------------------------------------------+
 // |                   MSVC Compiler CLI Flags                    |
@@ -32,7 +35,8 @@ Description:
 #define CL_LANG_VERSION                     "/std:[VAL]" //clatest, c++20
 #define CL_EXPERIMENTAL                     "/experimental:[VAL]" //c11atomics
 #define CL_DISABLE_WARNING                  "/wd[VAL]"
-#define CL_ENABLE_WARNING                   "/we[VAL]" //5262
+#define CL_ENABLE_WARNING                   "/w1[VAL]"
+#define CL_SET_WARNING_AS_ERROR             "/we[VAL]" //5262
 #define CL_FULL_FILE_PATHS                  "/FC"
 #define CL_WARNING_LEVEL                    "/W[VAL]" //0, 1, 2, 3, 4, all
 #define CL_NO_LOGO                          "/nologo" //Suppress the startup banner (the message about copyright and version info)
@@ -47,10 +51,11 @@ Description:
 #define CL_STD_LIB_DYNAMIC_DBG              "/MDd"
 #define CL_OPTIMIZATION_LEVEL               "/O[VAL]" //t, y, 2, d, b1
 #define CL_INLINE_EXPANSION_LEVEL           "/Ob[VAL]" //0, 1, 2, 3
-#define CL_PRECOMPILE_ONLY                  "/P"
-#define CL_PRECOMPILE_PRESERVE_COMMENTS     "/C"
+#define CL_PREPROCESS_TO_STDOUT             "/E" //writes to stdout
+#define CL_PREPROCESS_TO_FILE               "/P" //writes to .i file
+#define CL_PREPROCESS_PRESERVE_COMMENTS     "/C"
 #define CL_ENABLE_FUZZER                    "/fsanitize=fuzzer"
-#define CL_ENABLE_ADDRESS_SANATIZER         "/fsanitize=address"
+#define CL_ENABLE_ADDRESS_SANITIZER         "/fsanitize=address"
 #define CL_ENABLE_BUFFER_SECURITY_CHECK     "/GS" //Detects some buffer overruns that overwrite a function's return address, exception handler address, or certain types of parameters
 #define CL_DISABLE_MINIMAL_REBUILD          "/Gm-" //Disables minimal rebuild (a deprecated feature), which determines whether C++ source files that include changed C++ class definitions (stored in header (.h) files) need to be recompiled.
 #define CL_ENABLE_RUNTIME_CHECKS            "/RTC[VAL]" //1 = Enable fast runtime checks (Equivalent to `/RTCsu`)
@@ -75,7 +80,7 @@ Description:
 #define CL_WARNING_NAMED_TYPEDEF_IN_PARENTHESES          4115 //named type definition in parentheses
 #define CL_WARNING_SWITCH_ONLY_DEFAULT                   4065 //Switch statement contains 'default' but no 'case' labels
 #define CL_WARNING_UNREFERENCED_FUNC_PARAMETER           4100 //Unreferenced formal parameter [W4]
-#define CL_WARNING_UNREFERENCED_LCOAL_VARIABLE           4101 //Unreferenced local variable [W3]
+#define CL_WARNING_UNREFERENCED_LOCAL_VARIABLE           4101 //Unreferenced local variable [W3]
 #define CL_WARNING_CONDITIONAL_EXPR_IS_CONSTANT          4127 //Conditional expression is constant [W4]
 #define CL_WARNING_LOCAL_VAR_INIT_BUT_NOT_REFERENCED     4189 //Local variable is initialized but not referenced [W4]
 #define CL_WARNING_UNREACHABLE_CODE_DETECTED             4702 //Unreachable code [W4]
@@ -90,7 +95,7 @@ Description:
 #define LINK_OUTPUT_FILE               "/OUT:\"[VAL]\""
 #define LINK_LIBRARY_DIR               "/LIBPATH:\"[VAL]\""
 #define LINK_CREATE_ASSEMBLY_MANIFEST  "/MANIFEST" //Creates a side-by-side manifest file (XML) See https://learn.microsoft.com/en-us/windows/win32/SbsCs/manifest-files-reference
-#define LINK_ASSEMBLY_MANIFEST_FILE    "/MANIFESTFILE:\"[VAL]\"" //Change the default name of the manifest file
+#define LINK_MANIFESTFILE              "/ManifestFile:\"[VAL]\"" //Change the name of the manifest file (tests.intermediate.manifest)
 #define LINK_DATA_EXEC_COMPAT          "/NXCOMPAT" //Indicates that an executable is compatible with the Windows Data Execution Prevention feature
 #define LINK_ENABLE_ASLR               "/DYNAMICBASE" //Enables Address Space Layout Randomization
 #define LINK_DISABLE_ASLR              "/DYNAMICBASE:NO" //Disables Address Space Layout Randomization
@@ -103,7 +108,6 @@ Description:
 #define LINK_EMBED_UAC_INFO            "/MANIFESTUAC" //Specifies whether User Account Control (UAC) information is embedded in the program manifest
 #define LINK_DONT_EMBED_UAC_INFO       "/MANIFESTUAC:NO"
 #define LINK_EMBED_UAC_INFO_EX         "/MANIFESTUAC:\"[VAL]\"" //You can enter strings like "level='asInvoker' uiAccess='false'"
-#define LINK_MANIFESTFILE              "/ManifestFile:\"[VAL]\"" //tests.intermediate.manifest
 #define LINK_LINK_TIME_CODEGEN_FILE    "/LTCGOUT:\"[VAL]\"" //Specifies the filename for link-time code generation
 #define LINK_INCREMENTAL_FILE_NAME     "/ILK:\"[VAL]\""
 #define LINK_IMPORT_LIBRARY_FILE       "/IMPLIB:\"[VAL]\"" //Specify the name of the import library (the .lib that pairs with a .dll)
@@ -143,8 +147,8 @@ Description:
 #define CLANG_RPATH_DIR                "-rpath \"[VAL]\""
 #define CLANG_SYSTEM_LIBRARY           "-l[VAL]"
 #define CLANG_FRAMEWORK                "-framework [VAL]"
-#define CLANG_PRECOMPILE_ONLY          "-E"
-#define CLANG_PRECOMPILE_EMIT_DEFINES  "-dM" //Emit #defines instead of preprocessed output
+#define CLANG_PREPROCESS_TO_STDOUT     "-E" //writes to stdout
+#define CLANG_PREPROCESS_EMIT_DEFINES  "-dM" //Emit #defines instead of preprocessed output
 #define CLANG_INCLUDE_MACROS           "-dD" //Only matters when -E is passed
 #define CLANG_Q_FLAG                   "-Q[VAL]" //TODO: Name this better!
 #define CLANG_BUILD_SHARED_LIB         "-shared"
@@ -170,11 +174,10 @@ Description:
 #define CLANG_NO_STD_LIBRARIES         "--no-standard-libraries"
 #define CLANG_NO_STD_INCLUDES          "--no-standard-includes"
 #define CLANG_NO_CANONICAL_PREFIXES    "-no-canonical-prefixes" //TODO: Better name? Description?
-#define CLANG_RPATH_DIR                "-rpath \"[VAL]\""
-#define CLANG_DATA_SECTIONS            "-fdata-sections" //TODO: Better name? Decription?
-#define CLANG_FUNCTION_SECTIONS        "-ffunction-sections" //TODO: Better name? Decription?
-#define CLANG_UNWIND_TABLES            "-funwind-tables" //TODO: Better name? Decription?
-#define CLANG_STACK_PROTECTOR_STRONG   "-fstack-protector-strong" //TODO: Better name? Decription?
+#define CLANG_DATA_SECTIONS            "-fdata-sections" //TODO: Better name? Description?
+#define CLANG_FUNCTION_SECTIONS        "-ffunction-sections" //TODO: Better name? Description?
+#define CLANG_UNWIND_TABLES            "-funwind-tables" //TODO: Better name? Description?
+#define CLANG_STACK_PROTECTOR_STRONG   "-fstack-protector-strong" //TODO: Better name? Description?
 #define CLANG_NO_STDLIB_CPP            "-nostdlib++"
 
 #define CLANG_WARNING_UNKNOWN_WARNING_OPTION           "unknown-warning-option" //TODO: What does this warning look like?
@@ -206,7 +209,7 @@ Description:
 #define EXE_GCC     "gcc"
 
 #define GCC_COMPILE                  "-c"
-#define GCC_PRECOMPILE_ONLY          "-E"
+#define GCC_PREPROCESS_TO_STDOUT     "-E" //writes to stdout
 #define GCC_LANG_VERSION             "-std=[VAL]" //gnu17
 #define GCC_OUTPUT_FILE              "-o \"[VAL]\""
 #define GCC_OPTIMIZATION_LEVEL       "-O[VAL]" //TODO: This should be tested! (I assume it's the same as clang)
@@ -256,6 +259,7 @@ Description:
 // +--------------------------------------------------------------+
 // |          Sokol Shader Cross-Compiler SHDC CLI Flags          |
 // +--------------------------------------------------------------+
+//TODO: This should really move into something inside optional/ folder
 #if BUILDING_ON_WINDOWS
 #define EXE_SHDC        "src/third_party/_tools/win32/sokol-shdc.exe"
 #define EXE_SHDC_NAME   "sokol-shdc.exe"
@@ -280,4 +284,4 @@ Description:
 #define SHDC_INPUT            "--input=\"[VAL]\""
 #define SHDC_OUTPUT           "--output=\"[VAL]\""
 
-#endif //  _PIG_BUILD_CLI_FLAGS_H
+#endif //  _PIG_BUILD_COMPILER_FLAGS_H

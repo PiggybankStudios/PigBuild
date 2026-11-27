@@ -32,7 +32,7 @@ void Build(Str routingPrefix, Str compiler, Str exeName, bool windowsShell)
 		InitializeMsvcIf(StrLit(PIG_BUILD_ROOT), &isMsvcInitialized);
 	}
 	
-	// NOTE: See "pig_build_cli_flags.h" for these compiler flag #defines
+	// NOTE: See "pig_build_compiler_flags.h" for these compiler flag #defines
 	CliArgs args = EMPTY;
 	args.pathSepChar = windowsShell ? '\\' : '/';
 	AddArgNt(&args, CLI_QUOTED_ARG, "[ROOT]/main.c");

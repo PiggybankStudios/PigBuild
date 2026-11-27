@@ -39,7 +39,7 @@ The code in this repo used to live in [PigCore](https://github.com/PiggybankStud
 	
 	* `#include "pig_build_recompile.h"` - Contains the `RecompileIfNeeded` function that helps the build-script hash it's own source code and decide that it needs to be recompiled
 	
-	* `#include "pig_build_cli_flags.h"` - Contains a bunch of `#define`s that give readable names to CLI flags that we pass to the compilers: Clang, MSVC and GCC. That way we can do `AddStr(&args, CL_WARNINGS_AS_ERRORS)` instead of `AddStr(&args, "/WX")`
+	* `#include "pig_build_compiler_flags.h"` - Contains a bunch of `#define`s that give readable names to CLI flags that we pass to the compilers: Clang, MSVC and GCC. That way we can do `AddStr(&args, CL_WARNINGS_AS_ERRORS)` instead of `AddStr(&args, "/WX")`
 	
 	* `#include "pig_build_tags.h"` - Tags are an optional system built into `CliArgs` that allows us to put all out arguments into one list that conditionally apply to each compiler invocation based on the matching of `includeTags` and `excludeTags`. This file just `#define`s a basic set of tag strings like `T_MSVC_CL`, `T_LINUX`, `T_LANG_C` etc.
 	

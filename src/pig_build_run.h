@@ -97,7 +97,6 @@ int pig_run_(Str executablePath, pig_run_args args)
 		
 		if (exitCode != 0)
 		{
-			
 			PrintLine_E("ERROR: \"%.*s\" exited with code %d\nCmd >> %s",
 				StrPrint(executablePath),
 				exitCode,

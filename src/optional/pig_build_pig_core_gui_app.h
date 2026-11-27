@@ -26,7 +26,7 @@ Description:
 #include "pig_build_array.h"
 #include "pig_build_str_array.h"
 #include "pig_build_arg_list.h"
-#include "pig_build_cli_flags.h"
+#include "pig_build_compiler_flags.h"
 #include "pig_build_tags.h"
 #include "pig_build_misc.h"
 #include "pig_build_file.h"

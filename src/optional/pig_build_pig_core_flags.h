@@ -15,7 +15,7 @@ Description:
 
 #include "pig_build_base.h"
 #include "pig_build_str.h"
-#include "pig_build_cli_flags.h"
+#include "pig_build_compiler_flags.h"
 #include "pig_build_tags.h"
 #include "pig_build_arg_list.h"
 #include "pig_build_android.h"
@@ -88,7 +88,7 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	// +==========================================================+
 	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_LANG_C, CL_LANG_VERSION, "clatest"); //Use latest C language spec features
 	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_LANG_C, CL_EXPERIMENTAL, "c11atomics"); //Enables _Atomic types
-	// AddTaggedArg(compilerFlags, T_MSVC_CL T_LANG_C, CL_ENABLE_ADDRESS_SANATIZER);
+	// AddTaggedArg(compilerFlags, T_MSVC_CL T_LANG_C, CL_ENABLE_ADDRESS_SANITIZER);
 	AddTaggedArgNt(compilerFlags,  T_MSVC_CL T_LANG_CPP, CL_LANG_VERSION, "c++20");
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_LANG_CPP, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_ENUMERATION_MUST_HAVE_UNDERLYING_TYPE));
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_LANG_CPP, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_BITWISE_OP_BETWEEN_ENUMS));
@@ -144,7 +144,7 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	//We don't care about these warnings in DEBUG_BUILDs, but we will solve them when we go to build in release mode because they probably indicate mistakes at that point
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_SWITCH_ONLY_DEFAULT));
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_UNREFERENCED_FUNC_PARAMETER));
-	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_UNREFERENCED_LCOAL_VARIABLE));
+	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_UNREFERENCED_LOCAL_VARIABLE));
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_CONDITIONAL_EXPR_IS_CONSTANT));
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_LOCAL_VAR_INIT_BUT_NOT_REFERENCED));
 	AddTaggedArgStr(compilerFlags, T_MSVC_CL T_DEBUG_BUILD, CL_DISABLE_WARNING, FormatStr("%d", CL_WARNING_UNREACHABLE_CODE_DETECTED));
@@ -269,9 +269,9 @@ void FillPigCoreFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str pigCoreP
 	// | DUMP_ASSEMBLY and DUMP_PREPROCESSOR  |
 	// +======================================+
 	AddTaggedArgNt(compilerFlags, T_MSVC_CL T_DUMP_ASSEMBLY,     CL_GENERATE_ASSEMB_LISTING, "s"); //Generate assembly listing files with source code included
-	AddTaggedArg(compilerFlags,   T_MSVC_CL T_DUMP_PREPROCESSOR, CL_PRECOMPILE_ONLY);
-	AddTaggedArg(compilerFlags,   T_MSVC_CL T_DUMP_PREPROCESSOR, CL_PRECOMPILE_PRESERVE_COMMENTS);
-	AddTaggedArg(compilerFlags,   T_CLANG   T_DUMP_PREPROCESSOR, CLANG_PRECOMPILE_ONLY);
+	AddTaggedArg(compilerFlags,   T_MSVC_CL T_DUMP_PREPROCESSOR, CL_PREPROCESS_TO_FILE);
+	AddTaggedArg(compilerFlags,   T_MSVC_CL T_DUMP_PREPROCESSOR, CL_PREPROCESS_PRESERVE_COMMENTS);
+	AddTaggedArg(compilerFlags,   T_CLANG   T_DUMP_PREPROCESSOR, CLANG_PREPROCESS_TO_STDOUT);
 	AddTaggedArg(compilerFlags,   T_CLANG   T_DUMP_PREPROCESSOR, CLANG_INCLUDE_MACROS);
 	
 	// +==============================+

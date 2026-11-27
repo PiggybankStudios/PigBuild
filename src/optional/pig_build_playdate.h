@@ -13,7 +13,7 @@ Description:
 
 #include "pig_build_base.h"
 #include "pig_build_str.h"
-#include "pig_build_cli_flags.h"
+#include "pig_build_compiler_flags.h"
 #include "pig_build_arg_list.h"
 
 #define EXE_PDC "pdc"

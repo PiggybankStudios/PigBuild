@@ -43,7 +43,7 @@ Description:
 // +--------------------------------------------------------------+
 // |                   Composing Argument Lists                   |
 // +--------------------------------------------------------------+
-// We have this string inside a bunch of #defines in places like pig_build_cli_flags.h
+// We have this string inside a bunch of #defines in places like pig_build_compiler_flags.h
 // This allows us to replace that part of the argument string with an actual value, adding escaping if the argument is in quotes
 #define CLI_VAL_STR                   "[VAL]"
 #define CLI_UNQUOTED_ARG              "[VAL]"
