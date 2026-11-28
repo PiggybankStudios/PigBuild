@@ -114,7 +114,7 @@ void FillPlaydateFlags(CliArgs* compilerFlags, CliArgs* linkerFlags, Str playdat
 		AddTaggedArg(linkerFlags,    T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_ENABLE_INCREMENTAL);
 		AddTaggedArgNt(linkerFlags,  T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_INCREMENTAL_FILE_NAME, "tests.ilk"); //TODO: This should really move down below inside the tests.exe block
 		AddTaggedArg(linkerFlags,    T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_CREATE_ASSEMBLY_MANIFEST);
-		AddTaggedArgNt(linkerFlags,  T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_ASSEMBLY_MANIFEST_FILE, "tests.intermediate.manifest"); //TODO: This should really move down below inside the tests.exe block
+		AddTaggedArgNt(linkerFlags,  T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_MANIFESTFILE, "tests.intermediate.manifest"); //TODO: This should really move down below inside the tests.exe block
 		AddTaggedArgNt(linkerFlags,  T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_LINK_TIME_CODEGEN_FILE, "tests.iobj"); //TODO: This should really move down below inside the tests.exe block
 		AddTaggedArgNt(linkerFlags,  T_MSVC_LINK T_PLAYDATE T_SIMULATOR, LINK_EMBED_UAC_INFO_EX, "level='asInvoker' uiAccess='false'");
 		AddTaggedArg(linkerFlags,    T_MSVC_LINK T_PLAYDATE T_SIMULATOR T_DEBUG_BUILD, LINK_DEBUG_INFO);

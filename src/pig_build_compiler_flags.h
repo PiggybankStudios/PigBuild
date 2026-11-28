@@ -49,7 +49,7 @@ Description:
 #define CL_STD_LIB_DYNAMIC                  "/MD"
 #define CL_STD_LIB_STATIC_DBG               "/MTd"
 #define CL_STD_LIB_DYNAMIC_DBG              "/MDd"
-#define CL_OPTIMIZATION_LEVEL               "/O[VAL]" //t, y, 2, d, b1
+#define CL_OPTIMIZATION_LEVEL               "/O[VAL]" //d, 1, 2, x, s, t, y (/O2 implies /Ot)
 #define CL_INLINE_EXPANSION_LEVEL           "/Ob[VAL]" //0, 1, 2, 3
 #define CL_PREPROCESS_TO_STDOUT             "/E" //writes to stdout
 #define CL_PREPROCESS_TO_FILE               "/P" //writes to .i file
@@ -59,7 +59,7 @@ Description:
 #define CL_ENABLE_BUFFER_SECURITY_CHECK     "/GS" //Detects some buffer overruns that overwrite a function's return address, exception handler address, or certain types of parameters
 #define CL_DISABLE_MINIMAL_REBUILD          "/Gm-" //Disables minimal rebuild (a deprecated feature), which determines whether C++ source files that include changed C++ class definitions (stored in header (.h) files) need to be recompiled.
 #define CL_ENABLE_RUNTIME_CHECKS            "/RTC[VAL]" //1 = Enable fast runtime checks (Equivalent to `/RTCsu`)
-#define CL_CALLING_CONVENTION               "/G[VAL]" //Determines the order in which function arguments are pushed onto the stack, whether the caller function or called function removes the arguments from the stack at the end of the call, and the name-decorating convention that the compiler uses to identify individual functions
+#define CL_CALLING_CONVENTION               "/G[VAL]" //z=__cdecl, r=__fastcall, z=__stdcall, v=__vectorcall - Determines the order in which function arguments are pushed onto the stack, whether the caller function or called function removes the arguments from the stack at the end of the call, and the name-decorating convention that the compiler uses to identify individual functions
 #define CL_ENABLE_LANG_CONFORMANCE_OPTION   "/Zc:[VAL]"
 #define CL_DISABLE_LANG_CONFORMANCE_OPTION  "/Zc:[VAL]-"
 #define CL_INTERNAL_COMPILER_ERROR_BEHAVIOR "/errorReport:[VAL]"
@@ -113,9 +113,9 @@ Description:
 #define LINK_IMPORT_LIBRARY_FILE       "/IMPLIB:\"[VAL]\"" //Specify the name of the import library (the .lib that pairs with a .dll)
 #define LINK_DEBUG_INFO_FILE           "/PDB:\"[VAL]\""
 #define LINK_NATVIS_PATH               "/NATVIS:\"[VAL]\""
-#define LINK_NO_EXP                    "/noexp" //TODO: Name this better
-#define LINK_NO_COFF_GRP_INFO          "/nocoffgrpinfo" //TODO: Name this better
-#define LINK_OPT                       "/opt:[VAL]" //TODO: Name this better, Values: ref, icf
+#define LINK_NO_EXPORTS_FILE           "/noexp" //Don't create the .exp file when building a .dll (undocumented)
+#define LINK_NO_COFF_GRP_INFO          "/nocoffgrpinfo" //TODO: Drops the COFF group (POGO) entry from the PE debug directory? (undocumented)
+#define LINK_OPT                       "/opt:[VAL]" //ref=remove unused functions and data, icf=folds identical functions (also noref and noicf)
 
 // +==============================+
 // |        MSVC RC Flags         |
@@ -138,6 +138,7 @@ Description:
 #define CLANG_OPTIMIZATION_LEVEL       "-O[VAL]"
 #define CLANG_DEBUG_INFO               "-g[VAL]"
 #define CLANG_DEBUG_INFO_DEFAULT       "-g"
+#define CLANG_WARNINGS_AS_ERRORS       "-Werror"
 #define CLANG_WARNING_LEVEL            "-W[VAL]" //all
 #define CLANG_ENABLE_WARNING           "-W[VAL]"
 #define CLANG_DISABLE_WARNING          "-Wno-[VAL]"
@@ -223,8 +224,8 @@ Description:
 #define GCC_STD_LIB_DYNAMIC          "-MD" //MSVC-style option
 #define GCC_STD_LIB_STATIC_DBG       "-MTd" //MSVC-style option
 #define GCC_STD_LIB_DYNAMIC_DBG      "-MDd" //MSVC-style option
-#define GCC_WARNING_LEVEL            "-W[VAL]" //all
 #define GCC_WARNINGS_AS_ERRORS       "-Werror"
+#define GCC_WARNING_LEVEL            "-W[VAL]" //all
 #define GCC_ENABLE_WARNING           "-W[VAL]"
 #define GCC_DISABLE_WARNING          "-Wno-[VAL]"
 #define GCC_DISABLE_WARNING_AS_ERROR "-Wno-error=[VAL]"
